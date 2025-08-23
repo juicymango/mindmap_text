@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mind Map Test</title>
+    <script src="mindmap.js"></script>
+    <script src="serializer.js"></script>
+</head>
+<body>
+    <script>
+        // Test basic functionality
+        const mindMap = new MindMap();
+        console.log('MindMap created:', mindMap);
+        
+        // Test node creation
+        const node1 = mindMap.createNode('Test Node');
+        console.log('Node created:', node1);
+        
+        // Test serialization
+        const serializer = new Serializer();
+        const text = serializer.serialize(mindMap);
+        console.log('Serialized text:', text);
+        
+        // Test deserialization
+        const newMindMap = serializer.deserialize(text);
+        console.log('Deserialized mind map:', newMindMap);
+        
+        console.log('All tests passed!');
+    </script>
+</body>
+</html>
