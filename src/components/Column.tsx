@@ -1,5 +1,5 @@
 import React from 'react';
-import { Droppable } from 'react-beautiful-dnd';
+import { Droppable, Draggable } from 'react-beautiful-dnd';
 import { Node } from './Node';
 import { MindNode } from '../types';
 import styled from 'styled-components';
@@ -7,6 +7,7 @@ import styled from 'styled-components';
 interface ColumnProps {
   nodes: MindNode[];
   columnId: string;
+  index: number;
 }
 
 const ColumnContainer = styled.div`
@@ -19,19 +20,23 @@ const ColumnContainer = styled.div`
   flex-direction: column;
 `;
 
-export const Column: React.FC<ColumnProps> = ({ nodes, columnId }) => {
+export const Column: React.FC<ColumnProps> = ({ nodes, columnId, index }) => {
   return (
-    <ColumnContainer>
-      <Droppable droppableId={columnId}>
-        {(provided) => (
-          <div {...provided.droppableProps} ref={provided.innerRef}>
-            {nodes.map((node, index) => (
-              <Node key={node.id} node={node} index={index} />
-            ))}
-            {provided.placeholder}
-          </div>
-        )}
-      </Droppable>
-    </ColumnContainer>
+    <Draggable draggableId={columnId} index={index}>
+      {(provided) => (
+        <ColumnContainer {...provided.draggableProps} ref={provided.innerRef} {...provided.dragHandleProps}>
+          <Droppable droppableId={columnId} type="node">
+            {(provided) => (
+              <div {...provided.droppableProps} ref={provided.innerRef}>
+                {nodes.map((node, index) => (
+                  <Node key={node.id} node={node} index={index} />
+                ))}
+                {provided.placeholder}
+              </div>
+            )}
+          </Droppable>
+        </ColumnContainer>
+      )}
+    </Draggable>
   );
 };

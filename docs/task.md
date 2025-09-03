@@ -207,3 +207,16 @@ TS7006: Parameter 'childId' implicitly has an 'any' type.
 
 - fix them until no compile errors.
 - commit and push the changes.
+
+# task 9
+
+Uncaught runtime errors:
+×
+ERROR
+Invariant failed: Cannot find droppable entry with id [root]
+    at handleError (http://localhost:3000/static/js/bundle.js:34851:58)
+    at http://localhost:3000/static/js/bundle.js:34870:7
+
+- fix the error.
+- also i can only see the add node button, which i can add sibling nodes, but no ways to add children nodes.
+- commit and push the changes.

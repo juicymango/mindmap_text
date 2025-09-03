@@ -1,7 +1,7 @@
 import React from 'react';
 import { useMindMapStore } from '../store/mindmapStore';
 import { Column } from './Column';
-import { DragDropContext } from 'react-beautiful-dnd';
+import { DragDropContext, Droppable } from 'react-beautiful-dnd';
 import styled from 'styled-components';
 import { MindNode } from '../types';
 
@@ -35,11 +35,16 @@ export const MindMap: React.FC = () => {
 
   return (
     <DragDropContext onDragEnd={onDragEnd}>
-      <MindMapContainer>
-        {columns.map((column) => (
-          <Column key={column.id} columnId={column.id} nodes={column.nodes} />
-        ))}
-      </MindMapContainer>
+      <Droppable droppableId="mindmap" direction="horizontal">
+        {(provided) => (
+          <MindMapContainer {...provided.droppableProps} ref={provided.innerRef}>
+            {columns.map((column, index) => (
+              <Column key={column.id} columnId={column.id} nodes={column.nodes} index={index} />
+            ))}
+            {provided.placeholder}
+          </MindMapContainer>
+        )}
+      </Droppable>
     </DragDropContext>
   );
 };
