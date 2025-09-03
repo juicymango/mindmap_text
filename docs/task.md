@@ -40,3 +40,16 @@
 - how will you implement and test the project? output your plan to ./docs/plan.md.
 - not to implement at this time.
 - commit and push the changes.
+
+# task 6
+
+- be detail enough for execution.
+- make decisions. no "or"s. explain your decisions.
+- update ./docs/plan.md.
+- write your code structure to ./docs/code_structure.md.
+    - write your directory structure. explain functions for each directory.
+    - what files are in the directory? explain the functions.
+    - what functions, structures will be in each file? document each of them.
+    - be detail enough for your actual implementation.
+- not to implement at this time.
+- commit and push the changes.

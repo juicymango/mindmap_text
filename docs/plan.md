@@ -4,37 +4,47 @@ This document outlines the plan for implementing and testing the mind map applic
 
 ## Project Setup
 
-1.  **Initialize React App:** Use `create-react-app` to set up a new React project.
+1.  **Initialize React App:** Use `create-react-app` with the TypeScript template to set up a new React project.
     ```bash
-    npx create-react-app mindmap-app
+    npx create-react-app mindmap-app --template typescript
     ```
-2.  **Dependencies:** Add any necessary dependencies, such as a state management library (e.g., Redux or Zustand) if needed.
+2.  **Dependencies:**
+    - **State Management:** We will use `Zustand`. It's a small, fast and scalable bearbones state-management solution. It has a comfortable API based on hooks, and it's less boilerplate than Redux.
+    - **Drag and Drop:** We will use `react-beautiful-dnd`. It's a popular, accessible and powerful library for drag and drop in React.
+    - **Styling:** We will use `styled-components` for styling. It allows us to write actual CSS code to style our components, which is more intuitive and powerful than using plain JavaScript objects.
+    - **UUID:** We will use the `uuid` library to generate unique IDs for our nodes.
+
+    ```bash
+    npm install zustand react-beautiful-dnd styled-components uuid
+    npm install @types/react-beautiful-dnd @types/styled-components @types/uuid -D
+    ```
 
 ## Component Structure
 
 The application will be broken down into the following components:
 
--   **`App`:** The main component that holds the entire application.
--   **`MindMap`:** The main container for the mind map, which will manage the state of the mind map data.
--   **`Column`:** A component that renders a single column of nodes.
--   **`Node`:** A component that renders a single node within a column.
+-   **`App`:** The main component that holds the entire application. It will render the `Toolbar` and the `MindMap` components.
+-   **`MindMap`:** The main container for the mind map. It will fetch the data from the Zustand store and render the columns.
+-   **`Column`:** A component that renders a single column of nodes. It will be a droppable area for `react-beautiful-dnd`.
+-   **`Node`:** A component that renders a single node within a column. It will be a draggable item for `react-beautiful-dnd`.
 -   **`Toolbar`:** A component for buttons like "Save", "Load", etc.
 
-## State Management
+## State Management with Zustand
 
--   The mind map data will be stored in a central place, either using React's `useState` and `useContext` hooks for simpler cases, or a dedicated state management library like Redux or Zustand for more complex state logic.
--   The state will be a tree-like structure, as defined in `docs/ui_and_interaction_design.md`.
+-   A Zustand store will be created to manage the state of the mind map.
+-   The store will contain the mind map data as a tree-like structure, as defined in `docs/ui_and_interaction_design.md`.
+-   The store will also contain actions to manipulate the state, such as adding, deleting, and updating nodes.
 
 ## Implementation Details
 
-1.  **Column View:** The `MindMap` component will render a series of `Column` components based on the selected path.
-2.  **Node Selection:** Each `Node` component will have an `onClick` handler that updates the selected node in the application state.
-3.  **Expansion:** When a node is selected, the `MindMap` component will determine the children to be displayed in the next column and render a new `Column` component.
-4.  **Drag and Drop:** The `react-beautiful-dnd` or a similar library will be used to implement the drag-and-drop functionality for manual sorting of nodes.
-5.  **File Operations:** The browser's File System Access API will be used to save and load the mind map data as a JSON file.
+1.  **Column View:** The `MindMap` component will get the selected path from the Zustand store and render a series of `Column` components.
+2.  **Node Selection:** Each `Node` component will have an `onClick` handler that calls an action in the Zustand store to update the selected node.
+3.  **Expansion:** The Zustand store will have a dedicated function to determine the selected path based on the currently selected node. The `MindMap` component will use this to render the columns.
+4.  **Drag and Drop:** The `MindMap` component will be wrapped in a `DragDropContext`. The `Column` components will be `Droppable`, and the `Node` components will be `Draggable`. The `onDragEnd` handler will call an action in the Zustand store to update the order of the nodes.
+5.  **File Operations:** The `Toolbar` component will have "Save" and "Load" buttons. The "Save" button will get the mind map data from the Zustand store and use the File System Access API to save it as a JSON file. The "Load" button will use the File System Access API to load a JSON file and update the Zustand store.
 
 ## Testing Strategy
 
--   **Unit Tests:** Each component will be tested in isolation using `jest` and `react-testing-library`. Tests will cover rendering, user interactions, and state changes.
--   **Integration Tests:** The application will be tested as a whole to ensure that all components work together correctly. This will involve simulating user flows, such as creating a new mind map, adding nodes, and saving the mind map.
--   **End-to-End Tests:** A framework like Cypress could be used to automate browser testing and verify the application's functionality from a user's perspective.
+-   **Unit Tests:** Each component will be tested in isolation using `jest` and `react-testing-library`. We will mock the Zustand store to test the components in a predictable way.
+-   **Integration Tests:** We will test the integration between the components and the Zustand store. For example, we will test that clicking on a node correctly updates the state and re-renders the `MindMap` component.
+-   **End-to-End Tests:** We will use `Cypress` to automate browser testing. We will create test scripts that simulate user flows, such as creating a new mind map, adding nodes, and saving the mind map.
