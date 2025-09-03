@@ -1,0 +1,45 @@
+import React from 'react';
+import { useMindMapStore } from '../store/mindmapStore';
+import { Column } from './Column';
+import { DragDropContext } from 'react-beautiful-dnd';
+import styled from 'styled-components';
+import { MindNode } from '../types';
+
+const MindMapContainer = styled.div`
+  display: flex;
+`;
+
+export const MindMap: React.FC = () => {
+  const { mindmap, onDragEnd } = useMindMapStore();
+
+  const getColumns = () => {
+    const columns: { id: string; nodes: MindNode[] }[] = [];
+    let currentNode = mindmap.root;
+    columns.push({ id: currentNode.id, nodes: currentNode.children });
+
+    while (currentNode.selected_child_id) {
+      const selectedChild = currentNode.children.find(
+        (child) => child.id === currentNode.selected_child_id
+      );
+      if (selectedChild) {
+        columns.push({ id: selectedChild.id, nodes: selectedChild.children });
+        currentNode = selectedChild;
+      } else {
+        break;
+      }
+    }
+    return columns;
+  };
+
+  const columns = getColumns();
+
+  return (
+    <DragDropContext onDragEnd={onDragEnd}>
+      <MindMapContainer>
+        {columns.map((column) => (
+          <Column key={column.id} columnId={column.id} nodes={column.nodes} />
+        ))}
+      </MindMapContainer>
+    </DragDropContext>
+  );
+};

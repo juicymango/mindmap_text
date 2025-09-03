@@ -53,3 +53,10 @@
     - be detail enough for your actual implementation.
 - not to implement at this time.
 - commit and push the changes.
+
+# task 7
+
+- read all docs in ./docs.
+- implement the project step by step as stated in ./docs/plan.md.
+- be aligned with ./docs/code_structure.md.
+- commit and push the changes.
