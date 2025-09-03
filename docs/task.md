@@ -32,3 +32,11 @@
 - add function copy / move / paste nodes in Interaction Design.
 - not to implement at this time.
 - commit and push the changes.
+
+# task 5
+
+- it is a pure frontend project.
+- use the React framework.
+- how will you implement and test the project? output your plan to ./docs/plan.md.
+- not to implement at this time.
+- commit and push the changes.
