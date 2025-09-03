@@ -1,4 +1,4 @@
-import create from 'zustand';
+import { create, StoreApi, UseBoundStore } from 'zustand';
 import { MindMap, MindNode } from '../types';
 import { DropResult } from 'react-beautiful-dnd';
 import { v4 as uuidv4 } from 'uuid';
@@ -26,10 +26,10 @@ const findNode = (nodes: MindNode[], nodeId: string): MindNode | null => {
   return null;
 };
 
-export const useMindMapStore = create<MindMapState>((set, get) => ({
+export const useMindMapStore: UseBoundStore<StoreApi<MindMapState>> = create<MindMapState>((set, get) => ({
   mindmap: { root: { id: 'root', text: 'Root', children: [] } },
-  setMindmap: (mindmap) => set({ mindmap }),
-  addNode: (parentId, text) => {
+  setMindmap: (mindmap: MindMap) => set({ mindmap }),
+  addNode: (parentId: string, text: string) => {
     const { mindmap } = get();
     const newMindMap = { ...mindmap };
     const parent = findNode([newMindMap.root], parentId);
@@ -39,7 +39,7 @@ export const useMindMapStore = create<MindMapState>((set, get) => ({
       set({ mindmap: newMindMap });
     }
   },
-  deleteNode: (nodeId) => {
+  deleteNode: (nodeId: string) => {
     const { mindmap } = get();
     const newMindMap = { ...mindmap };
 
@@ -62,7 +62,7 @@ export const useMindMapStore = create<MindMapState>((set, get) => ({
       set({ mindmap: newMindMap });
     }
   },
-  updateNodeText: (nodeId, text) => {
+  updateNodeText: (nodeId: string, text: string) => {
     const { mindmap } = get();
     const newMindMap = { ...mindmap };
     const node = findNode([newMindMap.root], nodeId);
@@ -71,7 +71,7 @@ export const useMindMapStore = create<MindMapState>((set, get) => ({
       set({ mindmap: newMindMap });
     }
   },
-  onDragEnd: (result) => {
+  onDragEnd: (result: DropResult) => {
     const { source, destination } = result;
     if (!destination) {
       return;
@@ -102,7 +102,7 @@ export const useMindMapStore = create<MindMapState>((set, get) => ({
       set({ mindmap: newMindMap });
     }
   },
-  setSelectedChild: (parentId, childId) => {
+  setSelectedChild: (parentId: string, childId: string | undefined) => {
     const { mindmap } = get();
     const newMindMap = { ...mindmap };
     const parent = findNode([newMindMap.root], parentId);

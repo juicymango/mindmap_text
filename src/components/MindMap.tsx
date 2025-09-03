@@ -12,15 +12,15 @@ const MindMapContainer = styled.div`
 export const MindMap: React.FC = () => {
   const { mindmap, onDragEnd } = useMindMapStore();
 
+  const findChild = (nodes: MindNode[], childId: string) => nodes.find((child) => child.id === childId);
+
   const getColumns = () => {
     const columns: { id: string; nodes: MindNode[] }[] = [];
     let currentNode = mindmap.root;
     columns.push({ id: currentNode.id, nodes: currentNode.children });
 
     while (currentNode.selected_child_id) {
-      const selectedChild = currentNode.children.find(
-        (child) => child.id === currentNode.selected_child_id
-      );
+      const selectedChild = findChild(currentNode.children, currentNode.selected_child_id);
       if (selectedChild) {
         columns.push({ id: selectedChild.id, nodes: selectedChild.children });
         currentNode = selectedChild;

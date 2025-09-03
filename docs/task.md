@@ -60,3 +60,150 @@
 - implement the project step by step as stated in ./docs/plan.md.
 - be aligned with ./docs/code_structure.md.
 - commit and push the changes.
+
+# task 8
+
+Failed to compile.
+
+Attempted import error: 'zustand' does not contain a default export (imported as 'create').
+WARNING in [eslint] 
+src/components/MindMap.tsx
+  Line 22:9:  Function declared in a loop contains unsafe references to variable(s) 'currentNode'  no-loop-func
+
+ERROR in ./src/store/mindmapStore.ts 17:31-37
+export 'default' (imported as 'create') was not found in 'zustand' (possible exports: create, createStore, useStore)
+
+webpack compiled with 1 error and 1 warning
+ERROR in src/components/MindMap.tsx:22:10
+TS7006: Parameter 'child' implicitly has an 'any' type.
+    20 |     while (currentNode.selected_child_id) {
+    21 |       const selectedChild = currentNode.children.find(
+  > 22 |         (child) => child.id === currentNode.selected_child_id
+       |          ^^^^^
+    23 |       );
+    24 |       if (selectedChild) {
+    25 |         columns.push({ id: selectedChild.id, nodes: selectedChild.children });
+
+ERROR in src/store/mindmapStore.ts:29:32
+TS2349: This expression is not callable.
+  Type 'typeof import("/Users/plain/go/src/github.com/juicymango/mindmap_text/node_modules/zustand/index")' has no call signatures.
+    27 | };
+    28 |
+  > 29 | export const useMindMapStore = create<MindMapState>((set, get) => ({
+       |                                ^^^^^^
+    30 |   mindmap: { root: { id: 'root', text: 'Root', children: [] } },
+    31 |   setMindmap: (mindmap) => set({ mindmap }),
+    32 |   addNode: (parentId, text) => {
+
+ERROR in src/store/mindmapStore.ts:29:54
+TS7006: Parameter 'set' implicitly has an 'any' type.
+    27 | };
+    28 |
+  > 29 | export const useMindMapStore = create<MindMapState>((set, get) => ({
+       |                                                      ^^^
+    30 |   mindmap: { root: { id: 'root', text: 'Root', children: [] } },
+    31 |   setMindmap: (mindmap) => set({ mindmap }),
+    32 |   addNode: (parentId, text) => {
+
+ERROR in src/store/mindmapStore.ts:29:59
+TS7006: Parameter 'get' implicitly has an 'any' type.
+    27 | };
+    28 |
+  > 29 | export const useMindMapStore = create<MindMapState>((set, get) => ({
+       |                                                           ^^^
+    30 |   mindmap: { root: { id: 'root', text: 'Root', children: [] } },
+    31 |   setMindmap: (mindmap) => set({ mindmap }),
+    32 |   addNode: (parentId, text) => {
+
+ERROR in src/store/mindmapStore.ts:31:16
+TS7006: Parameter 'mindmap' implicitly has an 'any' type.
+    29 | export const useMindMapStore = create<MindMapState>((set, get) => ({
+    30 |   mindmap: { root: { id: 'root', text: 'Root', children: [] } },
+  > 31 |   setMindmap: (mindmap) => set({ mindmap }),
+       |                ^^^^^^^
+    32 |   addNode: (parentId, text) => {
+    33 |     const { mindmap } = get();
+    34 |     const newMindMap = { ...mindmap };
+
+ERROR in src/store/mindmapStore.ts:32:13
+TS7006: Parameter 'parentId' implicitly has an 'any' type.
+    30 |   mindmap: { root: { id: 'root', text: 'Root', children: [] } },
+    31 |   setMindmap: (mindmap) => set({ mindmap }),
+  > 32 |   addNode: (parentId, text) => {
+       |             ^^^^^^^^
+    33 |     const { mindmap } = get();
+    34 |     const newMindMap = { ...mindmap };
+    35 |     const parent = findNode([newMindMap.root], parentId);
+
+ERROR in src/store/mindmapStore.ts:32:23
+TS7006: Parameter 'text' implicitly has an 'any' type.
+    30 |   mindmap: { root: { id: 'root', text: 'Root', children: [] } },
+    31 |   setMindmap: (mindmap) => set({ mindmap }),
+  > 32 |   addNode: (parentId, text) => {
+       |                       ^^^^
+    33 |     const { mindmap } = get();
+    34 |     const newMindMap = { ...mindmap };
+    35 |     const parent = findNode([newMindMap.root], parentId);
+
+ERROR in src/store/mindmapStore.ts:42:16
+TS7006: Parameter 'nodeId' implicitly has an 'any' type.
+    40 |     }
+    41 |   },
+  > 42 |   deleteNode: (nodeId) => {
+       |                ^^^^^^
+    43 |     const { mindmap } = get();
+    44 |     const newMindMap = { ...mindmap };
+    45 |
+
+ERROR in src/store/mindmapStore.ts:65:20
+TS7006: Parameter 'nodeId' implicitly has an 'any' type.
+    63 |     }
+    64 |   },
+  > 65 |   updateNodeText: (nodeId, text) => {
+       |                    ^^^^^^
+    66 |     const { mindmap } = get();
+    67 |     const newMindMap = { ...mindmap };
+    68 |     const node = findNode([newMindMap.root], nodeId);
+
+ERROR in src/store/mindmapStore.ts:65:28
+TS7006: Parameter 'text' implicitly has an 'any' type.
+    63 |     }
+    64 |   },
+  > 65 |   updateNodeText: (nodeId, text) => {
+       |                            ^^^^
+    66 |     const { mindmap } = get();
+    67 |     const newMindMap = { ...mindmap };
+    68 |     const node = findNode([newMindMap.root], nodeId);
+
+ERROR in src/store/mindmapStore.ts:74:15
+TS7006: Parameter 'result' implicitly has an 'any' type.
+    72 |     }
+    73 |   },
+  > 74 |   onDragEnd: (result) => {
+       |               ^^^^^^
+    75 |     const { source, destination } = result;
+    76 |     if (!destination) {
+    77 |       return;
+
+ERROR in src/store/mindmapStore.ts:105:22
+TS7006: Parameter 'parentId' implicitly has an 'any' type.
+    103 |     }
+    104 |   },
+  > 105 |   setSelectedChild: (parentId, childId) => {
+        |                      ^^^^^^^^
+    106 |     const { mindmap } = get();
+    107 |     const newMindMap = { ...mindmap };
+    108 |     const parent = findNode([newMindMap.root], parentId);
+
+ERROR in src/store/mindmapStore.ts:105:32
+TS7006: Parameter 'childId' implicitly has an 'any' type.
+    103 |     }
+    104 |   },
+  > 105 |   setSelectedChild: (parentId, childId) => {
+        |                                ^^^^^^^
+    106 |     const { mindmap } = get();
+    107 |     const newMindMap = { ...mindmap };
+    108 |     const parent = findNode([newMindMap.root], parentId);
+
+- fix them until no compile errors.
+- commit and push the changes.
