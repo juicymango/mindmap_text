@@ -53,15 +53,17 @@ The UI will be a horizontally scrolling view of columns.
 6.  **Node Deletion:**
     - A "-" button will be available next to each node to delete it. A confirmation will be required.
 
+7.  **File Operations:**
+    - **Save:** A "Save" button will be present in the main toolbar. Clicking it will open a system dialog to save the mind map as a JSON file.
+    - **Load:** A "Load" button will be present in the main toolbar. Clicking it will open a system dialog to select a JSON file to load into the mind map.
+
+8.  **Manual Sorting:**
+    - The user can drag and drop a node within its column to reorder it among its siblings.
+
 ## Default State
 
 - On initial load, the root node is selected.
 - The first child of the root node is selected in the second column, and so on, creating an initial "selected path".
-
-## File Operations
-
-- **Save:** A "Save" button will be present in the main toolbar. Clicking it will open a system dialog to save the mind map as a JSON file.
-- **Load:** A "Load" button will be present in the main toolbar. Clicking it will open a system dialog to select a JSON file to load into the mind map.
 
 ## Data Format
 
@@ -71,3 +73,4 @@ The mind map will be saved in a JSON format. The structure will be a tree of nod
 - `text`: The text content of the node.
 - `children`: An array of child nodes.
 - `selected_child_id`: The ID of the selected child.
+- `children_order`: An array of child node IDs representing the manual sort order.

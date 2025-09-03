@@ -17,3 +17,11 @@
 - add save and load functions. use the local file system to storage.
 - update ./ui_and_interaction_design.md.
 - commit and push the changes.
+
+# task 3
+
+- update ./ui_and_interaction_design.md.
+- move File Operations into Interaction Design.
+- add function manually sorting sibling nodes in Interaction Design.
+- not to implement at this time.
+- commit and push the changes.
