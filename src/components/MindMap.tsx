@@ -35,7 +35,7 @@ export const MindMap: React.FC = () => {
 
   return (
     <DragDropContext onDragEnd={onDragEnd}>
-      <Droppable droppableId="mindmap" direction="horizontal">
+      <Droppable droppableId="mindmap" direction="horizontal" type="COLUMN">
         {(provided) => (
           <MindMapContainer {...provided.droppableProps} ref={provided.innerRef}>
             {columns.map((column, index) => (

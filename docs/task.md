@@ -233,3 +233,16 @@ Invariant failed: Cannot find droppable entry with id [mindmap]
 - fix the error caused by dragging a node.
 - i can't see how i can delete a node. fix it.
 - commit and push the changes.
+
+# task 11
+
+Uncaught runtime errors:
+×
+ERROR
+Invariant failed: Cannot find droppable entry with id [mindmap]
+    at handleError (http://localhost:3000/static/js/bundle.js:34851:58)
+    at http://localhost:3000/static/js/bundle.js:34870:7
+
+- the error isn't fixed.
+- how can you ensure your implementation? what will you test? list your test cases and where are the test codes in ./docs/test.md.
+- commit and push the changes.

@@ -22,7 +22,7 @@ const ColumnContainer = styled.div`
 
 export const Column: React.FC<ColumnProps> = ({ nodes, columnId, index }) => {
   return (
-    <Draggable draggableId={columnId} index={index}>
+    <Draggable draggableId={columnId} index={index} type="COLUMN">
       {(provided) => (
         <ColumnContainer {...provided.draggableProps} ref={provided.innerRef} {...provided.dragHandleProps}>
           <Droppable droppableId={columnId} type="node">
