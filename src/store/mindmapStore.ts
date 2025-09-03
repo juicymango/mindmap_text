@@ -81,6 +81,9 @@ export const useMindMapStore: UseBoundStore<StoreApi<MindMapState>> = create<Min
     const newMindMap = { ...mindmap };
 
     const findParent = (nodes: MindNode[], nodeId: string): MindNode | null => {
+      if (nodeId === 'root') {
+        return newMindMap.root;
+      }
       for (const node of nodes) {
         if (node.children.some(child => child.id === nodeId)) {
           return node;

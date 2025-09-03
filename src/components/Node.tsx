@@ -21,7 +21,7 @@ const NodeContainer = styled.div<{ isSelected: boolean }>`
 `;
 
 export const Node: React.FC<NodeProps> = ({ node, index }) => {
-  const { updateNodeText, setSelectedChild, mindmap, addNode } = useMindMapStore();
+  const { updateNodeText, setSelectedChild, mindmap, addNode, deleteNode } = useMindMapStore();
   const [isEditing, setIsEditing] = useState(false);
   const [text, setText] = useState(node.text);
 
@@ -48,6 +48,11 @@ export const Node: React.FC<NodeProps> = ({ node, index }) => {
   const handleAddChild = (e: React.MouseEvent) => {
     e.stopPropagation();
     addNode(node.id, 'New Node');
+  };
+
+  const handleDelete = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    deleteNode(node.id);
   };
 
   const findParent = (currentNode: MindNode, nodeId: string): MindNode | null => {
@@ -88,7 +93,10 @@ export const Node: React.FC<NodeProps> = ({ node, index }) => {
           ) : (
             node.text
           )}
-          <button onClick={handleAddChild}>+</button>
+          <div>
+            <button onClick={handleAddChild}>+</button>
+            <button onClick={handleDelete}>x</button>
+          </div>
         </NodeContainer>
       )}
     </Draggable>

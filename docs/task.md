@@ -220,3 +220,16 @@ Invariant failed: Cannot find droppable entry with id [root]
 - fix the error.
 - also i can only see the add node button, which i can add sibling nodes, but no ways to add children nodes.
 - commit and push the changes.
+
+# task 10
+
+Uncaught runtime errors:
+×
+ERROR
+Invariant failed: Cannot find droppable entry with id [mindmap]
+    at handleError (http://localhost:3000/static/js/bundle.js:34851:58)
+    at http://localhost:3000/static/js/bundle.js:34870:7
+
+- fix the error caused by dragging a node.
+- i can't see how i can delete a node. fix it.
+- commit and push the changes.
