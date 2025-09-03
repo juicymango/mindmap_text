@@ -60,6 +60,11 @@ The UI will be a horizontally scrolling view of columns.
 8.  **Manual Sorting:**
     - The user can drag and drop a node within its column to reorder it among its siblings.
 
+9.  **Copy, Move, and Paste:**
+    - **Copy:** The user can copy a selected node using a keyboard shortcut (e.g., `Cmd+C` or `Ctrl+C`).
+    - **Cut:** The user can cut a selected node using a keyboard shortcut (e.g., `Cmd+X` or `Ctrl+X`).
+    - **Paste:** The user can paste a copied or cut node as a child of the currently selected node using a keyboard shortcut (e.g., `Cmd+V` or `Ctrl+V`). Pasting will add the node to the end of the children list.
+
 ## Default State
 
 - On initial load, the root node is selected.

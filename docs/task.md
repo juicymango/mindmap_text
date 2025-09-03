@@ -25,3 +25,10 @@
 - add function manually sorting sibling nodes in Interaction Design.
 - not to implement at this time.
 - commit and push the changes.
+
+# task 4
+
+- update ./ui_and_interaction_design.md.
+- add function copy / move / paste nodes in Interaction Design.
+- not to implement at this time.
+- commit and push the changes.
