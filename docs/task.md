@@ -11,3 +11,9 @@
 - for each node, we record the selected child. we automatically expand the selected child when this node is selected, and also recursively expand the child's selected child. at the beginning, the first child is selected by default.
 - in this design, we can see the parents and the parents' brothers easily.
 - please design the ui and interactions. add new files in ./docs/.
+
+# task 2
+
+- add save and load functions. use the local file system to storage.
+- update ./ui_and_interaction_design.md.
+- commit and push the changes.
