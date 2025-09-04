@@ -7,6 +7,7 @@ import { MindNode } from '../types';
 
 const MindMapContainer = styled.div`
   display: flex;
+  overflow-x: auto;
 `;
 
 export const MindMap: React.FC = () => {

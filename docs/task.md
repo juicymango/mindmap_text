@@ -255,3 +255,10 @@ Invariant failed: Cannot find droppable entry with id [mindmap]
 - **DONE** update the implementation and the relevant test cases.
 - **DONE** make sure you pass the unit tests.
 - **DONE** commit and push the changes.
+
+# task 14
+
+- **DONE** enable scrolling horizontally when the depth is deep.
+- **DONE** update the implementation and the relevant test cases.
+- **DONE** make sure you pass the unit tests.
+- **DONE** commit and push the changes.
