@@ -22,7 +22,7 @@ export const Toolbar: React.FC = () => {
   const handleAddNode = () => {
     // For simplicity, we add a new node to the root.
     // A more complete implementation would allow selecting the parent.
-    addNode('root', 'New Node');
+    addNode([], 'New Node');
   };
 
   return (

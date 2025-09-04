@@ -245,3 +245,13 @@ Invariant failed: Cannot find droppable entry with id [mindmap]
 - **DONE** implement unit tests in ./docs/test.md.
 - **DONE** you can ignore e2e test temporarily.
 - **DONE** commit and push the changes.
+
+# task 13
+
+- **DONE** i want the mind map's content to be automatically generated.
+- **DONE** in the current mind map node structure, the id is difficult to generate.
+- **DONE** remove the id field in the mind map node structure.
+- **DONE** replace the selected_child_id to selected_child_idx, which is the index of the selected child node in the children array. regard it 0 if ommited.
+- **DONE** update the implementation and the relevant test cases.
+- **DONE** make sure you pass the unit tests.
+- **DONE** commit and push the changes.

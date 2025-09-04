@@ -1,8 +1,6 @@
-
 import { render, fireEvent } from '@testing-library/react';
 import { Node } from './Node';
 import { useMindMapStore } from '../store/mindmapStore';
-import { Draggable } from 'react-beautiful-dnd';
 
 jest.mock('../store/mindmapStore');
 jest.mock('react-beautiful-dnd', () => ({
@@ -24,14 +22,12 @@ describe('Node', () => {
   const deleteNode = jest.fn();
 
   const node = {
-    id: 'node1',
     text: 'Test Node',
     children: [],
   };
 
   const mindmap = {
     root: {
-      id: 'root',
       text: 'Root',
       children: [node],
     },
@@ -48,40 +44,40 @@ describe('Node', () => {
   });
 
   it('should render node text', () => {
-    const { getByText } = render(<Node node={node} index={0} />);
+    const { getByText } = render(<Node node={node} path={[0]} index={0} />);
     expect(getByText('Test Node')).toBeInTheDocument();
   });
 
   it('should enter edit mode on double click', () => {
-    const { getByText, getByDisplayValue } = render(<Node node={node} index={0} />);
+    const { getByText, getByDisplayValue } = render(<Node node={node} path={[0]} index={0} />);
     fireEvent.doubleClick(getByText('Test Node'));
     expect(getByDisplayValue('Test Node')).toBeInTheDocument();
   });
 
   it('should call updateNodeText on blur', () => {
-    const { getByText, getByDisplayValue } = render(<Node node={node} index={0} />);
+    const { getByText, getByDisplayValue } = render(<Node node={node} path={[0]} index={0} />);
     fireEvent.doubleClick(getByText('Test Node'));
     const input = getByDisplayValue('Test Node');
     fireEvent.change(input, { target: { value: 'Updated Text' } });
     fireEvent.blur(input);
-    expect(updateNodeText).toHaveBeenCalledWith('node1', 'Updated Text');
+    expect(updateNodeText).toHaveBeenCalledWith([0], 'Updated Text');
   });
 
   it('should call setSelectedChild on click', () => {
-    const { getByText } = render(<Node node={node} index={0} />);
+    const { getByText } = render(<Node node={node} path={[0]} index={0} />);
     fireEvent.click(getByText('Test Node'));
-    expect(setSelectedChild).toHaveBeenCalledWith('root', 'node1');
+    expect(setSelectedChild).toHaveBeenCalledWith([], 0);
   });
 
   it('should call addNode on add child button click', () => {
-    const { getByText } = render(<Node node={node} index={0} />);
+    const { getByText } = render(<Node node={node} path={[0]} index={0} />);
     fireEvent.click(getByText('+'));
-    expect(addNode).toHaveBeenCalledWith('node1', 'New Node');
+    expect(addNode).toHaveBeenCalledWith([0], 'New Node');
   });
 
   it('should call deleteNode on delete button click', () => {
-    const { getByText } = render(<Node node={node} index={0} />);
+    const { getByText } = render(<Node node={node} path={[0]} index={0} />);
     fireEvent.click(getByText('x'));
-    expect(deleteNode).toHaveBeenCalledWith('node1');
+    expect(deleteNode).toHaveBeenCalledWith([0]);
   });
 });

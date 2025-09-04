@@ -1,4 +1,3 @@
-
 import { render, fireEvent } from '@testing-library/react';
 import { Toolbar } from './Toolbar';
 import { useMindMapStore } from '../store/mindmapStore';
@@ -13,7 +12,7 @@ describe('Toolbar', () => {
 
   beforeEach(() => {
     (useMindMapStore as jest.Mock).mockReturnValue({
-      mindmap: { root: { id: 'root', text: 'Root', children: [] } },
+      mindmap: { root: { text: 'Root', children: [] } },
       setMindmap,
       addNode,
     });
@@ -22,7 +21,7 @@ describe('Toolbar', () => {
   it('should call addNode when "Add Node" button is clicked', () => {
     const { getByText } = render(<Toolbar />);
     fireEvent.click(getByText('Add Node'));
-    expect(addNode).toHaveBeenCalledWith('root', 'New Node');
+    expect(addNode).toHaveBeenCalledWith([], 'New Node');
   });
 
   it('should call saveToFile when "Save" button is clicked', () => {
@@ -32,7 +31,7 @@ describe('Toolbar', () => {
   });
 
   it('should call loadFromFile and setMindmap when "Load" button is clicked', async () => {
-    const newMindMap = { root: { id: 'root', text: 'New Root', children: [] } };
+    const newMindMap = { root: { text: 'New Root', children: [] } };
     (loadFromFile as jest.Mock).mockResolvedValue(newMindMap);
 
     const { getByText } = render(<Toolbar />);

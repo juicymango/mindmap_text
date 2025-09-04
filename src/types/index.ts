@@ -1,9 +1,7 @@
 export interface MindNode {
-  id: string;
   text: string;
   children: MindNode[];
-  selected_child_id?: string;
-  children_order?: string[];
+  selected_child_idx?: number;
 }
 
 export interface MindMap {

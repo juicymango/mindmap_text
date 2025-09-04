@@ -1,7 +1,7 @@
 import React from 'react';
 import { useMindMapStore } from '../store/mindmapStore';
 import { Column } from './Column';
-import { DragDropContext, Droppable } from 'react-beautiful-dnd';
+import { DragDropContext } from 'react-beautiful-dnd';
 import styled from 'styled-components';
 import { MindNode } from '../types';
 
@@ -12,17 +12,18 @@ const MindMapContainer = styled.div`
 export const MindMap: React.FC = () => {
   const { mindmap, onDragEnd } = useMindMapStore();
 
-  const findChild = (nodes: MindNode[], childId: string) => nodes.find((child) => child.id === childId);
-
   const getColumns = () => {
-    const columns: { id: string; nodes: MindNode[] }[] = [];
+    const columns: { path: number[]; nodes: MindNode[] }[] = [];
     let currentNode = mindmap.root;
-    columns.push({ id: currentNode.id, nodes: currentNode.children });
+    let currentPath: number[] = [];
+    columns.push({ path: currentPath, nodes: currentNode.children });
 
-    while (currentNode.selected_child_id) {
-      const selectedChild = findChild(currentNode.children, currentNode.selected_child_id);
+    while (true) {
+      const selectedChildIndex = currentNode.selected_child_idx ?? 0;
+      const selectedChild = currentNode.children[selectedChildIndex];
       if (selectedChild) {
-        columns.push({ id: selectedChild.id, nodes: selectedChild.children });
+        currentPath = [...currentPath, selectedChildIndex];
+        columns.push({ path: currentPath, nodes: selectedChild.children });
         currentNode = selectedChild;
       } else {
         break;
@@ -35,16 +36,16 @@ export const MindMap: React.FC = () => {
 
   return (
     <DragDropContext onDragEnd={onDragEnd}>
-      <Droppable droppableId="mindmap" direction="horizontal" type="COLUMN">
-        {(provided) => (
-          <MindMapContainer {...provided.droppableProps} ref={provided.innerRef}>
-            {columns.map((column, index) => (
-              <Column key={column.id} columnId={column.id} nodes={column.nodes} index={index} />
-            ))}
-            {provided.placeholder}
-          </MindMapContainer>
-        )}
-      </Droppable>
+      <MindMapContainer>
+        {columns.map((column, index) => (
+          <Column
+            key={JSON.stringify(column.path)}
+            columnPath={column.path}
+            nodes={column.nodes}
+            index={index}
+          />
+        ))}
+      </MindMapContainer>
     </DragDropContext>
   );
 };

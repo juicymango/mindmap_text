@@ -1,71 +1,67 @@
 import { create, StoreApi, UseBoundStore } from 'zustand';
 import { MindMap, MindNode } from '../types';
 import { DropResult } from 'react-beautiful-dnd';
-import { v4 as uuidv4 } from 'uuid';
 
 interface MindMapState {
   mindmap: MindMap;
   setMindmap: (mindmap: MindMap) => void;
-  addNode: (parentId: string, text: string) => void;
-  deleteNode: (nodeId: string) => void;
-  updateNodeText: (nodeId: string, text: string) => void;
+  addNode: (parentPath: number[], text: string) => void;
+  deleteNode: (path: number[]) => void;
+  updateNodeText: (path: number[], text: string) => void;
   onDragEnd: (result: DropResult) => void;
-  setSelectedChild: (parentId: string, childId: string | undefined) => void;
+  setSelectedChild: (parentPath: number[], childIndex: number | undefined) => void;
 }
 
-const findNode = (nodes: MindNode[], nodeId: string): MindNode | null => {
-  for (const node of nodes) {
-    if (node.id === nodeId) {
-      return node;
-    }
-    const found = findNode(node.children, nodeId);
-    if (found) {
-      return found;
+const findNode = (root: MindNode, path: number[]): MindNode | null => {
+  if (path.length === 0) {
+    return root;
+  }
+  let currentNode: MindNode | null = root;
+  for (const index of path) {
+    if (currentNode && currentNode.children && currentNode.children[index]) {
+      currentNode = currentNode.children[index];
+    } else {
+      return null;
     }
   }
-  return null;
+  return currentNode;
+};
+
+const findParent = (root: MindNode, path: number[]): MindNode | null => {
+  if (path.length === 0) {
+    return null;
+  }
+  const parentPath = path.slice(0, -1);
+  return findNode(root, parentPath);
 };
 
 export const useMindMapStore: UseBoundStore<StoreApi<MindMapState>> = create<MindMapState>((set, get) => ({
-  mindmap: { root: { id: 'root', text: 'Root', children: [] } },
+  mindmap: { root: { text: 'Root', children: [] } },
   setMindmap: (mindmap: MindMap) => set({ mindmap }),
-  addNode: (parentId: string, text: string) => {
+  addNode: (parentPath: number[], text: string) => {
     const { mindmap } = get();
     const newMindMap = { ...mindmap };
-    const parent = findNode([newMindMap.root], parentId);
+    const parent = findNode(newMindMap.root, parentPath);
     if (parent) {
-      const newNode: MindNode = { id: uuidv4(), text, children: [] };
+      const newNode: MindNode = { text, children: [] };
       parent.children.push(newNode);
       set({ mindmap: newMindMap });
     }
   },
-  deleteNode: (nodeId: string) => {
+  deleteNode: (path: number[]) => {
     const { mindmap } = get();
     const newMindMap = { ...mindmap };
-
-    const findParent = (nodes: MindNode[], nodeId: string): MindNode | null => {
-      for (const node of nodes) {
-        if (node.children.some(child => child.id === nodeId)) {
-          return node;
-        }
-        const found = findParent(node.children, nodeId);
-        if (found) {
-          return found;
-        }
-      }
-      return null;
-    };
-
-    const parent = findParent([newMindMap.root], nodeId);
-    if (parent) {
-      parent.children = parent.children.filter(child => child.id !== nodeId);
+    const parent = findParent(newMindMap.root, path);
+    const nodeIndex = path[path.length - 1];
+    if (parent && parent.children[nodeIndex] !== undefined) {
+      parent.children.splice(nodeIndex, 1);
       set({ mindmap: newMindMap });
     }
   },
-  updateNodeText: (nodeId: string, text: string) => {
+  updateNodeText: (path: number[], text: string) => {
     const { mindmap } = get();
     const newMindMap = { ...mindmap };
-    const node = findNode([newMindMap.root], nodeId);
+    const node = findNode(newMindMap.root, path);
     if (node) {
       node.text = text;
       set({ mindmap: newMindMap });
@@ -80,24 +76,8 @@ export const useMindMapStore: UseBoundStore<StoreApi<MindMapState>> = create<Min
     const { mindmap } = get();
     const newMindMap = { ...mindmap };
 
-    const findParent = (nodes: MindNode[], nodeId: string): MindNode | null => {
-      if (nodeId === 'root') {
-        return newMindMap.root;
-      }
-      for (const node of nodes) {
-        if (node.children.some(child => child.id === nodeId)) {
-          return node;
-        }
-        const found = findParent(node.children, nodeId);
-        if (found) {
-          return found;
-        }
-      }
-      return null;
-    };
-
-    const sourceParent = findParent([newMindMap.root], source.droppableId);
-    const destParent = findParent([newMindMap.root], destination.droppableId);
+    const sourceParent = findNode(newMindMap.root, JSON.parse(source.droppableId));
+    const destParent = findNode(newMindMap.root, JSON.parse(destination.droppableId));
 
     if (sourceParent && destParent) {
       const [removed] = sourceParent.children.splice(source.index, 1);
@@ -105,12 +85,12 @@ export const useMindMapStore: UseBoundStore<StoreApi<MindMapState>> = create<Min
       set({ mindmap: newMindMap });
     }
   },
-  setSelectedChild: (parentId: string, childId: string | undefined) => {
+  setSelectedChild: (parentPath: number[], childIndex: number | undefined) => {
     const { mindmap } = get();
     const newMindMap = { ...mindmap };
-    const parent = findNode([newMindMap.root], parentId);
+    const parent = findNode(newMindMap.root, parentPath);
     if (parent) {
-      parent.selected_child_id = childId;
+      parent.selected_child_idx = childIndex;
       set({ mindmap: newMindMap });
     }
   },

@@ -6,6 +6,7 @@ import styled from 'styled-components';
 
 interface NodeProps {
   node: MindNode;
+  path: number[];
   index: number;
 }
 
@@ -20,7 +21,22 @@ const NodeContainer = styled.div<{ $isSelected: boolean }>`
   align-items: center;
 `;
 
-export const Node: React.FC<NodeProps> = ({ node, index }) => {
+const findNode = (root: MindNode, path: number[]): MindNode | null => {
+  if (path.length === 0) {
+    return root;
+  }
+  let currentNode: MindNode | null = root;
+  for (const index of path) {
+    if (currentNode && currentNode.children && currentNode.children[index]) {
+      currentNode = currentNode.children[index];
+    } else {
+      return null;
+    }
+  }
+  return currentNode;
+};
+
+export const Node: React.FC<NodeProps> = ({ node, path, index }) => {
   const { updateNodeText, setSelectedChild, mindmap, addNode, deleteNode } = useMindMapStore();
   const [isEditing, setIsEditing] = useState(false);
   const [text, setText] = useState(node.text);
@@ -34,45 +50,31 @@ export const Node: React.FC<NodeProps> = ({ node, index }) => {
   };
 
   const handleBlur = () => {
-    updateNodeText(node.id, text);
+    updateNodeText(path, text);
     setIsEditing(false);
   };
 
   const handleClick = () => {
-    const parent = findParent(mindmap.root, node.id);
-    if (parent) {
-      setSelectedChild(parent.id, node.id);
-    }
+    const parentPath = path.slice(0, -1);
+    setSelectedChild(parentPath, index);
   };
 
   const handleAddChild = (e: React.MouseEvent) => {
     e.stopPropagation();
-    addNode(node.id, 'New Node');
+    addNode(path, 'New Node');
   };
 
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
-    deleteNode(node.id);
+    deleteNode(path);
   };
 
-  const findParent = (currentNode: MindNode, nodeId: string): MindNode | null => {
-    for (const child of currentNode.children) {
-      if (child.id === nodeId) {
-        return currentNode;
-      }
-      const found = findParent(child, nodeId);
-      if (found) {
-        return found;
-      }
-    }
-    return null;
-  };
-
-  const parent = findParent(mindmap.root, node.id);
-  const isSelected = parent?.selected_child_id === node.id;
+  const parentPath = path.slice(0, -1);
+  const parent = findNode(mindmap.root, parentPath);
+  const isSelected = (parent?.selected_child_idx ?? 0) === index;
 
   return (
-    <Draggable draggableId={node.id} index={index}>
+    <Draggable draggableId={JSON.stringify(path)} index={index}>
       {(provided) => (
         <NodeContainer
           {...provided.draggableProps}
