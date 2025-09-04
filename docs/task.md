@@ -262,3 +262,11 @@ Invariant failed: Cannot find droppable entry with id [mindmap]
 - **DONE** update the implementation and the relevant test cases.
 - **DONE** make sure you pass the unit tests.
 - **DONE** commit and push the changes.
+
+# task 15
+
+- **DONE** i found the width of a column will decrease if there are many columns.
+- **DONE** fix the length. let the use scroll instead.
+- **DONE** update the implementation and the relevant test cases.
+- **DONE** make sure you pass the unit tests.
+- **DONE** commit and push the changes.

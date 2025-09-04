@@ -18,6 +18,7 @@ const ColumnContainer = styled.div`
   width: 220px;
   display: flex;
   flex-direction: column;
+  flex-shrink: 0;
 `;
 
 export const Column: React.FC<ColumnProps> = ({ nodes, columnPath, index }) => {
