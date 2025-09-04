@@ -9,12 +9,12 @@ interface NodeProps {
   index: number;
 }
 
-const NodeContainer = styled.div<{ isSelected: boolean }>`
+const NodeContainer = styled.div<{ $isSelected: boolean }>`
   padding: 8px;
   border: 1px solid lightgrey;
   border-radius: 4px;
   margin-bottom: 8px;
-  background-color: ${(props) => (props.isSelected ? 'lightblue' : 'white')};
+  background-color: ${(props) => (props.$isSelected ? 'lightblue' : 'white')};
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -80,7 +80,7 @@ export const Node: React.FC<NodeProps> = ({ node, index }) => {
           ref={provided.innerRef}
           onDoubleClick={handleDoubleClick}
           onClick={handleClick}
-          isSelected={isSelected}
+          $isSelected={isSelected}
         >
           {isEditing ? (
             <input

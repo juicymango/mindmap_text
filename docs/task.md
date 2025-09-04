@@ -239,3 +239,9 @@ Invariant failed: Cannot find droppable entry with id [mindmap]
 - **DONE** the error isn't fixed.
 - **DONE** how can you ensure your implementation? what will you test? list your test cases and where are the test codes in ./docs/test.md.
 - **DONE** commit and push the changes.
+
+# task 12
+
+- **DONE** implement unit tests in ./docs/test.md.
+- **DONE** you can ignore e2e test temporarily.
+- **DONE** commit and push the changes.
