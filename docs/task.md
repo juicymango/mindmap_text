@@ -270,3 +270,15 @@ Invariant failed: Cannot find droppable entry with id [mindmap]
 - **DONE** update the implementation and the relevant test cases.
 - **DONE** make sure you pass the unit tests.
 - **DONE** commit and push the changes.
+
+# task 16
+
+- **DONE** in classic mind map implementations, the mind map is stored by plain text.
+- **DONE** each line represent a node.
+- **DONE** it uses tabs ('\t') to represent the hierarchical structure.
+- **DONE** suppose line A has n leading tabs. then it is the child of the last line above A that with n-1 leading tabs.
+- **DONE** please suport loading and saving the mind map in this format, additional to the current implementation.
+- **DONE** update the implementation and the relevant test cases.
+- **DONE** make sure you pass the unit tests.
+- **DONE** commit and push the changes.
+
