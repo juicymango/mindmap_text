@@ -24,7 +24,7 @@ describe('AI Workflow End-to-End Tests', () => {
     // Clear all mocks and store state
     jest.clearAllMocks();
     useMindMapStore.setState({
-      mindmap: { text: 'Root Node', children: [] },
+      mindmap: { root: { text: 'Root Node', children: [] } },
       jsonFilePath: '',
       textFilePath: '',
       isAILoading: false,
@@ -93,10 +93,10 @@ describe('AI Workflow End-to-End Tests', () => {
 
       // Verify AI content was added to mindmap
       const store = useMindMapStore.getState();
-      expect(store.mindmap.children).toHaveLength(1);
-      expect(store.mindmap.children[0].text).toBe('AI Generated Content');
-      expect(store.mindmap.children[0].children).toHaveLength(3);
-      expect(store.mindmap.children[0].children[0].text).toBe('Executive Summary');
+      expect(store.mindmap.root.children).toHaveLength(1);
+      expect(store.mindmap.root.children[0].text).toBe('AI Generated Content');
+      expect(store.mindmap.root.children[0].children).toHaveLength(3);
+      expect(store.mindmap.root.children[0].children[0].text).toBe('Executive Summary');
     });
 
     it('should handle AI error flow gracefully', async () => {
@@ -199,16 +199,18 @@ describe('AI Workflow End-to-End Tests', () => {
       // Setup initial AI-generated content
       useMindMapStore.setState({
         mindmap: {
-          text: 'Root Node',
-          children: [
-            {
-              text: 'AI Generated Content',
-              children: [
-                { text: 'AI Node 1', children: [] },
-                { text: 'AI Node 2', children: [] },
-              ],
-            },
-          ],
+          root: {
+            text: 'Root Node',
+            children: [
+              {
+                text: 'AI Generated Content',
+                children: [
+                  { text: 'AI Node 1', children: [] },
+                  { text: 'AI Node 2', children: [] },
+                ],
+              },
+            ],
+          },
         },
       });
 
@@ -227,18 +229,20 @@ describe('AI Workflow End-to-End Tests', () => {
       // Simulate editing AI-generated node (this would require actual edit functionality)
       // For now, we verify the content exists and can be manipulated
       const store = useMindMapStore.getState();
-      expect(store.mindmap.children[0].text).toBe('AI Generated Content');
+      expect(store.mindmap.root.children[0].text).toBe('AI Generated Content');
     });
 
     it('should support multiple AI generations in different branches', async () => {
       // Setup initial mindmap structure
       useMindMapStore.setState({
         mindmap: {
-          text: 'Root Node',
-          children: [
-            { text: 'Branch 1', children: [] },
-            { text: 'Branch 2', children: [] },
-          ],
+          root: {
+            text: 'Root Node',
+            children: [
+              { text: 'Branch 1', children: [] },
+              { text: 'Branch 2', children: [] },
+            ],
+          },
         },
       });
 
@@ -270,11 +274,11 @@ describe('AI Workflow End-to-End Tests', () => {
       
       // Simulate AI generation in branch 1
       await store.generateAIContent([0], 'Generate content for branch 1');
-      expect(store.mindmap.children[0].children).toHaveLength(1);
+      expect(store.mindmap.root.children[0].children).toHaveLength(1);
 
       // Simulate AI generation in branch 2
       await store.generateAIContent([1], 'Generate content for branch 2');
-      expect(store.mindmap.children[1].children).toHaveLength(1);
+      expect(store.mindmap.root.children[1].children).toHaveLength(1);
     });
   });
 
@@ -343,16 +347,18 @@ describe('AI Workflow End-to-End Tests', () => {
     it('should preserve AI-generated content when saving and loading', async () => {
       // Setup mindmap with AI-generated content
       const aiGeneratedMindmap = {
-        text: 'Root Node',
-        children: [
-          {
-            text: 'AI Generated Content',
-            children: [
-              { text: 'AI Node 1', children: [] },
-              { text: 'AI Node 2', children: [] },
-            ],
-          },
-        ],
+        root: {
+          text: 'Root Node',
+          children: [
+            {
+              text: 'AI Generated Content',
+              children: [
+                { text: 'AI Node 1', children: [] },
+                { text: 'AI Node 2', children: [] },
+              ],
+            },
+          ],
+        },
       };
 
       useMindMapStore.setState({
@@ -369,8 +375,8 @@ describe('AI Workflow End-to-End Tests', () => {
 
       // Verify AI-generated content is preserved
       const store = useMindMapStore.getState();
-      expect(store.mindmap.children[0].text).toBe('AI Generated Content');
-      expect(store.mindmap.children[0].children).toHaveLength(2);
+      expect(store.mindmap.root.children[0].text).toBe('AI Generated Content');
+      expect(store.mindmap.root.children[0].children).toHaveLength(2);
 
       // This test would require actual file operations
       // For now, we verify the store maintains AI-generated content

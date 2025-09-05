@@ -567,3 +567,634 @@ All requirements from Task 20 have been successfully implemented and tested.
 - update ./docs/code_structure.md based on the current implementation.
 - update ./docs/test.md based on the current implementation.
 - commit and push the changes.
+
+# task 23
+
+Compiled with problems:
+×
+ERROR in src/integration/aiWorkflow.test.tsx:27:18
+TS2322: Type '{ text: string; children: never[]; }' is not assignable to type 'MindMap'.
+  Object literal may only specify known properties, and 'text' does not exist in type 'MindMap'.
+    25 |     jest.clearAllMocks();
+    26 |     useMindMapStore.setState({
+  > 27 |       mindmap: { text: 'Root Node', children: [] },
+       |                  ^^^^^^^^^^^^^^^^^
+    28 |       jsonFilePath: '',
+    29 |       textFilePath: '',
+    30 |       isAILoading: false,
+ERROR in src/integration/aiWorkflow.test.tsx:96:28
+TS2339: Property 'children' does not exist on type 'MindMap'.
+    94 |       // Verify AI content was added to mindmap
+    95 |       const store = useMindMapStore.getState();
+  > 96 |       expect(store.mindmap.children).toHaveLength(1);
+       |                            ^^^^^^^^
+    97 |       expect(store.mindmap.children[0].text).toBe('AI Generated Content');
+    98 |       expect(store.mindmap.children[0].children).toHaveLength(3);
+    99 |       expect(store.mindmap.children[0].children[0].text).toBe('Executive Summary');
+ERROR in src/integration/aiWorkflow.test.tsx:97:28
+TS2339: Property 'children' does not exist on type 'MindMap'.
+     95 |       const store = useMindMapStore.getState();
+     96 |       expect(store.mindmap.children).toHaveLength(1);
+  >  97 |       expect(store.mindmap.children[0].text).toBe('AI Generated Content');
+        |                            ^^^^^^^^
+     98 |       expect(store.mindmap.children[0].children).toHaveLength(3);
+     99 |       expect(store.mindmap.children[0].children[0].text).toBe('Executive Summary');
+    100 |     });
+ERROR in src/integration/aiWorkflow.test.tsx:98:28
+TS2339: Property 'children' does not exist on type 'MindMap'.
+     96 |       expect(store.mindmap.children).toHaveLength(1);
+     97 |       expect(store.mindmap.children[0].text).toBe('AI Generated Content');
+  >  98 |       expect(store.mindmap.children[0].children).toHaveLength(3);
+        |                            ^^^^^^^^
+     99 |       expect(store.mindmap.children[0].children[0].text).toBe('Executive Summary');
+    100 |     });
+    101 |
+ERROR in src/integration/aiWorkflow.test.tsx:99:28
+TS2339: Property 'children' does not exist on type 'MindMap'.
+     97 |       expect(store.mindmap.children[0].text).toBe('AI Generated Content');
+     98 |       expect(store.mindmap.children[0].children).toHaveLength(3);
+  >  99 |       expect(store.mindmap.children[0].children[0].text).toBe('Executive Summary');
+        |                            ^^^^^^^^
+    100 |     });
+    101 |
+    102 |     it('should handle AI error flow gracefully', async () => {
+ERROR in src/integration/aiWorkflow.test.tsx:202:11
+TS2322: Type '{ text: string; children: { text: string; children: { text: string; children: never[]; }[]; }[]; }' is not assignable to type 'MindMap'.
+  Object literal may only specify known properties, and 'text' does not exist in type 'MindMap'.
+    200 |       useMindMapStore.setState({
+    201 |         mindmap: {
+  > 202 |           text: 'Root Node',
+        |           ^^^^^^^^^^^^^^^^^
+    203 |           children: [
+    204 |             {
+    205 |               text: 'AI Generated Content',
+ERROR in src/integration/aiWorkflow.test.tsx:230:28
+TS2339: Property 'children' does not exist on type 'MindMap'.
+    228 |       // For now, we verify the content exists and can be manipulated
+    229 |       const store = useMindMapStore.getState();
+  > 230 |       expect(store.mindmap.children[0].text).toBe('AI Generated Content');
+        |                            ^^^^^^^^
+    231 |     });
+    232 |
+    233 |     it('should support multiple AI generations in different branches', async () => {
+ERROR in src/integration/aiWorkflow.test.tsx:237:11
+TS2322: Type '{ text: string; children: { text: string; children: never[]; }[]; }' is not assignable to type 'MindMap'.
+  Object literal may only specify known properties, and 'text' does not exist in type 'MindMap'.
+    235 |       useMindMapStore.setState({
+    236 |         mindmap: {
+  > 237 |           text: 'Root Node',
+        |           ^^^^^^^^^^^^^^^^^
+    238 |           children: [
+    239 |             { text: 'Branch 1', children: [] },
+    240 |             { text: 'Branch 2', children: [] },
+ERROR in src/integration/aiWorkflow.test.tsx:273:28
+TS2339: Property 'children' does not exist on type 'MindMap'.
+    271 |       // Simulate AI generation in branch 1
+    272 |       await store.generateAIContent([0], 'Generate content for branch 1');
+  > 273 |       expect(store.mindmap.children[0].children).toHaveLength(1);
+        |                            ^^^^^^^^
+    274 |
+    275 |       // Simulate AI generation in branch 2
+    276 |       await store.generateAIContent([1], 'Generate content for branch 2');
+ERROR in src/integration/aiWorkflow.test.tsx:277:28
+TS2339: Property 'children' does not exist on type 'MindMap'.
+    275 |       // Simulate AI generation in branch 2
+    276 |       await store.generateAIContent([1], 'Generate content for branch 2');
+  > 277 |       expect(store.mindmap.children[1].children).toHaveLength(1);
+        |                            ^^^^^^^^
+    278 |     });
+    279 |   });
+    280 |
+ERROR in src/integration/aiWorkflow.test.tsx:359:9
+TS2741: Property 'root' is missing in type '{ text: string; children: { text: string; children: { text: string; children: never[]; }[]; }[]; }' but required in type 'MindMap'.
+    357 |
+    358 |       useMindMapStore.setState({
+  > 359 |         mindmap: aiGeneratedMindmap,
+        |         ^^^^^^^
+    360 |         jsonFilePath: '/test/path.json',
+    361 |       });
+    362 |
+ERROR in src/integration/aiWorkflow.test.tsx:372:28
+TS2339: Property 'children' does not exist on type 'MindMap'.
+    370 |       // Verify AI-generated content is preserved
+    371 |       const store = useMindMapStore.getState();
+  > 372 |       expect(store.mindmap.children[0].text).toBe('AI Generated Content');
+        |                            ^^^^^^^^
+    373 |       expect(store.mindmap.children[0].children).toHaveLength(2);
+    374 |
+    375 |       // This test would require actual file operations
+ERROR in src/integration/aiWorkflow.test.tsx:373:28
+TS2339: Property 'children' does not exist on type 'MindMap'.
+    371 |       const store = useMindMapStore.getState();
+    372 |       expect(store.mindmap.children[0].text).toBe('AI Generated Content');
+  > 373 |       expect(store.mindmap.children[0].children).toHaveLength(2);
+        |                            ^^^^^^^^
+    374 |
+    375 |       // This test would require actual file operations
+    376 |       // For now, we verify the store maintains AI-generated content
+ERROR in src/store/mindmapStore.ai.test.ts:25:18
+TS2322: Type '{ text: string; children: never[]; }' is not assignable to type 'MindMap'.
+  Object literal may only specify known properties, and 'text' does not exist in type 'MindMap'.
+    23 |     // Clear all stores before each test
+    24 |     useMindMapStore.setState({
+  > 25 |       mindmap: { text: 'Root Node', children: [] },
+       |                  ^^^^^^^^^^^^^^^^^
+    26 |       jsonFilePath: '',
+    27 |       textFilePath: '',
+    28 |       isAILoading: false,
+ERROR in src/store/mindmapStore.ai.test.ts:57:13
+TS18046: 'store' is of type 'unknown'.
+    55 |       mockAIInstance.generateContent.mockResolvedValue(mockAIResponse);
+    56 |
+  > 57 |       await store.generateAIContent(selectedPath, question);
+       |             ^^^^^
+    58 |
+    59 |       expect(store.isAILoading).toBe(false);
+    60 |       expect(store.aiError).toBeNull();
+ERROR in src/store/mindmapStore.ai.test.ts:59:14
+TS18046: 'store' is of type 'unknown'.
+    57 |       await store.generateAIContent(selectedPath, question);
+    58 |
+  > 59 |       expect(store.isAILoading).toBe(false);
+       |              ^^^^^
+    60 |       expect(store.aiError).toBeNull();
+    61 |       expect(store.mindmap.children).toHaveLength(1);
+    62 |       expect(store.mindmap.children[0].text).toBe('AI Generated Content');
+ERROR in src/store/mindmapStore.ai.test.ts:60:14
+TS18046: 'store' is of type 'unknown'.
+    58 |
+    59 |       expect(store.isAILoading).toBe(false);
+  > 60 |       expect(store.aiError).toBeNull();
+       |              ^^^^^
+    61 |       expect(store.mindmap.children).toHaveLength(1);
+    62 |       expect(store.mindmap.children[0].text).toBe('AI Generated Content');
+    63 |       expect(store.mindmap.children[0].children).toEqual(mockAIResponse.structure);
+ERROR in src/store/mindmapStore.ai.test.ts:61:14
+TS18046: 'store' is of type 'unknown'.
+    59 |       expect(store.isAILoading).toBe(false);
+    60 |       expect(store.aiError).toBeNull();
+  > 61 |       expect(store.mindmap.children).toHaveLength(1);
+       |              ^^^^^
+    62 |       expect(store.mindmap.children[0].text).toBe('AI Generated Content');
+    63 |       expect(store.mindmap.children[0].children).toEqual(mockAIResponse.structure);
+    64 |     });
+ERROR in src/store/mindmapStore.ai.test.ts:62:14
+TS18046: 'store' is of type 'unknown'.
+    60 |       expect(store.aiError).toBeNull();
+    61 |       expect(store.mindmap.children).toHaveLength(1);
+  > 62 |       expect(store.mindmap.children[0].text).toBe('AI Generated Content');
+       |              ^^^^^
+    63 |       expect(store.mindmap.children[0].children).toEqual(mockAIResponse.structure);
+    64 |     });
+    65 |
+ERROR in src/store/mindmapStore.ai.test.ts:63:14
+TS18046: 'store' is of type 'unknown'.
+    61 |       expect(store.mindmap.children).toHaveLength(1);
+    62 |       expect(store.mindmap.children[0].text).toBe('AI Generated Content');
+  > 63 |       expect(store.mindmap.children[0].children).toEqual(mockAIResponse.structure);
+       |              ^^^^^
+    64 |     });
+    65 |
+    66 |     it('should handle AI API errors', async () => {
+ERROR in src/store/mindmapStore.ai.test.ts:76:13
+TS18046: 'store' is of type 'unknown'.
+    74 |       });
+    75 |
+  > 76 |       await store.generateAIContent(selectedPath, question);
+       |             ^^^^^
+    77 |
+    78 |       expect(store.isAILoading).toBe(false);
+    79 |       expect(store.aiError).toBe('API Error: Failed to generate content');
+ERROR in src/store/mindmapStore.ai.test.ts:78:14
+TS18046: 'store' is of type 'unknown'.
+    76 |       await store.generateAIContent(selectedPath, question);
+    77 |
+  > 78 |       expect(store.isAILoading).toBe(false);
+       |              ^^^^^
+    79 |       expect(store.aiError).toBe('API Error: Failed to generate content');
+    80 |       expect(store.mindmap.children).toHaveLength(0);
+    81 |     });
+ERROR in src/store/mindmapStore.ai.test.ts:79:14
+TS18046: 'store' is of type 'unknown'.
+    77 |
+    78 |       expect(store.isAILoading).toBe(false);
+  > 79 |       expect(store.aiError).toBe('API Error: Failed to generate content');
+       |              ^^^^^
+    80 |       expect(store.mindmap.children).toHaveLength(0);
+    81 |     });
+    82 |
+ERROR in src/store/mindmapStore.ai.test.ts:80:14
+TS18046: 'store' is of type 'unknown'.
+    78 |       expect(store.isAILoading).toBe(false);
+    79 |       expect(store.aiError).toBe('API Error: Failed to generate content');
+  > 80 |       expect(store.mindmap.children).toHaveLength(0);
+       |              ^^^^^
+    81 |     });
+    82 |
+    83 |     it('should handle network errors', async () => {
+ERROR in src/store/mindmapStore.ai.test.ts:89:13
+TS18046: 'store' is of type 'unknown'.
+    87 |       mockAIInstance.generateContent.mockRejectedValue(new Error('Network error'));
+    88 |
+  > 89 |       await store.generateAIContent(selectedPath, question);
+       |             ^^^^^
+    90 |
+    91 |       expect(store.isAILoading).toBe(false);
+    92 |       expect(store.aiError).toBe('Network error');
+ERROR in src/store/mindmapStore.ai.test.ts:91:14
+TS18046: 'store' is of type 'unknown'.
+    89 |       await store.generateAIContent(selectedPath, question);
+    90 |
+  > 91 |       expect(store.isAILoading).toBe(false);
+       |              ^^^^^
+    92 |       expect(store.aiError).toBe('Network error');
+    93 |       expect(store.mindmap.children).toHaveLength(0);
+    94 |     });
+ERROR in src/store/mindmapStore.ai.test.ts:92:14
+TS18046: 'store' is of type 'unknown'.
+    90 |
+    91 |       expect(store.isAILoading).toBe(false);
+  > 92 |       expect(store.aiError).toBe('Network error');
+       |              ^^^^^
+    93 |       expect(store.mindmap.children).toHaveLength(0);
+    94 |     });
+    95 |
+ERROR in src/store/mindmapStore.ai.test.ts:93:14
+TS18046: 'store' is of type 'unknown'.
+    91 |       expect(store.isAILoading).toBe(false);
+    92 |       expect(store.aiError).toBe('Network error');
+  > 93 |       expect(store.mindmap.children).toHaveLength(0);
+       |              ^^^^^
+    94 |     });
+    95 |
+    96 |     it('should handle empty AI response', async () => {
+ERROR in src/store/mindmapStore.ai.test.ts:105:13
+TS18046: 'store' is of type 'unknown'.
+    103 |       });
+    104 |
+  > 105 |       await store.generateAIContent(selectedPath, question);
+        |             ^^^^^
+    106 |
+    107 |       expect(store.isAILoading).toBe(false);
+    108 |       expect(store.aiError).toBeNull();
+ERROR in src/store/mindmapStore.ai.test.ts:107:14
+TS18046: 'store' is of type 'unknown'.
+    105 |       await store.generateAIContent(selectedPath, question);
+    106 |
+  > 107 |       expect(store.isAILoading).toBe(false);
+        |              ^^^^^
+    108 |       expect(store.aiError).toBeNull();
+    109 |       expect(store.mindmap.children).toHaveLength(0);
+    110 |     });
+ERROR in src/store/mindmapStore.ai.test.ts:108:14
+TS18046: 'store' is of type 'unknown'.
+    106 |
+    107 |       expect(store.isAILoading).toBe(false);
+  > 108 |       expect(store.aiError).toBeNull();
+        |              ^^^^^
+    109 |       expect(store.mindmap.children).toHaveLength(0);
+    110 |     });
+    111 |
+ERROR in src/store/mindmapStore.ai.test.ts:109:14
+TS18046: 'store' is of type 'unknown'.
+    107 |       expect(store.isAILoading).toBe(false);
+    108 |       expect(store.aiError).toBeNull();
+  > 109 |       expect(store.mindmap.children).toHaveLength(0);
+        |              ^^^^^
+    110 |     });
+    111 |
+    112 |     it('should add AI content to correct parent node', async () => {
+ERROR in src/store/mindmapStore.ai.test.ts:122:34
+TS2741: Property 'root' is missing in type 'MindNode' but required in type 'MindMap'.
+    120 |       };
+    121 |
+  > 122 |       useMindMapStore.setState({ mindmap: initialMindmap });
+        |                                  ^^^^^^^
+    123 |       store = useMindMapStore.getState();
+    124 |
+    125 |       const selectedPath = [1]; // Target the second child
+ERROR in src/store/mindmapStore.ai.test.ts:139:13
+TS18046: 'store' is of type 'unknown'.
+    137 |       mockAIInstance.generateContent.mockResolvedValue(mockAIResponse);
+    138 |
+  > 139 |       await store.generateAIContent(selectedPath, question);
+        |             ^^^^^
+    140 |
+    141 |       expect(store.mindmap.children[1].children).toHaveLength(1);
+    142 |       expect(store.mindmap.children[1].children[0].text).toBe('AI Generated Content');
+ERROR in src/store/mindmapStore.ai.test.ts:141:14
+TS18046: 'store' is of type 'unknown'.
+    139 |       await store.generateAIContent(selectedPath, question);
+    140 |
+  > 141 |       expect(store.mindmap.children[1].children).toHaveLength(1);
+        |              ^^^^^
+    142 |       expect(store.mindmap.children[1].children[0].text).toBe('AI Generated Content');
+    143 |       expect(store.mindmap.children[1].children[0].children).toEqual(mockAIResponse.structure);
+    144 |     });
+ERROR in src/store/mindmapStore.ai.test.ts:142:14
+TS18046: 'store' is of type 'unknown'.
+    140 |
+    141 |       expect(store.mindmap.children[1].children).toHaveLength(1);
+  > 142 |       expect(store.mindmap.children[1].children[0].text).toBe('AI Generated Content');
+        |              ^^^^^
+    143 |       expect(store.mindmap.children[1].children[0].children).toEqual(mockAIResponse.structure);
+    144 |     });
+    145 |
+ERROR in src/store/mindmapStore.ai.test.ts:143:14
+TS18046: 'store' is of type 'unknown'.
+    141 |       expect(store.mindmap.children[1].children).toHaveLength(1);
+    142 |       expect(store.mindmap.children[1].children[0].text).toBe('AI Generated Content');
+  > 143 |       expect(store.mindmap.children[1].children[0].children).toEqual(mockAIResponse.structure);
+        |              ^^^^^
+    144 |     });
+    145 |
+    146 |     it('should set loading state during AI generation', async () => {
+ERROR in src/store/mindmapStore.ai.test.ts:156:54
+TS2345: Argument of type 'Promise<unknown>' is not assignable to parameter of type 'Promise<AIResponse>'.
+  Type 'unknown' is not assignable to type 'AIResponse'.
+    154 |       });
+    155 |
+  > 156 |       mockAIInstance.generateContent.mockReturnValue(promise);
+        |                                                      ^^^^^^^
+    157 |
+    158 |       const generatePromise = store.generateAIContent(selectedPath, question);
+    159 |       
+ERROR in src/store/mindmapStore.ai.test.ts:158:31
+TS18046: 'store' is of type 'unknown'.
+    156 |       mockAIInstance.generateContent.mockReturnValue(promise);
+    157 |
+  > 158 |       const generatePromise = store.generateAIContent(selectedPath, question);
+        |                               ^^^^^
+    159 |       
+    160 |       // Check loading state is set
+    161 |       expect(store.isAILoading).toBe(true);
+ERROR in src/store/mindmapStore.ai.test.ts:161:14
+TS18046: 'store' is of type 'unknown'.
+    159 |       
+    160 |       // Check loading state is set
+  > 161 |       expect(store.isAILoading).toBe(true);
+        |              ^^^^^
+    162 |       expect(store.aiError).toBeNull();
+    163 |
+    164 |       // Resolve the promise
+ERROR in src/store/mindmapStore.ai.test.ts:162:14
+TS18046: 'store' is of type 'unknown'.
+    160 |       // Check loading state is set
+    161 |       expect(store.isAILoading).toBe(true);
+  > 162 |       expect(store.aiError).toBeNull();
+        |              ^^^^^
+    163 |
+    164 |       // Resolve the promise
+    165 |       resolvePromise({
+ERROR in src/store/mindmapStore.ai.test.ts:173:14
+TS18046: 'store' is of type 'unknown'.
+    171 |       
+    172 |       // Check loading state is cleared
+  > 173 |       expect(store.isAILoading).toBe(false);
+        |              ^^^^^
+    174 |     });
+    175 |   });
+    176 |
+ERROR in src/store/mindmapStore.ai.test.ts:184:7
+TS18046: 'store' is of type 'unknown'.
+    182 |
+    183 |       store = useMindMapStore.getState();
+  > 184 |       store.clearAIError();
+        |       ^^^^^
+    185 |
+    186 |       expect(store.aiError).toBeNull();
+    187 |     });
+ERROR in src/store/mindmapStore.ai.test.ts:186:14
+TS18046: 'store' is of type 'unknown'.
+    184 |       store.clearAIError();
+    185 |
+  > 186 |       expect(store.aiError).toBeNull();
+        |              ^^^^^
+    187 |     });
+    188 |
+    189 |     it('should handle clearing null error', () => {
+ERROR in src/store/mindmapStore.ai.test.ts:195:7
+TS18046: 'store' is of type 'unknown'.
+    193 |
+    194 |       store = useMindMapStore.getState();
+  > 195 |       store.clearAIError();
+        |       ^^^^^
+    196 |
+    197 |       expect(store.aiError).toBeNull();
+    198 |     });
+ERROR in src/store/mindmapStore.ai.test.ts:197:14
+TS18046: 'store' is of type 'unknown'.
+    195 |       store.clearAIError();
+    196 |
+  > 197 |       expect(store.aiError).toBeNull();
+        |              ^^^^^
+    198 |     });
+    199 |   });
+    200 |
+ERROR in src/store/mindmapStore.ai.test.ts:209:9
+TS2322: Type 'MindNode' is not assignable to type 'MindMap'.
+    207 |
+    208 |       useMindMapStore.setState({
+  > 209 |         mindmap: initialMindmap,
+        |         ^^^^^^^
+    210 |         isAILoading: true,
+    211 |         aiError: 'Test error',
+    212 |         jsonFilePath: '/path/to/file.json',
+ERROR in src/store/mindmapStore.ai.test.ts:218:7
+TS18046: 'store' is of type 'unknown'.
+    216 |
+    217 |       // Update unrelated state
+  > 218 |       store.addNode([0], 'New Node');
+        |       ^^^^^
+    219 |
+    220 |       // AI state should remain unchanged
+    221 |       expect(store.isAILoading).toBe(true);
+ERROR in src/store/mindmapStore.ai.test.ts:221:14
+TS18046: 'store' is of type 'unknown'.
+    219 |
+    220 |       // AI state should remain unchanged
+  > 221 |       expect(store.isAILoading).toBe(true);
+        |              ^^^^^
+    222 |       expect(store.aiError).toBe('Test error');
+    223 |       
+    224 |       // Other state should be updated
+ERROR in src/store/mindmapStore.ai.test.ts:222:14
+TS18046: 'store' is of type 'unknown'.
+    220 |       // AI state should remain unchanged
+    221 |       expect(store.isAILoading).toBe(true);
+  > 222 |       expect(store.aiError).toBe('Test error');
+        |              ^^^^^
+    223 |       
+    224 |       // Other state should be updated
+    225 |       expect(store.mindmap.children[0].children).toHaveLength(1);
+ERROR in src/store/mindmapStore.ai.test.ts:225:14
+TS18046: 'store' is of type 'unknown'.
+    223 |       
+    224 |       // Other state should be updated
+  > 225 |       expect(store.mindmap.children[0].children).toHaveLength(1);
+        |              ^^^^^
+    226 |       expect(store.mindmap.children[0].children[0].text).toBe('New Node');
+    227 |     });
+    228 |
+ERROR in src/store/mindmapStore.ai.test.ts:226:14
+TS18046: 'store' is of type 'unknown'.
+    224 |       // Other state should be updated
+    225 |       expect(store.mindmap.children[0].children).toHaveLength(1);
+  > 226 |       expect(store.mindmap.children[0].children[0].text).toBe('New Node');
+        |              ^^^^^
+    227 |     });
+    228 |
+    229 |     it('should reset AI state when clearing errors', () => {
+ERROR in src/store/mindmapStore.ai.test.ts:236:7
+TS18046: 'store' is of type 'unknown'.
+    234 |
+    235 |       store = useMindMapStore.getState();
+  > 236 |       store.clearAIError();
+        |       ^^^^^
+    237 |
+    238 |       expect(store.isAILoading).toBe(false);
+    239 |       expect(store.aiError).toBeNull();
+ERROR in src/store/mindmapStore.ai.test.ts:238:14
+TS18046: 'store' is of type 'unknown'.
+    236 |       store.clearAIError();
+    237 |
+  > 238 |       expect(store.isAILoading).toBe(false);
+        |              ^^^^^
+    239 |       expect(store.aiError).toBeNull();
+    240 |     });
+    241 |   });
+ERROR in src/store/mindmapStore.ai.test.ts:239:14
+TS18046: 'store' is of type 'unknown'.
+    237 |
+    238 |       expect(store.isAILoading).toBe(false);
+  > 239 |       expect(store.aiError).toBeNull();
+        |              ^^^^^
+    240 |     });
+    241 |   });
+    242 |
+ERROR in src/store/mindmapStore.ai.test.ts:255:13
+TS18046: 'store' is of type 'unknown'.
+    253 |       mockAIInstance.generateContent.mockResolvedValue(mockAIResponse);
+    254 |
+  > 255 |       await store.generateAIContent(selectedPath, question);
+        |             ^^^^^
+    256 |
+    257 |       // Add regular node
+    258 |       store.addNode([0, 0], 'Regular Node');
+ERROR in src/store/mindmapStore.ai.test.ts:258:7
+TS18046: 'store' is of type 'unknown'.
+    256 |
+    257 |       // Add regular node
+  > 258 |       store.addNode([0, 0], 'Regular Node');
+        |       ^^^^^
+    259 |
+    260 |       expect(store.mindmap.children[0].children).toHaveLength(2);
+    261 |       expect(store.mindmap.children[0].children[0].text).toBe('AI Generated Content');
+ERROR in src/store/mindmapStore.ai.test.ts:260:14
+TS18046: 'store' is of type 'unknown'.
+    258 |       store.addNode([0, 0], 'Regular Node');
+    259 |
+  > 260 |       expect(store.mindmap.children[0].children).toHaveLength(2);
+        |              ^^^^^
+    261 |       expect(store.mindmap.children[0].children[0].text).toBe('AI Generated Content');
+    262 |       expect(store.mindmap.children[0].children[1].text).toBe('Regular Node');
+    263 |     });
+ERROR in src/store/mindmapStore.ai.test.ts:261:14
+TS18046: 'store' is of type 'unknown'.
+    259 |
+    260 |       expect(store.mindmap.children[0].children).toHaveLength(2);
+  > 261 |       expect(store.mindmap.children[0].children[0].text).toBe('AI Generated Content');
+        |              ^^^^^
+    262 |       expect(store.mindmap.children[0].children[1].text).toBe('Regular Node');
+    263 |     });
+    264 |
+ERROR in src/store/mindmapStore.ai.test.ts:262:14
+TS18046: 'store' is of type 'unknown'.
+    260 |       expect(store.mindmap.children[0].children).toHaveLength(2);
+    261 |       expect(store.mindmap.children[0].children[0].text).toBe('AI Generated Content');
+  > 262 |       expect(store.mindmap.children[0].children[1].text).toBe('Regular Node');
+        |              ^^^^^
+    263 |     });
+    264 |
+    265 |     it('should work correctly with updateNode operation', async () => {
+ERROR in src/store/mindmapStore.ai.test.ts:276:13
+TS18046: 'store' is of type 'unknown'.
+    274 |       mockAIInstance.generateContent.mockResolvedValue(mockAIResponse);
+    275 |
+  > 276 |       await store.generateAIContent(selectedPath, question);
+        |             ^^^^^
+    277 |
+    278 |       // Update AI-generated node
+    279 |       store.updateNode([0, 0], 'Updated AI Node');
+ERROR in src/store/mindmapStore.ai.test.ts:279:7
+TS18046: 'store' is of type 'unknown'.
+    277 |
+    278 |       // Update AI-generated node
+  > 279 |       store.updateNode([0, 0], 'Updated AI Node');
+        |       ^^^^^
+    280 |
+    281 |       expect(store.mindmap.children[0].children[0].text).toBe('Updated AI Node');
+    282 |     });
+ERROR in src/store/mindmapStore.ai.test.ts:281:14
+TS18046: 'store' is of type 'unknown'.
+    279 |       store.updateNode([0, 0], 'Updated AI Node');
+    280 |
+  > 281 |       expect(store.mindmap.children[0].children[0].text).toBe('Updated AI Node');
+        |              ^^^^^
+    282 |     });
+    283 |
+    284 |     it('should work correctly with deleteNode operation', async () => {
+ERROR in src/store/mindmapStore.ai.test.ts:295:13
+TS18046: 'store' is of type 'unknown'.
+    293 |       mockAIInstance.generateContent.mockResolvedValue(mockAIResponse);
+    294 |
+  > 295 |       await store.generateAIContent(selectedPath, question);
+        |             ^^^^^
+    296 |
+    297 |       // Delete AI-generated node
+    298 |       store.deleteNode([0, 0]);
+ERROR in src/store/mindmapStore.ai.test.ts:298:7
+TS18046: 'store' is of type 'unknown'.
+    296 |
+    297 |       // Delete AI-generated node
+  > 298 |       store.deleteNode([0, 0]);
+        |       ^^^^^
+    299 |
+    300 |       expect(store.mindmap.children[0].children).toHaveLength(0);
+    301 |     });
+ERROR in src/store/mindmapStore.ai.test.ts:300:14
+TS18046: 'store' is of type 'unknown'.
+    298 |       store.deleteNode([0, 0]);
+    299 |
+  > 300 |       expect(store.mindmap.children[0].children).toHaveLength(0);
+        |              ^^^^^
+    301 |     });
+    302 |   });
+    303 | });
+ERROR in src/utils/test-utils.ts:3:28
+TS2307: Cannot find module 'react-beautiful-dnd' or its corresponding type declarations.
+    1 | import { MindMapState, useMindMapStore } from '../store/mindmapStore';
+    2 | import { MindMap, MindNode } from '../types';
+  > 3 | import { DropResult } from 'react-beautiful-dnd';
+      |                            ^^^^^^^^^^^^^^^^^^^^^
+    4 | import React from 'react';
+    5 |
+    6 | /**
+ERROR in src/utils/test-utils.ts:17:5
+TS2322: Type '{ mindmap: { root: { text: string; children: never[]; }; }; setMindmap: jest.Mock<any, any>; addNode: jest.Mock<any, any>; deleteNode: jest.Mock<any, any>; updateNodeText: jest.Mock<...>; ... 6 more ...; clearFilePaths: jest.Mock<...>; }' is not assignable to type 'MindMapState'.
+  Object literal may only specify known properties, and 'onDragEnd' does not exist in type 'MindMapState'.
+    15 |     deleteNode: jest.fn(),
+    16 |     updateNodeText: jest.fn(),
+  > 17 |     onDragEnd: jest.fn(),
+       |     ^^^^^^^^^^^^^^^^^^^^
+    18 |     setSelectedChild: jest.fn(),
+    19 |     jsonFilePath: null,
+    20 |     textFilePath: null,
+
+- fix the compile errors.
+- add relevant automatic tests to prevent them occurring in the future.
+- make sure you pass all the automatic tests.
+- update ./docs/ui_and_iteration_design.md based on the current implementation.
+- update ./docs/code_structure.md based on the current implementation.
+- update ./docs/test.md based on the current implementation.
+- commit and push the changes.

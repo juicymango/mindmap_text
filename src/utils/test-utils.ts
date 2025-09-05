@@ -1,6 +1,5 @@
 import { MindMapState, useMindMapStore } from '../store/mindmapStore';
 import { MindMap, MindNode } from '../types';
-import { DropResult } from 'react-beautiful-dnd';
 import React from 'react';
 
 /**
@@ -14,8 +13,13 @@ export const createMockMindMapStore = (overrides: Partial<MindMapState> = {}) =>
     addNode: jest.fn(),
     deleteNode: jest.fn(),
     updateNodeText: jest.fn(),
-    onDragEnd: jest.fn(),
     setSelectedChild: jest.fn(),
+    copyNode: jest.fn(),
+    pasteNode: jest.fn(),
+    generateAIContent: jest.fn(),
+    isAILoading: false,
+    aiError: null,
+    clearAIError: jest.fn(),
     jsonFilePath: null,
     textFilePath: null,
     setJsonFilePath: jest.fn(),
