@@ -556,3 +556,14 @@ All requirements from Task 20 have been successfully implemented and tested.
 - append your plan for implementation and test to ./docs/plan.md.
 - not to implement yet.
 - commit and push the changes.
+
+# task 22
+
+- review your plan in ./docs/plan.md and implement the feature in task 21.
+- implement the features.
+- implement the automatic tests.
+- make sure you pass all the automatic tests.
+- update ./docs/ui_and_iteration_design.md based on the current implementation.
+- update ./docs/code_structure.md based on the current implementation.
+- update ./docs/test.md based on the current implementation.
+- commit and push the changes.

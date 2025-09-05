@@ -1,6 +1,8 @@
 import { create, StoreApi, UseBoundStore } from 'zustand';
 import { MindMap, MindNode } from '../types';
 import { mindMapToText, textToMindMap } from '../utils/textFormat';
+import { AIService } from '../services/aiService';
+import { getAIConfig, validateAIConfig, getNodePath } from '../config/ai';
 
 export interface MindMapState {
   mindmap: MindMap;
@@ -11,6 +13,11 @@ export interface MindMapState {
   copyNode: (path: number[]) => Promise<void>;
   pasteNode: (path: number[]) => Promise<void>;
   setSelectedChild: (parentPath: number[], childIndex: number | undefined) => void;
+  // AI functionality
+  generateAIContent: (path: number[], question: string) => Promise<void>;
+  isAILoading: boolean;
+  aiError: string | null;
+  clearAIError: () => void;
   // File path memory state
   jsonFilePath: string | null;
   textFilePath: string | null;
@@ -59,6 +66,8 @@ const getInitialFilePaths = () => {
 export const useMindMapStore: UseBoundStore<StoreApi<MindMapState>> = create<MindMapState>((set, get) => ({
   mindmap: { root: { text: 'Root', children: [] } },
   ...getInitialFilePaths(),
+  isAILoading: false,
+  aiError: null,
   setMindmap: (mindmap: MindMap) => set({ mindmap }),
   addNode: (parentPath: number[], text: string) => {
     const { mindmap } = get();
@@ -154,6 +163,63 @@ export const useMindMapStore: UseBoundStore<StoreApi<MindMapState>> = create<Min
     } catch (error) {
       console.error('Failed to paste from clipboard:', error);
     }
+  },
+  generateAIContent: async (path: number[], question: string) => {
+    const { mindmap } = get();
+    const aiConfig = getAIConfig();
+    
+    if (!validateAIConfig(aiConfig)) {
+      set({ aiError: 'AI configuration is invalid. Please check your environment variables.' });
+      return;
+    }
+
+    set({ isAILoading: true, aiError: null });
+
+    try {
+      const aiService = new AIService(aiConfig);
+      const selectedNode = findNode(mindmap.root, path);
+      
+      if (!selectedNode) {
+        throw new Error('Selected node not found');
+      }
+
+      const context = {
+        selectedNode: selectedNode.text,
+        parentNodes: getNodePath(mindmap.root, path).map(node => node.text),
+        mindMapContext: mindMapToText({ root: selectedNode }),
+      };
+
+      const response = await aiService.generateContent({
+        question,
+        context,
+      });
+
+      if (response.error) {
+        throw new Error(response.error);
+      }
+
+      // Add AI-generated content as children to selected node
+      const newMindMap = { ...mindmap };
+      const targetNode = findNode(newMindMap.root, path);
+      if (targetNode) {
+        targetNode.children.push(...response.structure);
+        // Update selected child to show pasted content
+        get().setSelectedChild(path, targetNode.children.length - 1);
+        set({ 
+          mindmap: newMindMap,
+          isAILoading: false,
+          aiError: null,
+        });
+      }
+    } catch (error) {
+      set({ 
+        isAILoading: false,
+        aiError: error instanceof Error ? error.message : 'Unknown error occurred',
+      });
+    }
+  },
+  clearAIError: () => {
+    set({ aiError: null });
   },
   clearFilePaths: () => {
     set({ jsonFilePath: null, textFilePath: null });

@@ -2,6 +2,8 @@ import React from 'react';
 import { useMindMapStore } from '../store/mindmapStore';
 import { saveToFile, saveAsFile, loadFromFile } from '../utils/file';
 import { FileFormat } from '../types';
+import { AIPromptDialog } from './AIPromptDialog';
+import { useSelectedPath } from '../contexts/SelectedPathContext';
 import styled from 'styled-components';
 
 const ToolbarContainer = styled.div`
@@ -32,8 +34,15 @@ export const Toolbar: React.FC = () => {
     jsonFilePath, 
     textFilePath, 
     setJsonFilePath, 
-    setTextFilePath 
+    setTextFilePath,
+    generateAIContent,
+    isAILoading,
+    aiError,
+    clearAIError
   } = useMindMapStore();
+
+  const { selectedPath } = useSelectedPath();
+  const [isAIDialogOpen, setIsAIDialogOpen] = React.useState(false);
 
   const handleSave = async () => {
     if (jsonFilePath) {
@@ -94,6 +103,16 @@ export const Toolbar: React.FC = () => {
     addNode([], 'New Node');
   };
 
+  const handleAIRequest = async (question: string) => {
+    await generateAIContent(selectedPath, question);
+    setIsAIDialogOpen(false);
+  };
+
+  const handleOpenAIDialog = () => {
+    setIsAIDialogOpen(true);
+    clearAIError();
+  };
+
   const getCurrentFilePath = () => {
     return jsonFilePath || textFilePath || 'No file selected';
   };
@@ -119,9 +138,26 @@ export const Toolbar: React.FC = () => {
         <button onClick={handleLoadAs}>Load As</button>
       </ButtonGroup>
       
+      <ButtonGroup>
+        <button 
+          onClick={handleOpenAIDialog}
+          disabled={isAILoading}
+        >
+          {isAILoading ? 'AI Working...' : 'Ask AI'}
+        </button>
+      </ButtonGroup>
+      
       <FilePathDisplay>
         Current file: {getCurrentFilePath()}
       </FilePathDisplay>
+      
+      <AIPromptDialog
+        isOpen={isAIDialogOpen}
+        onClose={() => setIsAIDialogOpen(false)}
+        onSubmit={handleAIRequest}
+        isLoading={isAILoading}
+        error={aiError || undefined}
+      />
     </ToolbarContainer>
   );
 };

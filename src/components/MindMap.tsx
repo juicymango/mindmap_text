@@ -1,6 +1,7 @@
 import React from 'react';
 import { useMindMapStore } from '../store/mindmapStore';
 import { Column } from './Column';
+import { useSelectedPath } from '../contexts/SelectedPathContext';
 import styled from 'styled-components';
 import { MindNode } from '../types';
 
@@ -11,7 +12,7 @@ const MindMapContainer = styled.div`
 
 export const MindMap: React.FC = () => {
   const { mindmap, copyNode, pasteNode, setSelectedChild } = useMindMapStore();
-  const [selectedPath, setSelectedPath] = React.useState<number[]>([]);
+  const { selectedPath, setSelectedPath } = useSelectedPath();
 
   const getColumns = () => {
     const columns: { path: number[]; nodes: MindNode[] }[] = [];
