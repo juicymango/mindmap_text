@@ -294,3 +294,14 @@ Invariant failed: Cannot find droppable entry with id [mindmap]
 - implement this feature and the relevant test cases.
 - make sure you pass the unit tests.
 - commit and push the changes.
+
+# task 18
+
+- review the task history above.
+- review all the code in this project.
+- update ./docs/ui_and_iteration_design.md based on the current implementation.
+- update ./docs/code_structure.md based on the current implementation.
+- update ./docs/test.md based on the current implementation.
+- think what will you do in the future. append your plan to ./docs/plan.md.
+- not to do your plan yet.
+- commit and push the changes.
