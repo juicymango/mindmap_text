@@ -3,6 +3,7 @@ import { useMindMapStore } from '../store/mindmapStore';
 import { saveToFile, saveAsFile, loadFromFile } from '../utils/file';
 import { FileFormat } from '../types';
 import { AIPromptDialog } from './AIPromptDialog';
+import { AIConfigDialog } from './AIConfigDialog';
 import { useSelectedPath } from '../contexts/SelectedPathContext';
 import styled from 'styled-components';
 
@@ -38,7 +39,11 @@ export const Toolbar: React.FC = () => {
     generateAIContent,
     isAILoading,
     aiError,
-    clearAIError
+    clearAIError,
+    aiConfig,
+    aiConfigDialogOpen,
+    setAIConfigDialogOpen,
+    updateAIConfig
   } = useMindMapStore();
 
   const { selectedPath } = useSelectedPath();
@@ -113,6 +118,15 @@ export const Toolbar: React.FC = () => {
     clearAIError();
   };
 
+  const handleAIConfigSave = (config: typeof aiConfig) => {
+    updateAIConfig(config);
+    setAIConfigDialogOpen(false);
+  };
+
+  const handleOpenAIConfigDialog = () => {
+    setAIConfigDialogOpen(true);
+  };
+
   const getCurrentFilePath = () => {
     return jsonFilePath || textFilePath || 'No file selected';
   };
@@ -145,6 +159,12 @@ export const Toolbar: React.FC = () => {
         >
           {isAILoading ? 'AI Working...' : 'Ask AI'}
         </button>
+        <button 
+          onClick={handleOpenAIConfigDialog}
+          disabled={isAILoading}
+        >
+          AI Config
+        </button>
       </ButtonGroup>
       
       <FilePathDisplay>
@@ -157,6 +177,12 @@ export const Toolbar: React.FC = () => {
         onSubmit={handleAIRequest}
         isLoading={isAILoading}
         error={aiError || undefined}
+      />
+      <AIConfigDialog
+        isOpen={aiConfigDialogOpen}
+        onClose={() => setAIConfigDialogOpen(false)}
+        onSave={handleAIConfigSave}
+        currentConfig={aiConfig}
       />
     </ToolbarContainer>
   );

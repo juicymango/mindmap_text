@@ -1607,3 +1607,925 @@ The mind map application includes AI-powered content generation that allows you 
 - **Privacy:** Ensure users understand how their data is used
 
 This comprehensive implementation plan ensures that AI content generation is integrated securely, effectively, and user-friendly into the mind map application while maintaining high standards of code quality and user experience.
+
+---
+
+# Task 25: AI Process Transparency and User Configuration Implementation Plan
+
+## Overview
+
+Task 25 focuses on making the AI process completely transparent to users, allowing them to configure AI settings, see exactly what input and output the AI model receives, and providing clear error information. This enhances user trust and control over the AI functionality.
+
+## Current State Analysis
+
+### Existing AI Implementation
+- **Configuration**: Hard-coded environment variables with no user interface
+- **Process**: Black-box AI interaction with no visibility into prompts/responses
+- **Error Handling**: Basic error messages without detailed context
+- **User Control**: Limited to question input only
+
+### Areas for Improvement
+1. **Configuration Transparency**: Users cannot see or modify AI settings
+2. **Process Visibility**: No insight into what is sent to/received from AI
+3. **Error Detailing**: Insufficient error information for troubleshooting
+4. **User Control**: No ability to fine-tune AI behavior
+
+## Implementation Plan
+
+### Phase 1: AI Configuration UI
+
+#### 1.1 Configuration Dialog Component
+```typescript
+// src/components/AIConfigDialog.tsx
+interface AIConfigDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSave: (config: AIConfig) => void;
+  currentConfig: AIConfig;
+}
+
+export const AIConfigDialog: React.FC<AIConfigDialogProps> = ({
+  isOpen,
+  onClose,
+  onSave,
+  currentConfig,
+}) => {
+  const [config, setConfig] = React.useState(currentConfig);
+  const [testStatus, setTestStatus] = React.useState<'idle' | 'testing' | 'success' | 'error'>('idle');
+  const [testError, setTestError] = React.useState('');
+
+  const handleTest = async () => {
+    setTestStatus('testing');
+    try {
+      const testService = new AIService(config);
+      await testService.generateContent({
+        question: 'Test',
+        context: { selectedNode: 'Test', parentNodes: [], mindMapContext: 'Test' },
+      });
+      setTestStatus('success');
+    } catch (error) {
+      setTestStatus('error');
+      setTestError(error instanceof Error ? error.message : 'Unknown error');
+    }
+  };
+
+  return (
+    <DialogOverlay>
+      <DialogContent>
+        <h2>AI Configuration</h2>
+        <form onSubmit={(e) => {
+          e.preventDefault();
+          onSave(config);
+        }}>
+          <ConfigSection>
+            <label>Provider</label>
+            <select 
+              value={config.provider} 
+              onChange={(e) => setConfig({...config, provider: e.target.value as any})}
+            >
+              <option value="openai">OpenAI</option>
+              <option value="anthropic">Anthropic</option>
+              <option value="local">Local AI</option>
+            </select>
+          </ConfigSection>
+
+          <ConfigSection>
+            <label>Model</label>
+            <input 
+              type="text" 
+              value={config.model} 
+              onChange={(e) => setConfig({...config, model: e.target.value})}
+              placeholder="e.g., gpt-3.5-turbo"
+            />
+          </ConfigSection>
+
+          <ConfigSection>
+            <label>API Key</label>
+            <input 
+              type="password" 
+              value={config.apiKey || ''} 
+              onChange={(e) => setConfig({...config, apiKey: e.target.value})}
+              placeholder="Enter your API key"
+            />
+          </ConfigSection>
+
+          <ConfigSection>
+            <label>Max Tokens</label>
+            <input 
+              type="number" 
+              value={config.maxTokens} 
+              onChange={(e) => setConfig({...config, maxTokens: parseInt(e.target.value)})}
+              min="1"
+              max="8000"
+            />
+          </ConfigSection>
+
+          <ConfigSection>
+            <label>Temperature ({config.temperature})</label>
+            <input 
+              type="range" 
+              min="0" 
+              max="2" 
+              step="0.1"
+              value={config.temperature} 
+              onChange={(e) => setConfig({...config, temperature: parseFloat(e.target.value)})}
+            />
+            <TemperatureDisplay>{config.temperature}</TemperatureDisplay>
+          </ConfigSection>
+
+          <TestSection>
+            <Button type="button" onClick={handleTest} disabled={testStatus === 'testing'}>
+              {testStatus === 'testing' ? 'Testing...' : 'Test Configuration'}
+            </Button>
+            {testStatus === 'success' && <TestSuccess>✓ Configuration works!</TestSuccess>}
+            {testStatus === 'error' && <TestError>{testError}</TestError>}
+          </TestSection>
+
+          <ButtonGroup>
+            <Button type="button" onClick={onClose}>Cancel</Button>
+            <Button type="submit" variant="primary">Save Configuration</Button>
+          </ButtonGroup>
+        </form>
+      </DialogContent>
+    </DialogOverlay>
+  );
+};
+```
+
+#### 1.2 Local Storage Integration
+```typescript
+// src/utils/aiConfigStorage.ts
+export interface StoredAIConfig extends AIConfig {
+  lastUpdated: string;
+  version: string;
+}
+
+export const saveAIConfig = (config: AIConfig): void => {
+  const storedConfig: StoredAIConfig = {
+    ...config,
+    lastUpdated: new Date().toISOString(),
+    version: '1.0',
+  };
+  localStorage.setItem('aiConfig', JSON.stringify(storedConfig));
+};
+
+export const loadAIConfig = (): AIConfig | null => {
+  try {
+    const stored = localStorage.getItem('aiConfig');
+    if (stored) {
+      const parsed: StoredAIConfig = JSON.parse(stored);
+      // Validate required fields
+      if (parsed.provider && parsed.model) {
+        const { lastUpdated, version, ...config } = parsed;
+        return config;
+      }
+    }
+  } catch (error) {
+    console.error('Failed to load AI config:', error);
+  }
+  return null;
+};
+
+export const clearAIConfig = (): void => {
+  localStorage.removeItem('aiConfig');
+};
+```
+
+### Phase 2: AI Process Transparency
+
+#### 2.1 Enhanced AI Prompt Dialog with Process Visibility
+```typescript
+// src/components/AIPromptDialog.tsx (Enhanced)
+interface AIPromptDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSubmit: (question: string) => void;
+  isLoading: boolean;
+  error?: string;
+  aiConfig?: AIConfig;
+  showProcessDetails?: boolean;
+  lastRequest?: {
+    question: string;
+    prompt: string;
+    response: string;
+    timestamp: string;
+  };
+}
+
+export const AIPromptDialog: React.FC<AIPromptDialogProps> = ({
+  isOpen,
+  onClose,
+  onSubmit,
+  isLoading,
+  error,
+  aiConfig,
+  showProcessDetails = false,
+  lastRequest,
+}) => {
+  const [question, setQuestion] = React.useState('');
+  const [showDetails, setShowDetails] = React.useState(showProcessDetails);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (question.trim()) {
+      onSubmit(question.trim());
+    }
+  };
+
+  return (
+    <DialogOverlay>
+      <DialogContent>
+        <DialogHeader>
+          <h2>Ask AI</h2>
+          {aiConfig && (
+            <ConfigBadge onClick={() => setShowDetails(!showDetails)}>
+              {aiConfig.provider} ({aiConfig.model})
+              {showDetails ? ' ▲' : ' ▼'}
+            </ConfigBadge>
+          )}
+        </DialogHeader>
+
+        {showDetails && aiConfig && (
+          <ConfigDetails>
+            <h4>Current AI Configuration</h4>
+            <ConfigGrid>
+              <div><strong>Provider:</strong></div><div>{aiConfig.provider}</div>
+              <div><strong>Model:</strong></div><div>{aiConfig.model}</div>
+              <div><strong>Max Tokens:</strong></div><div>{aiConfig.maxTokens}</div>
+              <div><strong>Temperature:</strong></div><div>{aiConfig.temperature}</div>
+            </ConfigGrid>
+          </ConfigDetails>
+        )}
+
+        {lastRequest && (
+          <ProcessDetails>
+            <h4>Last AI Interaction</h4>
+            <DetailSection>
+              <label>Your Question:</label>
+              <QuestionDisplay>{lastRequest.question}</QuestionDisplay>
+            </DetailSection>
+            <DetailSection>
+              <label>Sent to AI:</label>
+              <PromptDisplay>{lastRequest.prompt}</PromptDisplay>
+            </DetailSection>
+            <DetailSection>
+              <label>AI Response:</label>
+              <ResponseDisplay>{lastRequest.response}</ResponseDisplay>
+            </DetailSection>
+            <Timestamp>
+              Generated: {new Date(lastRequest.timestamp).toLocaleString()}
+            </Timestamp>
+          </ProcessDetails>
+        )}
+
+        <form onSubmit={handleSubmit}>
+          <TextArea
+            value={question}
+            onChange={(e) => setQuestion(e.target.value)}
+            placeholder="Enter your question or content generation request..."
+            disabled={isLoading}
+            autoFocus
+          />
+          
+          <HelperText>
+            The AI will consider the selected node context and generate structured content as child nodes.
+            {showDetails && ' Click the config badge above to see AI settings.'}
+          </HelperText>
+
+          {error && <ErrorMessage>{error}</ErrorMessage>}
+          
+          {isLoading && (
+            <LoadingSection>
+              <LoadingSpinner />
+              <LoadingText>Generating content with AI...</LoadingText>
+            </LoadingSection>
+          )}
+
+          <ButtonGroup>
+            <Button type="button" onClick={onClose} disabled={isLoading}>
+              Cancel
+            </Button>
+            <Button 
+              type="submit" 
+              variant="primary"
+              disabled={isLoading || !question.trim()}
+            >
+              {isLoading ? 'Generating...' : 'Generate'}
+            </Button>
+          </ButtonGroup>
+        </form>
+      </DialogContent>
+    </DialogOverlay>
+  );
+};
+```
+
+#### 2.2 Enhanced Store with Process Tracking
+```typescript
+// src/store/mindmapStore.ts (Enhanced)
+interface MindMapState {
+  // ... existing state
+  aiConfig: AIConfig;
+  lastAIRequest?: {
+    question: string;
+    prompt: string;
+    response: string;
+    timestamp: string;
+  };
+  setAIConfig: (config: AIConfig) => void;
+  clearLastAIRequest: () => void;
+}
+
+export const useMindMapStore = create<MindMapState>((set, get) => ({
+  // ... existing state
+  aiConfig: getAIConfig(),
+  
+  setAIConfig: (config: AIConfig) => {
+    set({ aiConfig: config });
+    saveAIConfig(config);
+  },
+
+  generateAIContent: async (path: number[], question: string) => {
+    const { mindmap, aiConfig } = get();
+    
+    set({ isAILoading: true, aiError: null });
+
+    try {
+      const aiService = new AIService(aiConfig);
+      const selectedNode = findNode(mindmap.root, path);
+      
+      if (!selectedNode) {
+        throw new Error('Selected node not found');
+      }
+
+      const context = {
+        selectedNode: selectedNode.text,
+        parentNodes: getNodePath(mindmap.root, path).map(node => node.text),
+        mindMapContext: mindMapToText({ root: selectedNode }),
+      };
+
+      const request = { question, context };
+      const prompt = aiService['buildPrompt'](request);
+      
+      const response = await aiService.generateContent(request);
+
+      if (response.error) {
+        throw new Error(response.error);
+      }
+
+      // Store the complete AI interaction for transparency
+      set({
+        lastAIRequest: {
+          question,
+          prompt,
+          response: response.content,
+          timestamp: new Date().toISOString(),
+        },
+      });
+
+      // Add AI-generated content as children to selected node
+      const newMindMap = { ...mindmap };
+      const targetNode = findNode(newMindMap.root, path);
+      if (targetNode) {
+        targetNode.children.push(...response.structure);
+        get().setSelectedChild(path, targetNode.children.length - 1);
+        set({ 
+          mindmap: newMindMap,
+          isAILoading: false,
+          aiError: null,
+        });
+      }
+    } catch (error) {
+      set({ 
+        isAILoading: false,
+        aiError: error instanceof Error ? error.message : 'Unknown error occurred',
+      });
+    }
+  },
+
+  clearLastAIRequest: () => {
+    set({ lastAIRequest: undefined });
+  },
+}));
+```
+
+### Phase 3: Enhanced Error Handling
+
+#### 3.1 Detailed Error Messages
+```typescript
+// src/utils/aiErrorHandling.ts
+export interface AIErrorDetails {
+  type: 'config' | 'network' | 'api' | 'parse' | 'unknown';
+  message: string;
+  details?: string;
+  suggestions?: string[];
+  retryable: boolean;
+}
+
+export const analyzeAIError = (error: unknown): AIErrorDetails => {
+  if (error instanceof Error) {
+    const message = error.message.toLowerCase();
+    
+    // Configuration errors
+    if (message.includes('api key') || message.includes('configuration')) {
+      return {
+        type: 'config',
+        message: 'AI Configuration Error',
+        details: error.message,
+        suggestions: [
+          'Check your AI API key in settings',
+          'Verify your AI provider configuration',
+          'Ensure your account has sufficient credits'
+        ],
+        retryable: false,
+      };
+    }
+    
+    // Network errors
+    if (message.includes('network') || message.includes('fetch')) {
+      return {
+        type: 'network',
+        message: 'Network Connection Error',
+        details: error.message,
+        suggestions: [
+          'Check your internet connection',
+          'Verify firewall settings',
+          'Try again in a few moments'
+        ],
+        retryable: true,
+      };
+    }
+    
+    // API errors
+    if (message.includes('api') || message.includes('401') || message.includes('403')) {
+      return {
+        type: 'api',
+        message: 'AI Service Error',
+        details: error.message,
+        suggestions: [
+          'Verify your API key is valid',
+          'Check your API usage limits',
+          'Contact AI provider support if issue persists'
+        ],
+        retryable: false,
+      };
+    }
+  }
+  
+  // Unknown errors
+  return {
+    type: 'unknown',
+    message: 'Unexpected AI Error',
+    details: error instanceof Error ? error.message : 'Unknown error occurred',
+    suggestions: [
+      'Try refreshing the application',
+      'Check your AI configuration',
+      'Contact support if the issue persists'
+    ],
+    retryable: true,
+  };
+};
+
+export const getAIErrorMessage = (error: unknown): string => {
+  const errorDetails = analyzeAIError(error);
+  return `${errorDetails.message}: ${errorDetails.details}`;
+};
+
+export const shouldRetryAIError = (error: unknown): boolean => {
+  const errorDetails = analyzeAIError(error);
+  return errorDetails.retryable;
+};
+```
+
+#### 3.2 Enhanced Error Display Component
+```typescript
+// src/components/AIErrorDisplay.tsx
+interface AIErrorDisplayProps {
+  error: string;
+  onRetry?: () => void;
+  onConfigure?: () => void;
+}
+
+export const AIErrorDisplay: React.FC<AIErrorDisplayProps> = ({
+  error,
+  onRetry,
+  onConfigure,
+}) => {
+  const errorDetails = analyzeAIError(error);
+  
+  return (
+    <ErrorContainer>
+      <ErrorIcon>⚠️</ErrorIcon>
+      <ErrorContent>
+        <ErrorTitle>{errorDetails.message}</ErrorTitle>
+        <ErrorDetails>{errorDetails.details}</ErrorDetails>
+        
+        {errorDetails.suggestions && (
+          <Suggestions>
+            <SuggestionsTitle>Suggestions:</SuggestionsTitle>
+            <ul>
+              {errorDetails.suggestions.map((suggestion, index) => (
+                <li key={index}>{suggestion}</li>
+              ))}
+            </ul>
+          </Suggestions>
+        )}
+        
+        <ErrorActions>
+          {errorDetails.retryable && onRetry && (
+            <Button onClick={onRetry} variant="outline">
+              Try Again
+            </Button>
+          )}
+          {errorDetails.type === 'config' && onConfigure && (
+            <Button onClick={onConfigure} variant="primary">
+              Configure AI Settings
+            </Button>
+          )}
+        </ErrorActions>
+      </ErrorContent>
+    </ErrorContainer>
+  );
+};
+```
+
+### Phase 4: Toolbar Integration
+
+#### 4.1 Enhanced Toolbar with AI Configuration
+```typescript
+// src/components/Toolbar.tsx (Enhanced)
+export const Toolbar: React.FC = () => {
+  const { 
+    generateAIContent, 
+    isAILoading, 
+    aiError, 
+    aiConfig,
+    setAIConfig,
+    clearAIError,
+    clearLastAIRequest,
+    lastAIRequest,
+  } = useMindMapStore();
+  
+  const [isAIDialogOpen, setIsAIDialogOpen] = React.useState(false);
+  const [isConfigDialogOpen, setIsConfigDialogOpen] = React.useState(false);
+
+  const handleAIRequest = async (question: string) => {
+    await generateAIContent([], question);
+    setIsAIDialogOpen(false);
+  };
+
+  const handleConfigSave = (config: AIConfig) => {
+    setAIConfig(config);
+    setIsConfigDialogOpen(false);
+    clearAIError();
+  };
+
+  const handleRetry = () => {
+    clearAIError();
+    // User would need to re-enter their question
+    setIsAIDialogOpen(true);
+  };
+
+  return (
+    <ToolbarContainer>
+      {/* ... existing toolbar buttons ... */}
+      
+      <AIButtonGroup>
+        <AIConfigButton 
+          onClick={() => setIsConfigDialogOpen(true)}
+          title={`AI: ${aiConfig.provider} (${aiConfig.model})`}
+        >
+          ⚙️
+        </AIConfigButton>
+        
+        <Button 
+          onClick={() => setIsAIDialogOpen(true)}
+          disabled={isAILoading}
+        >
+          {isAILoading ? 'AI Working...' : 'Ask AI'}
+        </Button>
+      </AIButtonGroup>
+      
+      <AIPromptDialog
+        isOpen={isAIDialogOpen}
+        onClose={() => {
+          setIsAIDialogOpen(false);
+          clearAIError();
+        }}
+        onSubmit={handleAIRequest}
+        isLoading={isAILoading}
+        error={aiError}
+        aiConfig={aiConfig}
+        lastRequest={lastAIRequest}
+      />
+      
+      <AIConfigDialog
+        isOpen={isConfigDialogOpen}
+        onClose={() => setIsConfigDialogOpen(false)}
+        onSave={handleConfigSave}
+        currentConfig={aiConfig}
+      />
+      
+      {aiError && (
+        <AIErrorDisplay
+          error={aiError}
+          onRetry={handleRetry}
+          onConfigure={() => setIsConfigDialogOpen(true)}
+        />
+      )}
+    </ToolbarContainer>
+  );
+};
+```
+
+### Phase 5: Testing Strategy
+
+#### 5.1 Configuration Tests
+```typescript
+// src/components/AIConfigDialog.test.tsx
+describe('AIConfigDialog', () => {
+  it('should allow users to modify AI configuration', () => {
+    const mockOnSave = jest.fn();
+    const mockConfig: AIConfig = {
+      provider: 'openai',
+      model: 'gpt-3.5-turbo',
+      apiKey: 'test-key',
+      maxTokens: 1000,
+      temperature: 0.7,
+    };
+
+    render(
+      <AIConfigDialog
+        isOpen={true}
+        onClose={jest.fn()}
+        onSave={mockOnSave}
+        currentConfig={mockConfig}
+      />
+    );
+
+    // Change provider
+    fireEvent.change(screen.getByLabelText('Provider'), {
+      target: { value: 'anthropic' },
+    });
+
+    // Change model
+    fireEvent.change(screen.getByLabelText('Model'), {
+      target: { value: 'claude-3-sonnet' },
+    });
+
+    // Save configuration
+    fireEvent.click(screen.getByText('Save Configuration'));
+
+    expect(mockOnSave).toHaveBeenCalledWith({
+      ...mockConfig,
+      provider: 'anthropic',
+      model: 'claude-3-sonnet',
+    });
+  });
+
+  it('should test AI configuration and show results', async () => {
+    const mockConfig: AIConfig = {
+      provider: 'openai',
+      model: 'gpt-3.5-turbo',
+      apiKey: 'test-key',
+      maxTokens: 1000,
+      temperature: 0.7,
+    };
+
+    render(
+      <AIConfigDialog
+        isOpen={true}
+        onClose={jest.fn()}
+        onSave={jest.fn()}
+        currentConfig={mockConfig}
+      />
+    );
+
+    // Mock successful test
+    jest.spyOn(AIService.prototype, 'generateContent')
+      .mockResolvedValue({
+        content: 'Test response',
+        structure: [],
+      });
+
+    fireEvent.click(screen.getByText('Test Configuration'));
+
+    expect(screen.getByText('Testing...')).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(screen.getByText('✓ Configuration works!')).toBeInTheDocument();
+    });
+  });
+});
+```
+
+#### 5.2 Process Transparency Tests
+```typescript
+// src/components/AIPromptDialog.test.tsx (Enhanced)
+describe('AIPromptDialog Process Transparency', () => {
+  it('should show AI configuration details when expanded', () => {
+    const mockConfig: AIConfig = {
+      provider: 'openai',
+      model: 'gpt-3.5-turbo',
+      apiKey: 'test-key',
+      maxTokens: 1000,
+      temperature: 0.7,
+    };
+
+    render(
+      <AIPromptDialog
+        isOpen={true}
+        onClose={jest.fn()}
+        onSubmit={jest.fn()}
+        isLoading={false}
+        aiConfig={mockConfig}
+        showProcessDetails={true}
+      />
+    );
+
+    expect(screen.getByText('Current AI Configuration')).toBeInTheDocument();
+    expect(screen.getByText('openai')).toBeInTheDocument();
+    expect(screen.getByText('gpt-3.5-turbo')).toBeInTheDocument();
+    expect(screen.getByText('1000')).toBeInTheDocument();
+    expect(screen.getByText('0.7')).toBeInTheDocument();
+  });
+
+  it('should display last AI interaction details', () => {
+    const mockLastRequest = {
+      question: 'What are the benefits of remote work?',
+      prompt: 'You are an AI assistant... [full prompt]',
+      response: 'Flexibility\nCost Savings\nWork-Life Balance',
+      timestamp: '2024-01-01T12:00:00Z',
+    };
+
+    render(
+      <AIPromptDialog
+        isOpen={true}
+        onClose={jest.fn()}
+        onSubmit={jest.fn()}
+        isLoading={false}
+        lastRequest={mockLastRequest}
+      />
+    );
+
+    expect(screen.getByText('Last AI Interaction')).toBeInTheDocument();
+    expect(screen.getByText('What are the benefits of remote work?')).toBeInTheDocument();
+    expect(screen.getByText('Flexibility')).toBeInTheDocument();
+    expect(screen.getByText('Generated:')).toBeInTheDocument();
+  });
+});
+```
+
+#### 5.3 Error Handling Tests
+```typescript
+// src/utils/aiErrorHandling.test.ts
+describe('AI Error Handling', () => {
+  it('should analyze configuration errors correctly', () => {
+    const configError = new Error('Invalid API key provided');
+    const errorDetails = analyzeAIError(configError);
+
+    expect(errorDetails.type).toBe('config');
+    expect(errorDetails.retryable).toBe(false);
+    expect(errorDetails.suggestions).toContain('Check your AI API key in settings');
+  });
+
+  it('should analyze network errors correctly', () => {
+    const networkError = new Error('Network request failed');
+    const errorDetails = analyzeAIError(networkError);
+
+    expect(errorDetails.type).toBe('network');
+    expect(errorDetails.retryable).toBe(true);
+    expect(errorDetails.suggestions).toContain('Check your internet connection');
+  });
+
+  it('should provide actionable error messages', () => {
+    const error = new Error('API key invalid');
+    const errorMessage = getAIErrorMessage(error);
+
+    expect(errorMessage).toContain('AI Configuration Error');
+    expect(errorMessage).toContain('API key invalid');
+  });
+});
+```
+
+### Phase 6: Documentation Updates
+
+#### 6.1 User Guide Updates
+```markdown
+# AI Configuration and Usage Guide
+
+## AI Configuration
+
+### Accessing AI Settings
+1. Click the gear icon (⚙️) next to the "Ask AI" button in the toolbar
+2. The AI Configuration dialog will open
+
+### Configuration Options
+- **Provider**: Choose your AI service (OpenAI, Anthropic, Local)
+- **Model**: Enter the specific model name (e.g., gpt-3.5-turbo, claude-3-sonnet)
+- **API Key**: Your service API key (stored locally, never shared)
+- **Max Tokens**: Maximum response length (100-8000)
+- **Temperature**: Creativity level (0.0-2.0, where 2.0 is most creative)
+
+### Testing Configuration
+- Click "Test Configuration" to verify your settings work
+- Success: Green checkmark appears
+- Error: Detailed error message with suggestions
+
+## AI Process Transparency
+
+### Viewing AI Interactions
+1. Open the "Ask AI" dialog
+2. Click the configuration badge to see current settings
+3. After generating content, view the last interaction details
+
+### Understanding AI Input/Output
+- **Your Question**: Exactly what you typed
+- **Sent to AI**: The complete prompt including mind map context
+- **AI Response**: The raw response from the AI service
+
+## Error Resolution
+
+### Common Issues and Solutions
+1. **Configuration Errors**
+   - Check API key validity
+   - Verify account credits/limits
+   - Ensure correct model name
+
+2. **Network Errors**
+   - Check internet connection
+   - Verify firewall settings
+   - Try again later
+
+3. **API Errors**
+   - Verify API key permissions
+   - Check usage limits
+   - Contact provider support
+
+### Getting Help
+- Use the "Configure AI Settings" button in error messages
+- Review the detailed error suggestions
+- Check your AI provider's documentation
+```
+
+## Success Criteria
+
+### Transparency Requirements
+- ✅ Users can view and modify all AI configuration settings
+- ✅ Complete AI interaction history is available for inspection
+- ✅ Detailed error messages with actionable suggestions
+- ✅ Real-time configuration testing and validation
+
+### Usability Requirements
+- ✅ Intuitive configuration interface with clear labels
+- ✅ One-click access to AI settings and process details
+- ✅ Contextual help and error resolution guidance
+- ✅ Persistent configuration storage with user control
+
+### Technical Requirements
+- ✅ Local storage for user preferences (no server dependency)
+- ✅ Comprehensive error analysis and handling
+- ✅ Modular components for easy maintenance
+- ✅ Full test coverage for new transparency features
+
+### Security Requirements
+- ✅ API keys stored locally with user control
+- ✅ No sensitive data logged or exposed
+- ✅ Clear privacy indicators for AI interactions
+- ✅ User control over data retention
+
+## Implementation Timeline
+
+### Week 1: Foundation (Days 1-5)
+- **Day 1-2**: Configuration dialog and storage implementation
+- **Day 3**: Enhanced prompt dialog with transparency features
+- **Day 4**: Error handling and analysis system
+- **Day 5**: Store integration and state management
+
+### Week 2: Integration (Days 6-10)
+- **Day 6-7**: Toolbar integration and UI updates
+- **Day 8**: Process visibility and interaction tracking
+- **Day 9**: Enhanced error display and user guidance
+- **Day 10**: Initial testing and refinement
+
+### Week 3: Polish (Days 11-15)
+- **Day 11-12**: Comprehensive testing and bug fixes
+- **Day 13**: Performance optimization and user experience refinement
+- **Day 14**: Documentation updates and user guides
+- **Day 15**: Final testing, deployment preparation, and release
+
+## Risk Mitigation
+
+### Technical Risks
+- **Configuration Complexity**: Provide clear defaults and validation
+- **Performance Impact**: Optimize storage and rendering of process details
+- **Browser Compatibility**: Test across different browsers and devices
+- **Data Storage**: Implement robust local storage with fallbacks
+
+### User Experience Risks
+- **Information Overload**: Make transparency features optional and progressive
+- **Configuration Confusion**: Provide clear guidance and validation
+- **Error Anxiety**: Offer helpful suggestions and easy resolution paths
+- **Privacy Concerns**: Be transparent about data usage and storage
+
+This implementation plan ensures that users have complete visibility and control over the AI process while maintaining a clean, intuitive interface that doesn't overwhelm with technical details. The phased approach allows for incremental improvement while preserving the existing functionality.

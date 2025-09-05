@@ -1,5 +1,6 @@
 import { MindMapState, useMindMapStore } from '../store/mindmapStore';
 import { MindMap, MindNode } from '../types';
+import { AIConfig } from '../config/ai';
 import React from 'react';
 
 /**
@@ -20,6 +21,17 @@ export const createMockMindMapStore = (overrides: Partial<MindMapState> = {}) =>
     isAILoading: false,
     aiError: null,
     clearAIError: jest.fn(),
+    aiConfig: {
+      provider: 'openai',
+      model: 'gpt-3.5-turbo',
+      apiKey: 'test-api-key',
+      maxTokens: 1000,
+      temperature: 0.7,
+    },
+    aiConfigDialogOpen: false,
+    setAIConfigDialogOpen: jest.fn(),
+    updateAIConfig: jest.fn(),
+    aiProcessHistory: [],
     jsonFilePath: null,
     textFilePath: null,
     setJsonFilePath: jest.fn(),

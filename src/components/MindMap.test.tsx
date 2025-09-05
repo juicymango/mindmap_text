@@ -1,6 +1,7 @@
 import { render } from '@testing-library/react';
 import { MindMap } from './MindMap';
 import { createMockMindMapStore } from '../utils/test-utils';
+import { SelectedPathProvider } from '../contexts/SelectedPathContext';
 
 jest.mock('../store/mindmapStore');
 jest.mock('./Column', () => ({
@@ -28,7 +29,11 @@ describe('MindMap', () => {
 
     const mockStore = createMockMindMapStore({ mindmap, copyNode: jest.fn(), pasteNode: jest.fn() });
 
-    const { getAllByTestId } = render(<MindMap />);
+    const { getAllByTestId } = render(
+      <SelectedPathProvider>
+        <MindMap />
+      </SelectedPathProvider>
+    );
     const columns = getAllByTestId('column');
     expect(columns).toHaveLength(3);
     expect(columns[0]).toHaveTextContent('[]');

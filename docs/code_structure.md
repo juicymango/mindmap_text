@@ -14,7 +14,16 @@ mindmap-app/
 │   │   ├── MindMap.tsx
 │   │   ├── Column.tsx
 │   │   ├── Node.tsx
-│   │   └── Toolbar.tsx
+│   │   ├── Toolbar.tsx
+│   │   ├── AIPromptDialog.tsx
+│   │   ├── AIConfigDialog.tsx
+│   │   └── AIErrorDisplay.tsx
+│   ├── config/
+│   │   └── ai.ts
+│   ├── contexts/
+│   │   └── SelectedPathContext.tsx
+│   ├── services/
+│   │   └── aiService.ts
 │   ├── store/
 │   │   └── mindmapStore.ts
 │   ├── styles/
@@ -22,6 +31,8 @@ mindmap-app/
 │   ├── types/
 │   │   └── index.ts
 │   ├── utils/
+│   │   ├── aiConfigStorage.ts
+│   │   ├── aiErrorHandling.ts
 │   │   ├── file.ts
 │   │   ├── textFormat.ts
 │   │   └── test-utils.ts

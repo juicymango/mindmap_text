@@ -1205,3 +1205,17 @@ TS2322: Type '{ mindmap: { root: { text: string; children: never[]; }; }; setMin
 - keep fixing it.
 - make sure you pass all the automatic tests.
 - commit and push the changes.
+
+# task 25
+
+- let the ask ai process to be transparent.
+- design interaction to let the user input its config.
+- let the user see what exactly the input and output of the ai model are.
+- let the user know if there are any errors.
+- make your plan in ./docs/plan.md.
+- implement the feature and the tests.
+- make sure you pass all the automatic tests.
+- update ./docs/ui_and_iteration_design.md based on the current implementation.
+- update ./docs/code_structure.md based on the current implementation.
+- update ./docs/test.md based on the current implementation.
+- commit and push the changes.

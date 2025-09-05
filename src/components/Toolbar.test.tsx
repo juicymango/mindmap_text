@@ -3,6 +3,7 @@ import { render, fireEvent, act } from '@testing-library/react';
 import { Toolbar } from './Toolbar';
 import { createMockMindMapStore } from '../utils/test-utils';
 import { saveToFile, saveAsFile, loadFromFile } from '../utils/file';
+import { SelectedPathProvider } from '../contexts/SelectedPathContext';
 
 jest.mock('../store/mindmapStore');
 jest.mock('../utils/file');
@@ -26,13 +27,21 @@ describe('Toolbar', () => {
   });
 
   it('should call addNode when "Add Node" button is clicked', () => {
-    const { getByText } = render(<Toolbar />);
+    const { getByText } = render(
+      <SelectedPathProvider>
+        <Toolbar />
+      </SelectedPathProvider>
+    );
     fireEvent.click(getByText('Add Node'));
     expect(addNode).toHaveBeenCalledWith([], 'New Node');
   });
 
   it('should display "No file selected" when no file path is set', () => {
-    const { getByText } = render(<Toolbar />);
+    const { getByText } = render(
+      <SelectedPathProvider>
+        <Toolbar />
+      </SelectedPathProvider>
+    );
     expect(getByText('Current file: No file selected')).toBeInTheDocument();
   });
 
@@ -47,7 +56,11 @@ describe('Toolbar', () => {
       setTextFilePath,
     });
 
-    const { getByText } = render(<Toolbar />);
+    const { getByText } = render(
+      <SelectedPathProvider>
+        <Toolbar />
+      </SelectedPathProvider>
+    );
     expect(getByText('Current file: /path/to/file.json')).toBeInTheDocument();
   });
 
@@ -62,12 +75,20 @@ describe('Toolbar', () => {
       setTextFilePath,
     });
 
-    const { getByText } = render(<Toolbar />);
+    const { getByText } = render(
+      <SelectedPathProvider>
+        <Toolbar />
+      </SelectedPathProvider>
+    );
     expect(getByText('Current file: /path/to/file.txt')).toBeInTheDocument();
   });
 
   it('should disable Save and Load buttons when no file path is set', () => {
-    const { getByText } = render(<Toolbar />);
+    const { getByText } = render(
+      <SelectedPathProvider>
+        <Toolbar />
+      </SelectedPathProvider>
+    );
     
     expect(getByText('Save')).toBeDisabled();
     expect(getByText('Load')).toBeDisabled();
@@ -84,7 +105,11 @@ describe('Toolbar', () => {
       setTextFilePath,
     });
 
-    const { getByText } = render(<Toolbar />);
+    const { getByText } = render(
+      <SelectedPathProvider>
+        <Toolbar />
+      </SelectedPathProvider>
+    );
     
     expect(getByText('Save')).not.toBeDisabled();
     expect(getByText('Load')).not.toBeDisabled();
@@ -101,7 +126,11 @@ describe('Toolbar', () => {
       setTextFilePath,
     });
 
-    const { getByText } = render(<Toolbar />);
+    const { getByText } = render(
+      <SelectedPathProvider>
+        <Toolbar />
+      </SelectedPathProvider>
+    );
     fireEvent.click(getByText('Save'));
     
     expect(saveToFile).toHaveBeenCalledWith(
@@ -121,7 +150,11 @@ describe('Toolbar', () => {
       setTextFilePath,
     });
 
-    const { getByText } = render(<Toolbar />);
+    const { getByText } = render(
+      <SelectedPathProvider>
+        <Toolbar />
+      </SelectedPathProvider>
+    );
     fireEvent.click(getByText('Save'));
     
     expect(saveToFile).toHaveBeenCalledWith(
@@ -144,7 +177,11 @@ describe('Toolbar', () => {
       setTextFilePath,
     });
 
-    const { getByText } = render(<Toolbar />);
+    const { getByText } = render(
+      <SelectedPathProvider>
+        <Toolbar />
+      </SelectedPathProvider>
+    );
     
     const saveButton = getByText('Save');
     expect(saveButton).toBeDisabled();
@@ -154,7 +191,11 @@ describe('Toolbar', () => {
     const mockPath = '/path/to/newfile.json';
     (saveAsFile as jest.Mock).mockResolvedValue(mockPath);
 
-    const { getByText } = render(<Toolbar />);
+    const { getByText } = render(
+      <SelectedPathProvider>
+        <Toolbar />
+      </SelectedPathProvider>
+    );
     fireEvent.click(getByText('Save As JSON'));
 
     await act(async () => {
@@ -172,7 +213,11 @@ describe('Toolbar', () => {
     const mockPath = '/path/to/newfile.txt';
     (saveAsFile as jest.Mock).mockResolvedValue(mockPath);
 
-    const { getByText } = render(<Toolbar />);
+    const { getByText } = render(
+      <SelectedPathProvider>
+        <Toolbar />
+      </SelectedPathProvider>
+    );
     fireEvent.click(getByText('Save As Text'));
 
     await act(async () => {
@@ -203,7 +248,11 @@ describe('Toolbar', () => {
       setTextFilePath,
     });
 
-    const { getByText } = render(<Toolbar />);
+    const { getByText } = render(
+      <SelectedPathProvider>
+        <Toolbar />
+      </SelectedPathProvider>
+    );
     fireEvent.click(getByText('Load'));
 
     await act(async () => {
@@ -222,7 +271,11 @@ describe('Toolbar', () => {
     };
     (loadFromFile as jest.Mock).mockResolvedValue(mockResult);
 
-    const { getByText } = render(<Toolbar />);
+    const { getByText } = render(
+      <SelectedPathProvider>
+        <Toolbar />
+      </SelectedPathProvider>
+    );
     fireEvent.click(getByText('Load As'));
 
     await act(async () => {
@@ -245,7 +298,11 @@ describe('Toolbar', () => {
       setTextFilePath,
     });
 
-    const { getByText } = render(<Toolbar />);
+    const { getByText } = render(
+      <SelectedPathProvider>
+        <Toolbar />
+      </SelectedPathProvider>
+    );
     expect(getByText('Current file: /path/to/file.json')).toBeInTheDocument();
   });
 });

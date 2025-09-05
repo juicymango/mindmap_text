@@ -18,6 +18,7 @@ The UI is a horizontally scrolling view of columns with a toolbar at the top:
 ```
 +-------------------------------------------------------------+
 | Toolbar: [Add Node] [Save] [Save As] [Load] [Load As]     |
+|         [Ask AI] [AI Config]                                |
 | Current file: /path/to/file.json                            |
 +-------------------------------------------------------------+
 | Column 1 (Root) | Column 2         | Column 3         |
@@ -73,11 +74,14 @@ The UI is a horizontally scrolling view of columns with a toolbar at the top:
     - **Paste:** Select a node and press Ctrl+V (Cmd+V on Mac) to paste clipboard content as children to the selected node.
     - Uses the existing text format for clipboard operations.
 
-9.  **AI Content Generation:**
-    - **AI Configuration:** Users configure AI models through local command-line commands for security.
-    - **Question Input:** Select a node and use the "Ask AI" feature to input a question.
+9.  **AI Content Generation with Transparency:**
+    - **AI Configuration:** Users configure AI models through a user-friendly dialog interface with support for OpenAI, Anthropic, and Local AI providers.
+    - **Question Input:** Select a node and use the "Ask AI" feature to input a question through an enhanced dialog with process visibility.
+    - **Process Transparency:** Users can view their complete AI interaction history, including exact prompts sent to the AI and responses received.
+    - **Configuration Transparency:** Current AI settings are displayed in the prompt dialog for full visibility into the generation process.
     - **AI Response:** The AI generates content in mind map structure and appends it as child nodes to the selected node.
-    - **Security:** API keys and sensitive data are handled locally without exposure to the application.
+    - **Error Analysis:** AI errors are analyzed with detailed explanations and actionable suggestions for resolution.
+    - **Security:** API keys are stored locally with environment variable priority for sensitive data.
 
 10. **Data Formats:**
 
@@ -88,18 +92,22 @@ The UI is a horizontally scrolling view of columns with a toolbar at the top:
 - **File Path Memory:** Stores JSON and text file paths separately with localStorage persistence.
 
 ### AI Integration
-- **AI Configuration:** Environment variables and local command-line setup for secure API key management.
+- **AI Configuration:** User-friendly configuration dialog with support for multiple AI providers, local storage of preferences, and environment variable fallback for security.
+- **Process Transparency:** Complete AI interaction history tracking with detailed logging of prompts, responses, and error states.
+- **Enhanced Error Handling:** Intelligent error analysis with categorized error types, severity levels, and actionable suggestions.
 - **Prompt Engineering:** Context-aware prompts that include relevant mind map context for accurate AI responses.
 - **Response Processing:** AI responses are parsed and converted to mind map node structure automatically.
-- **Error Handling:** Graceful handling of AI service failures and invalid response formats.
+- **Security:** API keys stored locally with environment variable priority, ensuring sensitive data is never exposed in the UI.
 
 ### Components
 - **App:** Main application component that renders Toolbar and MindMap.
-- **Toolbar:** Contains file operation buttons and displays current file path.
+- **Toolbar:** Contains file operation buttons, AI features, and displays current file path.
 - **MindMap:** Renders columns based on the selected path and handles keyboard shortcuts.
 - **Column:** Renders a column of nodes.
 - **Node:** Renders an individual node with edit and delete controls.
-- **AI Prompt Dialog:** Modal dialog for inputting AI questions and configuration.
+- **AIPromptDialog:** Enhanced modal dialog for AI questions with process history, configuration transparency, and error display.
+- **AIConfigDialog:** User-friendly dialog for configuring AI settings with validation, testing, and provider-specific options.
+- **AIErrorDisplay:** Intelligent error display component with analysis, categorized suggestions, and technical details.
 
 ### Data Structure
 ```typescript
