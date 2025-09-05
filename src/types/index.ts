@@ -7,3 +7,5 @@ export interface MindNode {
 export interface MindMap {
   root: MindNode;
 }
+
+export type FileFormat = 'json' | 'text';

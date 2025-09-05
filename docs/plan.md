@@ -48,3 +48,62 @@ The application will be broken down into the following components:
 -   **Unit Tests:** Each component will be tested in isolation using `jest` and `react-testing-library`. We will mock the Zustand store to test the components in a predictable way.
 -   **Integration Tests:** We will test the integration between the components and the Zustand store. For example, we will test that clicking on a node correctly updates the state and re-renders the `MindMap` component.
 -   **End-to-End Tests:** We will use `Cypress` to automate browser testing. We will create test scripts that simulate user flows, such as creating a new mind map, adding nodes, and saving the mind map.
+
+## Task 17: File Path Memory Feature Implementation Plan
+
+### Overview
+Implement file path memory functionality to allow users to save and load mind maps from remembered file paths, with format detection based on file extension.
+
+### Implementation Plan
+
+1. **State Management Enhancement**
+   - Add file path memory state to the Zustand store
+   - Store remembered file paths for both JSON and text formats
+   - Add actions to update and clear remembered file paths
+
+2. **File Operations Enhancement**
+   - Modify save/load functions to use remembered file paths
+   - Add format detection based on file extension (.json/.txt)
+   - Implement "Save" and "Load" buttons that use remembered paths
+   - Keep "Save As" and "Load As" buttons for path selection
+
+3. **UI Enhancements**
+   - Display current remembered file path in the toolbar
+   - Add "Save" and "Load" buttons alongside existing "Save As" and "Load As" buttons
+   - Show appropriate error messages when file operations fail
+
+4. **Local Storage Integration**
+   - Use localStorage to persist remembered file paths across sessions
+   - Implement fallback behavior when no file path is remembered
+
+### Technical Approach
+
+1. **Store State Extensions**
+   ```typescript
+   interface FilePathState {
+     jsonFilePath: string | null;
+     textFilePath: string | null;
+     setJsonFilePath: (path: string | null) => void;
+     setTextFilePath: (path: string | null) => void;
+     clearFilePaths: () => void;
+   }
+   ```
+
+2. **Enhanced File Operations**
+   - `save(mindmap: MindMap, filePath?: string)` - Save to remembered path or prompt
+   - `load(filePath?: string)` - Load from remembered path or prompt
+   - `detectFormat(filePath: string)` - Determine format from file extension
+
+3. **UI Components**
+   - Add file path display to Toolbar component
+   - Implement quick save/load buttons
+   - Add error handling for file operations
+
+### Implementation Steps
+
+1. Update Zustand store with file path state
+2. Enhance file utility functions with path memory
+3. Update Toolbar component with new buttons and file path display
+4. Implement localStorage persistence
+5. Add comprehensive error handling
+6. Update unit tests to cover new functionality

@@ -7,7 +7,11 @@ describe('mindmapStore', () => {
     const { result } = renderHook(() => useMindMapStore());
     act(() => {
       result.current.setMindmap({ root: { text: 'Root', children: [] } });
+      result.current.clearFilePaths();
     });
+    
+    // Clear localStorage
+    localStorage.clear();
   });
 
   it('should add a node', () => {
@@ -93,5 +97,68 @@ describe('mindmapStore', () => {
 
     expect(result.current.mindmap.root.children[0].text).toBe('Node 2');
     expect(result.current.mindmap.root.children[1].text).toBe('Node 1');
+  });
+
+  // File path memory tests
+  it('should initialize with null file paths', () => {
+    const { result } = renderHook(() => useMindMapStore());
+
+    expect(result.current.jsonFilePath).toBeNull();
+    expect(result.current.textFilePath).toBeNull();
+  });
+
+  it('should set JSON file path', () => {
+    const { result } = renderHook(() => useMindMapStore());
+
+    act(() => {
+      result.current.setJsonFilePath('/path/to/file.json');
+    });
+
+    expect(result.current.jsonFilePath).toBe('/path/to/file.json');
+    expect(localStorage.getItem('jsonFilePath')).toBe('/path/to/file.json');
+  });
+
+  it('should set text file path', () => {
+    const { result } = renderHook(() => useMindMapStore());
+
+    act(() => {
+      result.current.setTextFilePath('/path/to/file.txt');
+    });
+
+    expect(result.current.textFilePath).toBe('/path/to/file.txt');
+    expect(localStorage.getItem('textFilePath')).toBe('/path/to/file.txt');
+  });
+
+  it('should clear file paths', () => {
+    const { result } = renderHook(() => useMindMapStore());
+
+    act(() => {
+      result.current.setJsonFilePath('/path/to/file.json');
+      result.current.setTextFilePath('/path/to/file.txt');
+    });
+
+    expect(result.current.jsonFilePath).toBe('/path/to/file.json');
+    expect(result.current.textFilePath).toBe('/path/to/file.txt');
+
+    act(() => {
+      result.current.clearFilePaths();
+    });
+
+    expect(result.current.jsonFilePath).toBeNull();
+    expect(result.current.textFilePath).toBeNull();
+    expect(localStorage.getItem('jsonFilePath')).toBeNull();
+    expect(localStorage.getItem('textFilePath')).toBeNull();
+  });
+
+  it('should handle null file path setting', () => {
+    const { result } = renderHook(() => useMindMapStore());
+
+    act(() => {
+      result.current.setJsonFilePath('/path/to/file.json');
+      result.current.setJsonFilePath(null);
+    });
+
+    expect(result.current.jsonFilePath).toBeNull();
+    expect(localStorage.getItem('jsonFilePath')).toBe('');
   });
 });

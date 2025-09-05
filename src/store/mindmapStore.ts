@@ -10,6 +10,12 @@ interface MindMapState {
   updateNodeText: (path: number[], text: string) => void;
   onDragEnd: (result: DropResult) => void;
   setSelectedChild: (parentPath: number[], childIndex: number | undefined) => void;
+  // File path memory state
+  jsonFilePath: string | null;
+  textFilePath: string | null;
+  setJsonFilePath: (path: string | null) => void;
+  setTextFilePath: (path: string | null) => void;
+  clearFilePaths: () => void;
 }
 
 const findNode = (root: MindNode, path: number[]): MindNode | null => {
@@ -35,8 +41,23 @@ const findParent = (root: MindNode, path: number[]): MindNode | null => {
   return findNode(root, parentPath);
 };
 
+// Initialize from localStorage
+const getInitialFilePaths = () => {
+  if (typeof window !== 'undefined') {
+    return {
+      jsonFilePath: localStorage.getItem('jsonFilePath') || null,
+      textFilePath: localStorage.getItem('textFilePath') || null,
+    };
+  }
+  return {
+    jsonFilePath: null,
+    textFilePath: null,
+  };
+};
+
 export const useMindMapStore: UseBoundStore<StoreApi<MindMapState>> = create<MindMapState>((set, get) => ({
   mindmap: { root: { text: 'Root', children: [] } },
+  ...getInitialFilePaths(),
   setMindmap: (mindmap: MindMap) => set({ mindmap }),
   addNode: (parentPath: number[], text: string) => {
     const { mindmap } = get();
@@ -92,6 +113,25 @@ export const useMindMapStore: UseBoundStore<StoreApi<MindMapState>> = create<Min
     if (parent) {
       parent.selected_child_idx = childIndex;
       set({ mindmap: newMindMap });
+    }
+  },
+  setJsonFilePath: (path: string | null) => {
+    set({ jsonFilePath: path });
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('jsonFilePath', path || '');
+    }
+  },
+  setTextFilePath: (path: string | null) => {
+    set({ textFilePath: path });
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('textFilePath', path || '');
+    }
+  },
+  clearFilePaths: () => {
+    set({ jsonFilePath: null, textFilePath: null });
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('jsonFilePath');
+      localStorage.removeItem('textFilePath');
     }
   },
 }));

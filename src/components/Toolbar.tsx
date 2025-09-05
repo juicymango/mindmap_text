@@ -1,45 +1,125 @@
 import React from 'react';
 import { useMindMapStore } from '../store/mindmapStore';
-import { saveToFile, loadFromFile, saveAsText, loadFromText } from '../utils/file';
+import { saveToFile, saveAsFile, loadFromFile } from '../utils/file';
+import { FileFormat } from '../types';
 import styled from 'styled-components';
 
 const ToolbarContainer = styled.div`
   padding: 8px;
   border-bottom: 1px solid lightgrey;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+`;
+
+const FilePathDisplay = styled.div`
+  font-size: 12px;
+  color: #666;
+  margin-left: 8px;
+`;
+
+const ButtonGroup = styled.div`
+  display: flex;
+  gap: 4px;
 `;
 
 export const Toolbar: React.FC = () => {
-  const { mindmap, setMindmap, addNode } = useMindMapStore();
+  const { 
+    mindmap, 
+    setMindmap, 
+    addNode, 
+    jsonFilePath, 
+    textFilePath, 
+    setJsonFilePath, 
+    setTextFilePath 
+  } = useMindMapStore();
 
-  const handleSave = () => saveToFile(mindmap);
-  const handleLoad = async () => {
-    const newMindMap = await loadFromFile();
-    if (newMindMap) {
-      setMindmap(newMindMap);
+  const handleSave = async () => {
+    if (jsonFilePath) {
+      saveToFile(mindmap, jsonFilePath);
+    } else if (textFilePath) {
+      saveToFile(mindmap, textFilePath);
+    } else {
+      const path = await saveAsFile(mindmap, 'json');
+      if (path) {
+        setJsonFilePath(path);
+      }
     }
   };
 
-  const handleSaveAsText = () => saveAsText(mindmap);
-  const handleLoadFromText = async () => {
-    const newMindMap = await loadFromText();
+  const handleSaveAs = async (format: FileFormat) => {
+    const path = await saveAsFile(mindmap, format);
+    if (path) {
+      if (format === 'json') {
+        setJsonFilePath(path);
+      } else {
+        setTextFilePath(path);
+      }
+    }
+  };
+
+  const handleLoad = async () => {
+    const filePath = jsonFilePath || textFilePath;
+    const { mindmap: newMindMap, path } = await loadFromFile(filePath);
+    
     if (newMindMap) {
       setMindmap(newMindMap);
+      const format = path.endsWith('.txt') ? 'text' : 'json';
+      if (format === 'json') {
+        setJsonFilePath(path);
+      } else {
+        setTextFilePath(path);
+      }
+    }
+  };
+
+  const handleLoadAs = async () => {
+    const { mindmap: newMindMap, path } = await loadFromFile();
+    
+    if (newMindMap) {
+      setMindmap(newMindMap);
+      const format = path.endsWith('.txt') ? 'text' : 'json';
+      if (format === 'json') {
+        setJsonFilePath(path);
+      } else {
+        setTextFilePath(path);
+      }
     }
   };
 
   const handleAddNode = () => {
-    // For simplicity, we add a new node to the root.
-    // A more complete implementation would allow selecting the parent.
     addNode([], 'New Node');
   };
+
+  const getCurrentFilePath = () => {
+    return jsonFilePath || textFilePath || 'No file selected';
+  };
+
+  const hasFilePath = jsonFilePath || textFilePath;
 
   return (
     <ToolbarContainer>
       <button onClick={handleAddNode}>Add Node</button>
-      <button onClick={handleSave}>Save as JSON</button>
-      <button onClick={handleLoad}>Load from JSON</button>
-      <button onClick={handleSaveAsText}>Save as Text</button>
-      <button onClick={handleLoadFromText}>Load from Text</button>
+      
+      <ButtonGroup>
+        <button onClick={handleSave} disabled={!hasFilePath}>
+          Save
+        </button>
+        <button onClick={() => handleSaveAs('json')}>Save As JSON</button>
+        <button onClick={() => handleSaveAs('text')}>Save As Text</button>
+      </ButtonGroup>
+      
+      <ButtonGroup>
+        <button onClick={handleLoad} disabled={!hasFilePath}>
+          Load
+        </button>
+        <button onClick={handleLoadAs}>Load As</button>
+      </ButtonGroup>
+      
+      <FilePathDisplay>
+        Current file: {getCurrentFilePath()}
+      </FilePathDisplay>
     </ToolbarContainer>
   );
 };

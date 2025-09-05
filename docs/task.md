@@ -282,3 +282,15 @@ Invariant failed: Cannot find droppable entry with id [mindmap]
 - **DONE** make sure you pass the unit tests.
 - **DONE** commit and push the changes.
 
+# task 17
+
+- when save as json or as text, let the user select the file path and insert the file name. remember this file path.
+- when load from json or text, also remember the file path.
+- display this remembered file path.
+- add buttons save and load. save to the remembered file path. load from the remembered file path. detect the json or text format by the file suffix.
+- make your implementation plan. append it to ./docs/plan.md.
+- update your solution to ./docs/code_structure.md.
+- update your tests to ./docs/test.md.
+- implement this feature and the relevant test cases.
+- make sure you pass the unit tests.
+- commit and push the changes.
