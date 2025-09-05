@@ -1219,3 +1219,11 @@ TS2322: Type '{ mindmap: { root: { text: string; children: never[]; }; }; setMin
 - update ./docs/code_structure.md based on the current implementation.
 - update ./docs/test.md based on the current implementation.
 - commit and push the changes.
+
+# task 26
+
+- there are compile errrors. fix them.
+- make sure npx tsc --noEmit reports no errors.
+- make sure you pass all the automatic tests.
+- commit and push the changes.
+
