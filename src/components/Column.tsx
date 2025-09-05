@@ -1,5 +1,4 @@
 import React from 'react';
-import { Droppable } from 'react-beautiful-dnd';
 import { Node } from './Node';
 import { MindNode } from '../types';
 import styled from 'styled-components';
@@ -8,6 +7,7 @@ interface ColumnProps {
   nodes: MindNode[];
   columnPath: number[];
   index: number;
+  onNodeSelect: (path: number[]) => void;
 }
 
 const ColumnContainer = styled.div`
@@ -21,22 +21,18 @@ const ColumnContainer = styled.div`
   flex-shrink: 0;
 `;
 
-export const Column: React.FC<ColumnProps> = ({ nodes, columnPath, index }) => {
-  // Ensure droppableId is always a valid string
-  const droppableId = columnPath.length === 0 ? 'root' : JSON.stringify(columnPath);
-  
+export const Column: React.FC<ColumnProps> = ({ nodes, columnPath, index, onNodeSelect }) => {
   return (
     <ColumnContainer>
-      <Droppable droppableId={droppableId} type="node">
-        {(provided) => (
-          <div {...provided.droppableProps} ref={provided.innerRef}>
-            {nodes.map((node, index) => (
-              <Node key={index} node={node} path={[...columnPath, index]} index={index} />
-            ))}
-            {provided.placeholder}
-          </div>
-        )}
-      </Droppable>
+      {nodes.map((node, nodeIndex) => (
+        <Node 
+          key={nodeIndex} 
+          node={node} 
+          path={[...columnPath, nodeIndex]} 
+          index={nodeIndex}
+          onSelect={onNodeSelect}
+        />
+      ))}
     </ColumnContainer>
   );
 };

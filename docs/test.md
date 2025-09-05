@@ -132,6 +132,40 @@
   - Text files with invalid indentation should be rejected.
   - The first line must be at depth 0 (no leading tabs).
 
+## Copy/Paste Functionality
+
+- **Copy functionality:**
+  - Copy current node and entire subtree to clipboard using text format
+  - Use Ctrl+C (Windows/Linux) or Cmd+C (Mac) to copy selected node
+  - Clipboard content uses text format with tab hierarchy
+  - Handles clipboard API errors with fallback to document.execCommand
+  - Shows error messages in console for failed copy operations
+
+- **Paste functionality:**
+  - Paste clipboard content to current node, appending as children
+  - Use Ctrl+V (Windows/Linux) or Cmd+V (Mac) to paste to selected node
+  - Parses clipboard text using existing text format utilities
+  - Automatically expands to show newly pasted children
+  - Handles invalid clipboard content gracefully with error messages
+
+- **Keyboard shortcuts:**
+  - Ctrl+C/Cmd+C: Copy selected node and subtree
+  - Ctrl+V/Cmd+V: Paste clipboard content as children of selected node
+  - Shortcuts work when the MindMap component has focus
+  - No UI buttons - keyboard shortcuts only
+
+- **Text format integration:**
+  - Copy uses existing `mindMapToText` utility for consistent format
+  - Paste uses existing `textToMindMap` utility for parsing
+  - Maintains compatibility with existing text format files
+  - Preserves hierarchy and node relationships
+
+- **Error handling:**
+  - Graceful handling of clipboard API permission errors
+  - Fallback mechanisms for older browsers without clipboard API
+  - Validation of clipboard content before pasting
+  - Console error logging for debugging failed operations
+
 ## Column-Based UI
 
 - **Column rendering:**
@@ -158,16 +192,16 @@
 The project includes comprehensive test utilities to prevent TypeScript compilation errors and ensure type safety:
 
 - **Type-safe mocking utilities:** `createMockMindMapStore()` provides proper TypeScript typing for mocking the Zustand store
-- **React component mocks:** `mockDragDropContext`, `mockDroppable`, `mockDraggable` for testing react-beautiful-dnd components
 - **Type guard utilities:** `isNonNullString()`, `isValidMindMap()` for runtime type checking
 - **Test data builders:** `createTestMindMap()`, `createTestNode()` for creating consistent test data
+- **Clipboard API mocking:** Mock utilities for testing copy/paste functionality
 
 ### Error Prevention Measures
 
 - **TypeScript mocking fixes:** Resolved TS2352 errors by creating type-safe mock utilities
 - **Null safety improvements:** Fixed TS2345 errors by adding proper null checks in Toolbar.tsx and file.ts
-- **Runtime error prevention:** Fixed react-beautiful-dnd "Cannot find droppable entry" error by using 'root' instead of '[]' for droppableId
 - **Async test improvements:** Fixed timeout issues by properly handling async operations in tests
+- **Clipboard API error handling:** Graceful handling of clipboard permission errors and fallback mechanisms
 
 ### ESLint Configuration
 
@@ -187,12 +221,13 @@ The project uses ESLint with TypeScript support to prevent common errors:
 - Test addNode functionality with different parent paths
 - Test deleteNode functionality and parent-child relationships
 - Test updateNodeText functionality
-- Test onDragEnd functionality with old format droppableId (`[]`)
-- Test onDragEnd functionality with new format droppableId (`root`)
-- Test onDragEnd functionality with nested droppableId (`[0]`)
-- Test onDragEnd functionality with invalid droppableId (graceful fallback)
-- Test onDragEnd functionality with no destination
 - Test setSelectedChild functionality and expansion behavior
+- Test copyNode functionality with various node structures
+- Test copyNode error handling with clipboard API failures
+- Test copyNode fallback to document.execCommand
+- Test pasteNode functionality with valid clipboard content
+- Test pasteNode error handling with invalid clipboard data
+- Test pasteNode graceful error handling
 - Test findNode and findParent helper functions
 
 ### File Utils Tests (`src/utils/file.test.ts`)
@@ -237,7 +272,7 @@ The project uses ESLint with TypeScript support to prevent common errors:
 - Test click to select
 - Test add child functionality
 - Test delete functionality
-- Test drag and drop integration
+- Test node selection path tracking
 - Test findNode helper function
 
 #### Toolbar Component Tests (`src/components/Toolbar.test.tsx`)
@@ -263,6 +298,7 @@ The project uses ESLint with TypeScript support to prevent common errors:
 
 - **UI interaction test:**
   - Test complete user workflow from creation to saving
-  - Test drag and drop operations
   - Test selection and expansion behavior
   - Test file operations with path memory
+  - Test copy/paste workflow with keyboard shortcuts
+  - Test clipboard integration across different node structures

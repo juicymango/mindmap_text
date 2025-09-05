@@ -656,3 +656,268 @@ describe('Error Handling', () => {
 - ✅ Robust testing infrastructure
 
 This comprehensive approach will not only fix the current issues but also prevent similar problems from occurring in the future, improving the overall code quality and developer experience.
+
+---
+
+# Task 20: Copy/Paste Implementation and Drag Removal Plan
+
+## Overview
+
+Task 20 requires removing all dragging features from the application and implementing copy/paste functionality using keyboard shortcuts and text format. This plan outlines the implementation strategy for these changes.
+
+## Requirements Analysis
+
+### Drag Removal Requirements
+- Remove all react-beautiful-dnd dependencies and components
+- Remove drag-related functionality from store and components
+- Clean up drag-related tests and utilities
+- Maintain existing node manipulation features (add, delete, edit)
+
+### Copy/Paste Requirements
+- **Copy functionality**: Copy current node and entire subtree to clipboard using text format
+- **Paste functionality**: Paste clipboard content to current node, appending as children
+- **Keyboard shortcuts**: Use Ctrl+C/Cmd+C for copy, Ctrl+V/Cmd+V for paste
+- **No UI buttons**: Implement through keyboard shortcuts only
+- **Text format**: Use existing text format functionality for clipboard operations
+
+## Implementation Plan
+
+### Phase 1: Remove Dragging Features
+
+#### 1.1 Dependency Removal
+- Remove `react-beautiful-dnd` and `@types/react-beautiful-dnd` from package.json
+- Remove drag-related imports from all components
+- Clean up package.json and update dependencies
+
+#### 1.2 Store Updates
+- Remove `onDragEnd` function from mindmap store
+- Remove drag-related state and actions
+- Update store interface to remove drag-related methods
+
+#### 1.3 Component Updates
+- **MindMap component**: Remove DragDropContext wrapper
+- **Column component**: Remove Droppable wrapper and drag-related props
+- **Node component**: Remove Draggable wrapper and drag-related props
+- Clean up drag-related event handlers and props
+
+#### 1.4 Test Updates
+- Remove drag-related tests from all test files
+- Update test utilities to remove drag mocking
+- Clean up test data structures that reference drag functionality
+
+### Phase 2: Implement Copy Functionality
+
+#### 2.1 Store Updates
+- Add `copyNode` function to mindmap store
+- Function should:
+  - Take a node path as parameter
+  - Extract the node and its entire subtree
+  - Convert to text format using existing `mindMapToText` utility
+  - Write to clipboard using `navigator.clipboard.writeText`
+
+#### 2.2 Keyboard Event Handling
+- Add keyboard event listener to MindMap component
+- Implement `handleKeyDown` function
+- Detect Ctrl+C/Cmd+C keyboard shortcuts
+- Call store's copy function with selected node path
+
+#### 2.3 Text Format Integration
+- Leverage existing `mindMapToText` utility
+- Ensure proper text format with tab hierarchy
+- Handle edge cases (empty nodes, special characters)
+
+#### 2.4 Error Handling
+- Handle clipboard API permission errors
+- Graceful fallback for browsers without clipboard API
+- Handle cases where no node is selected
+
+### Phase 3: Implement Paste Functionality
+
+#### 3.1 Store Updates
+- Add `pasteNode` function to mindmap store
+- Function should:
+  - Take a target node path as parameter
+  - Read text from clipboard using `navigator.clipboard.readText`
+  - Parse text using existing `textToMindMap` utility
+  - Append parsed nodes as children to target node
+
+#### 3.2 Keyboard Event Handling
+- Extend `handleKeyDown` function in MindMap component
+- Detect Ctrl+V/Cmd+V keyboard shortcuts
+- Call store's paste function with selected node path
+
+#### 3.3 Data Integration
+- Handle merging of clipboard data with existing mind map
+- Update selected_child_idx to show newly pasted children
+- Handle duplicate node names or conflicts
+
+#### 3.4 Error Handling
+- Handle invalid clipboard data format
+- Graceful handling of parse errors
+- Handle cases where no node is selected for paste target
+
+### Phase 4: Testing
+
+#### 4.1 Unit Tests
+- Test copy functionality with various node structures
+- Test paste functionality with valid and invalid clipboard data
+- Test keyboard event handling and shortcut detection
+- Test error handling for edge cases
+
+#### 4.2 Integration Tests
+- Test complete copy/paste workflow
+- Test integration with existing text format utilities
+- Test state updates after copy/paste operations
+
+#### 4.3 Browser Compatibility Tests
+- Test clipboard API compatibility
+- Test fallback mechanisms for older browsers
+- Test keyboard shortcuts across different platforms
+
+## Technical Implementation Details
+
+### Store Interface Updates
+```typescript
+// Remove from MindMapState interface:
+onDragEnd: (result: DropResult) => void;
+
+// Add to MindMapState interface:
+copyNode: (path: number[]) => Promise<void>;
+pasteNode: (path: number[]) => Promise<void>;
+```
+
+### Copy Function Implementation
+```typescript
+const copyNode = async (path: number[]) => {
+  const node = findNode(mindmap, path);
+  if (!node) return;
+  
+  // Create a temporary mind map with just this node
+  const tempMindMap: MindMap = { root: node };
+  const textFormat = mindMapToText(tempMindMap);
+  
+  try {
+    await navigator.clipboard.writeText(textFormat);
+  } catch (error) {
+    console.error('Failed to copy to clipboard:', error);
+    // Fallback: use document.execCommand for older browsers
+    const textArea = document.createElement('textarea');
+    textArea.value = textFormat;
+    document.body.appendChild(textArea);
+    textArea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textArea);
+  }
+};
+```
+
+### Paste Function Implementation
+```typescript
+const pasteNode = async (path: number[]) => {
+  try {
+    const clipboardText = await navigator.clipboard.readText();
+    const parsedMindMap = textToMindMap(clipboardText);
+    
+    if (!parsedMindMap) {
+      throw new Error('Invalid clipboard format');
+    }
+    
+    // Add parsed nodes as children to target node
+    const targetNode = findNode(mindmap, path);
+    if (targetNode) {
+      targetNode.children.push(...parsedMindMap.root.children);
+      // Update selected child to show pasted content
+      setSelectedChild(path, targetNode.children.length - 1);
+    }
+  } catch (error) {
+    console.error('Failed to paste from clipboard:', error);
+  }
+};
+```
+
+### Keyboard Event Handler
+```typescript
+const handleKeyDown = (event: React.KeyboardEvent) => {
+  // Check for Ctrl+C or Cmd+C
+  if ((event.ctrlKey || event.metaKey) && event.key === 'c') {
+    event.preventDefault();
+    copyNode(selectedPath);
+  }
+  
+  // Check for Ctrl+V or Cmd+V
+  if ((event.ctrlKey || event.metaKey) && event.key === 'v') {
+    event.preventDefault();
+    pasteNode(selectedPath);
+  }
+};
+```
+
+## Success Criteria
+
+### Drag Removal
+- ✅ All react-beautiful-dnd dependencies removed
+- ✅ Drag-related code removed from all components
+- ✅ All drag-related tests removed or updated
+- ✅ Application runs without drag functionality
+- ✅ Existing features (add, delete, edit) work normally
+
+### Copy/Paste Implementation
+- ✅ Copy functionality works with Ctrl+C/Cmd+C
+- ✅ Paste functionality works with Ctrl+V/Cmd+V
+- ✅ Clipboard operations use text format correctly
+- ✅ Error handling for clipboard API failures
+- ✅ Proper integration with existing state management
+- ✅ Cross-browser compatibility
+
+### Testing
+- ✅ Comprehensive test coverage for copy/paste functionality
+- ✅ Tests pass without drag-related dependencies
+- ✅ Error cases covered and handled gracefully
+- ✅ Integration tests verify complete workflow
+
+## Implementation Timeline
+
+### Day 1: Drag Removal
+- Remove dependencies and drag-related code
+- Update components and store
+- Remove drag-related tests
+- Verify application works without drag features
+
+### Day 2: Copy Implementation
+- Implement copy function in store
+- Add keyboard event handling
+- Integrate with text format utilities
+- Add error handling and fallbacks
+
+### Day 3: Paste Implementation
+- Implement paste function in store
+- Handle clipboard data parsing
+- Integrate with existing mind map structure
+- Add conflict resolution and error handling
+
+### Day 4: Testing and Refinement
+- Write comprehensive tests
+- Test cross-browser compatibility
+- Handle edge cases and error scenarios
+- Refine implementation based on testing
+
+### Day 5: Documentation and Finalization
+- Update documentation files
+- Add keyboard shortcut documentation
+- Final testing and bug fixes
+- Commit and push changes
+
+## Risk Mitigation
+
+### Technical Risks
+- **Clipboard API compatibility**: Implement fallback using document.execCommand
+- **Text format parsing**: Leverage existing, tested utilities
+- **State management complexity**: Follow existing patterns and conventions
+- **Browser security restrictions**: Handle permission errors gracefully
+
+### User Experience Risks
+- **Discoverability**: Add keyboard shortcut hints where appropriate
+- **Error feedback**: Provide user feedback for failed operations
+- **Data loss prevention**: Add confirmation for destructive operations
+
+This implementation plan provides a comprehensive approach to removing drag functionality and implementing copy/paste features while maintaining the application's stability and user experience.

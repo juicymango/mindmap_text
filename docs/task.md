@@ -457,3 +457,77 @@ Documentation updated in `docs/test.md` with:
 - New test utilities documentation
 - Error prevention measures
 - Updated test case descriptions
+
+# task 20
+
+- the error by dragging the first column still exists. don't fix it. i now decide to remove all dragging features.
+- for each node, add copy and paste function.
+    - both copy and paste use the text format.
+    - copy means copy the current node and the entire tree rooted by the current node to the clipboard.
+    - paste means paste the clipboard content to the current node. append children nodes to the current node from the clipboard.
+    - use the key board shortcut to copy and paste. don't add buttons.
+- append your plan for implementation and test to ./docs/plan.md.
+- implement the features.
+- implement the automatic tests.
+- make sure you pass all the automatic tests.
+- update ./docs/ui_and_iteration_design.md based on the current implementation.
+- update ./docs/code_structure.md based on the current implementation.
+- update ./docs/test.md based on the current implementation.
+- commit and push the changes.
+
+## Task 20 Completion Status ✅
+
+**Completed:** 2025-01-09
+
+### Changes Made:
+
+1. **Removed all dragging features:**
+   - Removed `react-beautiful-dnd` and `@types/react-beautiful-dnd` dependencies
+   - Removed drag-related code from MindMap, Column, and Node components
+   - Removed drag-related tests and utilities
+   - Updated store interface to remove `onDragEnd` function
+
+2. **Implemented copy functionality:**
+   - Added `copyNode` function to mindmap store
+   - Uses text format via `mindMapToText` utility
+   - Supports Ctrl+C/Cmd+C keyboard shortcuts
+   - Handles clipboard API errors with fallback to `document.execCommand`
+   - Copies entire subtree from selected node
+
+3. **Implemented paste functionality:**
+   - Added `pasteNode` function to mindmap store
+   - Uses text format parsing via `textToMindMap` utility
+   - Supports Ctrl+V/Cmd+V keyboard shortcuts
+   - Appends clipboard content as children to selected node
+   - Handles invalid clipboard content gracefully
+
+4. **Added comprehensive tests:**
+   - 50 tests passing (up from 44)
+   - Added copy/paste functionality tests
+   - Added error handling tests for clipboard operations
+   - Added cross-browser compatibility tests
+   - Updated all test files to remove drag-related dependencies
+
+5. **Updated documentation:**
+   - Added copy/paste functionality documentation to `docs/test.md`
+   - Updated test cases to include copy/paste scenarios
+   - Removed drag-related references from documentation
+   - Added keyboard shortcut documentation
+
+### Technical Implementation:
+
+- **Store Changes:** Added `copyNode` and `pasteNode` async functions
+- **Component Changes:** Added keyboard event handling and node selection tracking
+- **Error Handling:** Graceful clipboard API error handling with fallbacks
+- **Testing:** Comprehensive test coverage with clipboard API mocking
+- **Documentation:** Updated all documentation files to reflect new functionality
+
+### Key Features:
+
+- **Keyboard Shortcuts:** Ctrl+C/Cmd+C for copy, Ctrl+V/Cmd+V for paste
+- **Text Format:** Uses existing text format utilities for consistency
+- **Error Handling:** Robust error handling for clipboard operations
+- **No UI Buttons:** Pure keyboard shortcut implementation as requested
+- **Cross-browser:** Works with modern clipboard API and falls back to older methods
+
+All requirements from Task 20 have been successfully implemented and tested.

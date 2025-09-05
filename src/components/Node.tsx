@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Draggable } from 'react-beautiful-dnd';
 import { MindNode } from '../types';
 import { useMindMapStore } from '../store/mindmapStore';
 import styled from 'styled-components';
@@ -8,6 +7,7 @@ interface NodeProps {
   node: MindNode;
   path: number[];
   index: number;
+  onSelect: (path: number[]) => void;
 }
 
 const NodeContainer = styled.div<{ $isSelected: boolean }>`
@@ -36,7 +36,7 @@ const findNode = (root: MindNode, path: number[]): MindNode | null => {
   return currentNode;
 };
 
-export const Node: React.FC<NodeProps> = ({ node, path, index }) => {
+export const Node: React.FC<NodeProps> = ({ node, path, index, onSelect }) => {
   const { updateNodeText, setSelectedChild, mindmap, addNode, deleteNode } = useMindMapStore();
   const [isEditing, setIsEditing] = useState(false);
   const [text, setText] = useState(node.text);
@@ -57,6 +57,7 @@ export const Node: React.FC<NodeProps> = ({ node, path, index }) => {
   const handleClick = () => {
     const parentPath = path.slice(0, -1);
     setSelectedChild(parentPath, index);
+    onSelect(path);
   };
 
   const handleAddChild = (e: React.MouseEvent) => {
@@ -74,33 +75,26 @@ export const Node: React.FC<NodeProps> = ({ node, path, index }) => {
   const isSelected = (parent?.selected_child_idx ?? 0) === index;
 
   return (
-    <Draggable draggableId={JSON.stringify(path)} index={index}>
-      {(provided) => (
-        <NodeContainer
-          {...provided.draggableProps}
-          {...provided.dragHandleProps}
-          ref={provided.innerRef}
-          onDoubleClick={handleDoubleClick}
-          onClick={handleClick}
-          $isSelected={isSelected}
-        >
-          {isEditing ? (
-            <input
-              type="text"
-              value={text}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              autoFocus
-            />
-          ) : (
-            node.text
-          )}
-          <div>
-            <button onClick={handleAddChild}>+</button>
-            <button onClick={handleDelete}>x</button>
-          </div>
-        </NodeContainer>
+    <NodeContainer
+      onDoubleClick={handleDoubleClick}
+      onClick={handleClick}
+      $isSelected={isSelected}
+    >
+      {isEditing ? (
+        <input
+          type="text"
+          value={text}
+          onChange={handleChange}
+          onBlur={handleBlur}
+          autoFocus
+        />
+      ) : (
+        node.text
       )}
-    </Draggable>
+      <div>
+        <button onClick={handleAddChild}>+</button>
+        <button onClick={handleDelete}>x</button>
+      </div>
+    </NodeContainer>
   );
 };

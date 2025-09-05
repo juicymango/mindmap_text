@@ -1,7 +1,6 @@
 import React from 'react';
 import { useMindMapStore } from '../store/mindmapStore';
 import { Column } from './Column';
-import { DragDropContext } from 'react-beautiful-dnd';
 import styled from 'styled-components';
 import { MindNode } from '../types';
 
@@ -11,7 +10,8 @@ const MindMapContainer = styled.div`
 `;
 
 export const MindMap: React.FC = () => {
-  const { mindmap, onDragEnd } = useMindMapStore();
+  const { mindmap, copyNode, pasteNode, setSelectedChild } = useMindMapStore();
+  const [selectedPath, setSelectedPath] = React.useState<number[]>([]);
 
   const getColumns = () => {
     const columns: { path: number[]; nodes: MindNode[] }[] = [];
@@ -35,18 +35,40 @@ export const MindMap: React.FC = () => {
 
   const columns = getColumns();
 
+  const handleKeyDown = (event: React.KeyboardEvent) => {
+    // Check for Ctrl+C or Cmd+C
+    if ((event.ctrlKey || event.metaKey) && event.key === 'c') {
+      event.preventDefault();
+      copyNode(selectedPath);
+    }
+    
+    // Check for Ctrl+V or Cmd+V
+    if ((event.ctrlKey || event.metaKey) && event.key === 'v') {
+      event.preventDefault();
+      pasteNode(selectedPath);
+    }
+  };
+
+  const handleNodeSelect = (path: number[]) => {
+    setSelectedPath(path);
+    if (path.length > 0) {
+      const parentPath = path.slice(0, -1);
+      const childIndex = path[path.length - 1];
+      setSelectedChild(parentPath, childIndex);
+    }
+  };
+
   return (
-    <DragDropContext onDragEnd={onDragEnd}>
-      <MindMapContainer>
-        {columns.map((column, index) => (
-          <Column
-            key={JSON.stringify(column.path)}
-            columnPath={column.path}
-            nodes={column.nodes}
-            index={index}
-          />
-        ))}
-      </MindMapContainer>
-    </DragDropContext>
+    <MindMapContainer onKeyDown={handleKeyDown} tabIndex={0}>
+      {columns.map((column, index) => (
+        <Column
+          key={JSON.stringify(column.path)}
+          columnPath={column.path}
+          nodes={column.nodes}
+          index={index}
+          onNodeSelect={handleNodeSelect}
+        />
+      ))}
+    </MindMapContainer>
   );
 };

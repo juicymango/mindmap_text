@@ -1,6 +1,6 @@
 import { create, StoreApi, UseBoundStore } from 'zustand';
 import { MindMap, MindNode } from '../types';
-import { DropResult } from 'react-beautiful-dnd';
+import { mindMapToText, textToMindMap } from '../utils/textFormat';
 
 export interface MindMapState {
   mindmap: MindMap;
@@ -8,7 +8,8 @@ export interface MindMapState {
   addNode: (parentPath: number[], text: string) => void;
   deleteNode: (path: number[]) => void;
   updateNodeText: (path: number[], text: string) => void;
-  onDragEnd: (result: DropResult) => void;
+  copyNode: (path: number[]) => Promise<void>;
+  pasteNode: (path: number[]) => Promise<void>;
   setSelectedChild: (parentPath: number[], childIndex: number | undefined) => void;
   // File path memory state
   jsonFilePath: string | null;
@@ -88,37 +89,6 @@ export const useMindMapStore: UseBoundStore<StoreApi<MindMapState>> = create<Min
       set({ mindmap: newMindMap });
     }
   },
-  onDragEnd: (result: DropResult) => {
-    const { source, destination } = result;
-    if (!destination) {
-      return;
-    }
-
-    const { mindmap } = get();
-    const newMindMap = { ...mindmap };
-
-    // Parse droppableId, handling the special case for 'root'
-    const parseDroppableId = (droppableId: string): number[] => {
-      if (droppableId === 'root') {
-        return [];
-      }
-      try {
-        return JSON.parse(droppableId);
-      } catch (error) {
-        console.error('Invalid droppableId:', droppableId);
-        return [];
-      }
-    };
-
-    const sourceParent = findNode(newMindMap.root, parseDroppableId(source.droppableId));
-    const destParent = findNode(newMindMap.root, parseDroppableId(destination.droppableId));
-
-    if (sourceParent && destParent) {
-      const [removed] = sourceParent.children.splice(source.index, 1);
-      destParent.children.splice(destination.index, 0, removed);
-      set({ mindmap: newMindMap });
-    }
-  },
   setSelectedChild: (parentPath: number[], childIndex: number | undefined) => {
     const { mindmap } = get();
     const newMindMap = { ...mindmap };
@@ -138,6 +108,51 @@ export const useMindMapStore: UseBoundStore<StoreApi<MindMapState>> = create<Min
     set({ textFilePath: path });
     if (typeof window !== 'undefined') {
       localStorage.setItem('textFilePath', path || '');
+    }
+  },
+  copyNode: async (path: number[]) => {
+    const { mindmap } = get();
+    const node = findNode(mindmap.root, path);
+    if (!node) return;
+    
+    // Create a temporary mind map with just this node
+    const tempMindMap: MindMap = { root: node };
+    const textFormat = mindMapToText(tempMindMap);
+    
+    try {
+      await navigator.clipboard.writeText(textFormat);
+    } catch (error) {
+      console.error('Failed to copy to clipboard:', error);
+      // Fallback: use document.execCommand for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = textFormat;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+    }
+  },
+  pasteNode: async (path: number[]) => {
+    try {
+      const clipboardText = await navigator.clipboard.readText();
+      const parsedMindMap = textToMindMap(clipboardText);
+      
+      if (!parsedMindMap) {
+        throw new Error('Invalid clipboard format');
+      }
+      
+      // Add parsed nodes as children to target node
+      const { mindmap } = get();
+      const newMindMap = { ...mindmap };
+      const targetNode = findNode(newMindMap.root, path);
+      if (targetNode) {
+        targetNode.children.push(...parsedMindMap.root.children);
+        // Update selected child to show pasted content
+        get().setSelectedChild(path, targetNode.children.length - 1);
+        set({ mindmap: newMindMap });
+      }
+    } catch (error) {
+      console.error('Failed to paste from clipboard:', error);
     }
   },
   clearFilePaths: () => {
