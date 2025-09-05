@@ -73,7 +73,7 @@ describe('mindmapStore', () => {
     expect(result.current.mindmap.root.selected_child_idx).toBe(0);
   });
 
-  it('should handle onDragEnd', () => {
+  it('should handle onDragEnd with old format droppableId', () => {
     const { result } = renderHook(() => useMindMapStore());
 
     act(() => {
@@ -97,6 +97,109 @@ describe('mindmapStore', () => {
 
     expect(result.current.mindmap.root.children[0].text).toBe('Node 2');
     expect(result.current.mindmap.root.children[1].text).toBe('Node 1');
+  });
+
+  it('should handle onDragEnd with new format droppableId', () => {
+    const { result } = renderHook(() => useMindMapStore());
+
+    act(() => {
+      result.current.addNode([], 'Node 1');
+      result.current.addNode([], 'Node 2');
+    });
+
+    expect(result.current.mindmap.root.children[0].text).toBe('Node 1');
+    expect(result.current.mindmap.root.children[1].text).toBe('Node 2');
+
+    const dragResult = {
+      source: { droppableId: 'root', index: 0 },
+      destination: { droppableId: 'root', index: 1 },
+      draggableId: '[0]',
+    };
+
+    act(() => {
+      // @ts-ignore
+      result.current.onDragEnd(dragResult);
+    });
+
+    expect(result.current.mindmap.root.children[0].text).toBe('Node 2');
+    expect(result.current.mindmap.root.children[1].text).toBe('Node 1');
+  });
+
+  it('should handle onDragEnd with nested droppableId', () => {
+    const { result } = renderHook(() => useMindMapStore());
+
+    act(() => {
+      result.current.addNode([], 'Parent');
+      result.current.addNode([0], 'Child 1');
+      result.current.addNode([0], 'Child 2');
+    });
+
+    expect(result.current.mindmap.root.children[0].children[0].text).toBe('Child 1');
+    expect(result.current.mindmap.root.children[0].children[1].text).toBe('Child 2');
+
+    const dragResult = {
+      source: { droppableId: '[0]', index: 0 },
+      destination: { droppableId: '[0]', index: 1 },
+      draggableId: '[0,0]',
+    };
+
+    act(() => {
+      // @ts-ignore
+      result.current.onDragEnd(dragResult);
+    });
+
+    expect(result.current.mindmap.root.children[0].children[0].text).toBe('Child 2');
+    expect(result.current.mindmap.root.children[0].children[1].text).toBe('Child 1');
+  });
+
+  it('should handle onDragEnd with invalid droppableId', () => {
+    const { result } = renderHook(() => useMindMapStore());
+
+    act(() => {
+      result.current.addNode([], 'Node 1');
+      result.current.addNode([], 'Node 2');
+    });
+
+    // Invalid droppableId defaults to root (empty array)
+    const dragResult = {
+      source: { droppableId: 'invalid', index: 0 },
+      destination: { droppableId: 'invalid', index: 1 },
+      draggableId: '[0]',
+    };
+
+    act(() => {
+      // @ts-ignore
+      result.current.onDragEnd(dragResult);
+    });
+
+    // Should handle invalid droppableId by treating it as root
+    expect(result.current.mindmap.root.children[0].text).toBe('Node 2');
+    expect(result.current.mindmap.root.children[1].text).toBe('Node 1');
+  });
+
+  it('should handle onDragEnd with no destination', () => {
+    const { result } = renderHook(() => useMindMapStore());
+
+    act(() => {
+      result.current.addNode([], 'Node 1');
+      result.current.addNode([], 'Node 2');
+    });
+
+    const originalChildren = [...result.current.mindmap.root.children];
+
+    const dragResult = {
+      source: { droppableId: 'root', index: 0 },
+      destination: null,
+      draggableId: '[0]',
+    };
+
+    act(() => {
+      // @ts-ignore
+      result.current.onDragEnd(dragResult);
+    });
+
+    // Should not change anything with no destination
+    expect(result.current.mindmap.root.children).toEqual(originalChildren);
   });
 
   // File path memory tests

@@ -149,6 +149,33 @@
 
 - **Unit and integration tests:** `src/App.test.tsx`, `src/components/*.test.tsx`, `src/store/*.test.ts`, `src/utils/*.test.ts`
 - **End-to-end tests:** (Not implemented yet, but would be in a separate `e2e` directory)
+- **Test utilities:** `src/utils/test-utils.ts` - Type-safe mocking utilities and test helpers
+
+## TypeScript Error Prevention and Testing Utilities
+
+### Test Utilities (`src/utils/test-utils.ts`)
+
+The project includes comprehensive test utilities to prevent TypeScript compilation errors and ensure type safety:
+
+- **Type-safe mocking utilities:** `createMockMindMapStore()` provides proper TypeScript typing for mocking the Zustand store
+- **React component mocks:** `mockDragDropContext`, `mockDroppable`, `mockDraggable` for testing react-beautiful-dnd components
+- **Type guard utilities:** `isNonNullString()`, `isValidMindMap()` for runtime type checking
+- **Test data builders:** `createTestMindMap()`, `createTestNode()` for creating consistent test data
+
+### Error Prevention Measures
+
+- **TypeScript mocking fixes:** Resolved TS2352 errors by creating type-safe mock utilities
+- **Null safety improvements:** Fixed TS2345 errors by adding proper null checks in Toolbar.tsx and file.ts
+- **Runtime error prevention:** Fixed react-beautiful-dnd "Cannot find droppable entry" error by using 'root' instead of '[]' for droppableId
+- **Async test improvements:** Fixed timeout issues by properly handling async operations in tests
+
+### ESLint Configuration
+
+The project uses ESLint with TypeScript support to prevent common errors:
+- Strict type checking enabled
+- No unused variables allowed
+- Proper null checking enforced
+- Consistent code formatting maintained
 
 ## Unit Test Cases
 
@@ -160,7 +187,11 @@
 - Test addNode functionality with different parent paths
 - Test deleteNode functionality and parent-child relationships
 - Test updateNodeText functionality
-- Test onDragEnd functionality for reordering nodes
+- Test onDragEnd functionality with old format droppableId (`[]`)
+- Test onDragEnd functionality with new format droppableId (`root`)
+- Test onDragEnd functionality with nested droppableId (`[0]`)
+- Test onDragEnd functionality with invalid droppableId (graceful fallback)
+- Test onDragEnd functionality with no destination
 - Test setSelectedChild functionality and expansion behavior
 - Test findNode and findParent helper functions
 
@@ -192,7 +223,10 @@
 
 #### Column Component Tests (`src/components/Column.test.tsx`)
 - Test column rendering with nodes
-- Test droppable functionality
+- Test droppable functionality with root droppableId (`root`)
+- Test droppable functionality with nested droppableId (`[0,1]`)
+- Test placeholder rendering
+- Test empty nodes array handling
 - Test fixed width and flex-shrink properties
 - Test column path handling
 

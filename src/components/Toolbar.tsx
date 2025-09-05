@@ -61,6 +61,8 @@ export const Toolbar: React.FC = () => {
 
   const handleLoad = async () => {
     const filePath = jsonFilePath || textFilePath;
+    if (!filePath) return;
+    
     const { mindmap: newMindMap, path } = await loadFromFile(filePath);
     
     if (newMindMap) {

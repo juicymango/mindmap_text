@@ -1,13 +1,14 @@
 import { render } from '@testing-library/react';
 import { MindMap } from './MindMap';
-import { useMindMapStore } from '../store/mindmapStore';
+import { createMockMindMapStore } from '../utils/test-utils';
 
 jest.mock('../store/mindmapStore');
 jest.mock('./Column', () => ({
-  Column: ({ columnPath }: { columnPath: number[] }) => <div data-testid="column">{JSON.stringify(columnPath)}</div>,
+  Column: ({ columnPath }: { columnPath: number[] }) => require('react').createElement('div', { 'data-testid': 'column' }, JSON.stringify(columnPath)),
 }));
 jest.mock('react-beautiful-dnd', () => ({
-  DragDropContext: ({ children }: { children: any }) => <div>{children}</div>,
+  DragDropContext: require('../utils/test-utils').mockDragDropContext,
+  Droppable: require('../utils/test-utils').mockDroppable,
 }));
 
 describe('MindMap', () => {
@@ -29,7 +30,7 @@ describe('MindMap', () => {
       },
     };
 
-    (useMindMapStore as jest.Mock).mockReturnValue({ mindmap, onDragEnd: jest.fn() });
+    const mockStore = createMockMindMapStore({ mindmap, onDragEnd: jest.fn() });
 
     const { getAllByTestId } = render(<MindMap />);
     const columns = getAllByTestId('column');

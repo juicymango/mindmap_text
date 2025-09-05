@@ -63,7 +63,11 @@ export const loadFromFile = async (filePath?: string): Promise<{ mindmap: MindMa
             
             if (format === 'text') {
               const text = e.target?.result as string;
-              mindmap = textToMindMap(text);
+              const parsedMindMap = textToMindMap(text);
+              if (!parsedMindMap) {
+                throw new Error('Invalid text format');
+              }
+              mindmap = parsedMindMap;
             } else {
               mindmap = JSON.parse(e.target?.result as string);
             }

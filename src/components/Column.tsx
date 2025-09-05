@@ -22,9 +22,12 @@ const ColumnContainer = styled.div`
 `;
 
 export const Column: React.FC<ColumnProps> = ({ nodes, columnPath, index }) => {
+  // Ensure droppableId is always a valid string
+  const droppableId = columnPath.length === 0 ? 'root' : JSON.stringify(columnPath);
+  
   return (
     <ColumnContainer>
-      <Droppable droppableId={JSON.stringify(columnPath)} type="node">
+      <Droppable droppableId={droppableId} type="node">
         {(provided) => (
           <div {...provided.droppableProps} ref={provided.innerRef}>
             {nodes.map((node, index) => (

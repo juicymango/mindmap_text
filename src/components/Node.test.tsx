@@ -1,18 +1,10 @@
 import { render, fireEvent } from '@testing-library/react';
 import { Node } from './Node';
-import { useMindMapStore } from '../store/mindmapStore';
+import { createMockMindMapStore } from '../utils/test-utils';
 
 jest.mock('../store/mindmapStore');
 jest.mock('react-beautiful-dnd', () => ({
-  Draggable: ({ children }: { children: any }) =>
-    children(
-      {
-        draggableProps: { style: {} },
-        dragHandleProps: {},
-        innerRef: jest.fn(),
-      },
-      {}
-    ),
+  Draggable: require('../utils/test-utils').mockDraggable,
 }));
 
 describe('Node', () => {
@@ -34,7 +26,7 @@ describe('Node', () => {
   };
 
   beforeEach(() => {
-    (useMindMapStore as jest.Mock).mockReturnValue({
+    const mockStore = createMockMindMapStore({
       updateNodeText,
       setSelectedChild,
       addNode,

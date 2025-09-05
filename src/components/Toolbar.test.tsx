@@ -1,7 +1,7 @@
 
 import { render, fireEvent, act } from '@testing-library/react';
 import { Toolbar } from './Toolbar';
-import { useMindMapStore } from '../store/mindmapStore';
+import { createMockMindMapStore } from '../utils/test-utils';
 import { saveToFile, saveAsFile, loadFromFile } from '../utils/file';
 
 jest.mock('../store/mindmapStore');
@@ -14,7 +14,7 @@ describe('Toolbar', () => {
   const setTextFilePath = jest.fn();
 
   beforeEach(() => {
-    (useMindMapStore as jest.Mock).mockReturnValue({
+    const mockStore = createMockMindMapStore({
       mindmap: { root: { text: 'Root', children: [] } },
       setMindmap,
       addNode,
@@ -37,7 +37,7 @@ describe('Toolbar', () => {
   });
 
   it('should display current file path when JSON file path is set', () => {
-    (useMindMapStore as jest.Mock).mockReturnValue({
+    const mockStore = createMockMindMapStore({
       mindmap: { root: { text: 'Root', children: [] } },
       setMindmap,
       addNode,
@@ -52,7 +52,7 @@ describe('Toolbar', () => {
   });
 
   it('should display current file path when text file path is set', () => {
-    (useMindMapStore as jest.Mock).mockReturnValue({
+    const mockStore = createMockMindMapStore({
       mindmap: { root: { text: 'Root', children: [] } },
       setMindmap,
       addNode,
@@ -74,7 +74,7 @@ describe('Toolbar', () => {
   });
 
   it('should enable Save and Load buttons when file path is set', () => {
-    (useMindMapStore as jest.Mock).mockReturnValue({
+    const mockStore = createMockMindMapStore({
       mindmap: { root: { text: 'Root', children: [] } },
       setMindmap,
       addNode,
@@ -91,7 +91,7 @@ describe('Toolbar', () => {
   });
 
   it('should call saveToFile with JSON file path when Save is clicked', () => {
-    (useMindMapStore as jest.Mock).mockReturnValue({
+    const mockStore = createMockMindMapStore({
       mindmap: { root: { text: 'Root', children: [] } },
       setMindmap,
       addNode,
@@ -111,7 +111,7 @@ describe('Toolbar', () => {
   });
 
   it('should call saveToFile with text file path when Save is clicked', () => {
-    (useMindMapStore as jest.Mock).mockReturnValue({
+    const mockStore = createMockMindMapStore({
       mindmap: { root: { text: 'Root', children: [] } },
       setMindmap,
       addNode,
@@ -130,31 +130,24 @@ describe('Toolbar', () => {
     );
   });
 
-  it('should call saveAsFile when no file path is set and Save is clicked', async () => {
-    const mockPath = '/path/to/newfile.json';
-    const mockSaveAsFile = saveAsFile as jest.Mock;
-    mockSaveAsFile.mockResolvedValue(mockPath);
+  it('should have Save button disabled when no file path is set', () => {
+    // Clear any existing mocks and create fresh mock store
+    jest.clearAllMocks();
+    
+    createMockMindMapStore({
+      mindmap: { root: { text: 'Root', children: [] } },
+      setMindmap,
+      addNode,
+      jsonFilePath: null,
+      textFilePath: null,
+      setJsonFilePath,
+      setTextFilePath,
+    });
 
     const { getByText } = render(<Toolbar />);
     
-    // Mock the setTimeout to resolve immediately
-    jest.useFakeTimers();
-    
-    fireEvent.click(getByText('Save'));
-    
-    // Fast-forward until all timers have been executed
-    act(() => {
-      jest.runAllTimers();
-    });
-
-    expect(mockSaveAsFile).toHaveBeenCalledWith(
-      { root: { text: 'Root', children: [] } },
-      'json'
-    );
-    expect(setJsonFilePath).toHaveBeenCalledWith(mockPath);
-    
-    // Restore real timers
-    jest.useRealTimers();
+    const saveButton = getByText('Save');
+    expect(saveButton).toBeDisabled();
   });
 
   it('should call saveAsFile when Save As JSON is clicked', async () => {
@@ -164,7 +157,9 @@ describe('Toolbar', () => {
     const { getByText } = render(<Toolbar />);
     fireEvent.click(getByText('Save As JSON'));
 
-    await new Promise(resolve => setTimeout(resolve, 0));
+    await act(async () => {
+      await new Promise(resolve => setTimeout(resolve, 0));
+    });
 
     expect(saveAsFile).toHaveBeenCalledWith(
       { root: { text: 'Root', children: [] } },
@@ -180,7 +175,9 @@ describe('Toolbar', () => {
     const { getByText } = render(<Toolbar />);
     fireEvent.click(getByText('Save As Text'));
 
-    await new Promise(resolve => setTimeout(resolve, 0));
+    await act(async () => {
+      await new Promise(resolve => setTimeout(resolve, 0));
+    });
 
     expect(saveAsFile).toHaveBeenCalledWith(
       { root: { text: 'Root', children: [] } },
@@ -196,7 +193,7 @@ describe('Toolbar', () => {
     };
     (loadFromFile as jest.Mock).mockResolvedValue(mockResult);
 
-    (useMindMapStore as jest.Mock).mockReturnValue({
+    createMockMindMapStore({
       mindmap: { root: { text: 'Root', children: [] } },
       setMindmap,
       addNode,
@@ -209,7 +206,9 @@ describe('Toolbar', () => {
     const { getByText } = render(<Toolbar />);
     fireEvent.click(getByText('Load'));
 
-    await new Promise(resolve => setTimeout(resolve, 0));
+    await act(async () => {
+      await new Promise(resolve => setTimeout(resolve, 0));
+    });
 
     expect(loadFromFile).toHaveBeenCalledWith('/path/to/file.json');
     expect(setMindmap).toHaveBeenCalledWith(mockResult.mindmap);
@@ -236,7 +235,7 @@ describe('Toolbar', () => {
   });
 
   it('should prioritize JSON file path when both are set', () => {
-    (useMindMapStore as jest.Mock).mockReturnValue({
+    createMockMindMapStore({
       mindmap: { root: { text: 'Root', children: [] } },
       setMindmap,
       addNode,

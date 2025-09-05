@@ -2,7 +2,7 @@ import { create, StoreApi, UseBoundStore } from 'zustand';
 import { MindMap, MindNode } from '../types';
 import { DropResult } from 'react-beautiful-dnd';
 
-interface MindMapState {
+export interface MindMapState {
   mindmap: MindMap;
   setMindmap: (mindmap: MindMap) => void;
   addNode: (parentPath: number[], text: string) => void;
@@ -97,8 +97,21 @@ export const useMindMapStore: UseBoundStore<StoreApi<MindMapState>> = create<Min
     const { mindmap } = get();
     const newMindMap = { ...mindmap };
 
-    const sourceParent = findNode(newMindMap.root, JSON.parse(source.droppableId));
-    const destParent = findNode(newMindMap.root, JSON.parse(destination.droppableId));
+    // Parse droppableId, handling the special case for 'root'
+    const parseDroppableId = (droppableId: string): number[] => {
+      if (droppableId === 'root') {
+        return [];
+      }
+      try {
+        return JSON.parse(droppableId);
+      } catch (error) {
+        console.error('Invalid droppableId:', droppableId);
+        return [];
+      }
+    };
+
+    const sourceParent = findNode(newMindMap.root, parseDroppableId(source.droppableId));
+    const destParent = findNode(newMindMap.root, parseDroppableId(destination.droppableId));
 
     if (sourceParent && destParent) {
       const [removed] = sourceParent.children.splice(source.index, 1);

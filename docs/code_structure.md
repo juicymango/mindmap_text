@@ -23,7 +23,8 @@ mindmap-app/
 │   │   └── index.ts
 │   ├── utils/
 │   │   ├── file.ts
-│   │   └── textFormat.ts
+│   │   ├── textFormat.ts
+│   │   └── test-utils.ts
 │   ├── index.tsx
 │   └── react-app-env.d.ts
 ├── docs/
@@ -39,7 +40,7 @@ mindmap-app/
 -   `src/store/`: Contains the Zustand store with file path memory.
 -   `src/styles/`: Contains the global styles.
 -   `src/types/`: Contains the TypeScript types.
--   `src/utils/`: Contains utility functions for file operations and text format conversion.
+-   `src/utils/`: Contains utility functions for file operations, text format conversion, and testing utilities.
 
 ## File Functions and Structures
 
@@ -761,5 +762,91 @@ mindmap-app/
       });
 
       return { root };
+    };
+    ```
+
+### `src/utils/test-utils.ts`
+
+-   **Function:** Provides type-safe testing utilities and mocks for the application.
+-   **Structure:**
+    ```typescript
+    import { MindMapState, useMindMapStore } from '../store/mindmapStore';
+    import { MindMap, MindNode } from '../types';
+    import { DropResult } from 'react-beautiful-dnd';
+    import React from 'react';
+
+    export const createMockMindMapStore = (overrides: Partial<MindMapState> = {}) => {
+      // Type-safe mock for the Zustand store
+      const baseState: MindMapState = {
+        mindmap: { root: { text: 'Root', children: [] } },
+        setMindmap: jest.fn(),
+        addNode: jest.fn(),
+        deleteNode: jest.fn(),
+        updateNodeText: jest.fn(),
+        onDragEnd: jest.fn(),
+        setSelectedChild: jest.fn(),
+        jsonFilePath: null,
+        textFilePath: null,
+        setJsonFilePath: jest.fn(),
+        setTextFilePath: jest.fn(),
+        clearFilePaths: jest.fn(),
+      };
+      
+      const mockStore = { ...baseState, ...overrides };
+      
+      // Mock the actual store hook
+      const mockedUseMindMapStore = useMindMapStore as jest.MockedFunction<typeof useMindMapStore>;
+      mockedUseMindMapStore.mockReturnValue(mockStore);
+      
+      return mockStore;
+    };
+
+    export const createTestMindMap = (structure: any): MindMap => {
+      // Helper function to create a test mind map with specified structure
+      return {
+        root: structure
+      };
+    };
+
+    export const createTestNode = (text: string, children: MindNode[] = [], selected_child_idx?: number): MindNode => {
+      // Helper function to create a test node with children
+      return {
+        text,
+        children,
+        selected_child_idx
+      };
+    };
+
+    export const isNonNullString = (value: string | null | undefined): value is string => {
+      // Type guard for checking if a value is a non-null string
+      return typeof value === 'string' && value.length > 0;
+    };
+
+    export const isValidMindMap = (mindmap: MindMap | null): mindmap is MindMap => {
+      // Type guard for checking if a mind map is valid
+      return mindmap !== null && mindmap.root !== undefined;
+    };
+
+    export const mockDragDropContext = ({ children }: { children: React.ReactNode }) => {
+      // Mock for react-beautiful-dnd DragDropContext
+      return React.createElement('div', null, children);
+    };
+
+    export const mockDroppable = ({ children }: { children: (provided: any) => React.ReactNode }) => {
+      // Mock for react-beautiful-dnd Droppable
+      return children({
+        droppableProps: {},
+        innerRef: jest.fn(),
+        placeholder: null
+      });
+    };
+
+    export const mockDraggable = ({ children }: { children: (provided: any) => React.ReactNode }) => {
+      // Mock for react-beautiful-dnd Draggable
+      return children({
+        draggableProps: { style: {} },
+        dragHandleProps: {},
+        innerRef: jest.fn(),
+      });
     };
     ```
