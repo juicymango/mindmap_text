@@ -531,3 +531,28 @@ Documentation updated in `docs/test.md` with:
 - **Cross-browser:** Works with modern clipboard API and falls back to older methods
 
 All requirements from Task 20 have been successfully implemented and tested.
+
+# task 21
+
+- new feature
+    - enable content generating by AI.
+    - the user can select a node and then ask a question.
+    - the AI will generate a response in the mind map structure and format.
+    - the response will be appended as a child node to the selected node.
+- task
+    - design a way to let the user config the AI model.
+        - maybe use the user's local command line commands.
+        - it must be safe. don't leak private data like the api key.
+    - design the prompt for the AI model.
+        - we don't use chat history.
+        - you should pass information in the current mind map to the AI model.
+            - think about what information should be passed to the AI model.
+            - do you need to pass the whole mind map or just part of it?
+        - think about the format of the response.
+            - you should pass the response to the mind map node structure.
+    - design the whole interaction process for this feature.
+        - need to consider cases when the AI model fails or generates invalid data.
+- update your design to ./docs/ui_and_interaction_design.md.
+- append your plan for implementation and test to ./docs/plan.md.
+- not to implement yet.
+- commit and push the changes.

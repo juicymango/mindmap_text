@@ -921,3 +921,689 @@ const handleKeyDown = (event: React.KeyboardEvent) => {
 - **Data loss prevention**: Add confirmation for destructive operations
 
 This implementation plan provides a comprehensive approach to removing drag functionality and implementing copy/paste features while maintaining the application's stability and user experience.
+
+---
+
+# Task 21: AI Content Generation Implementation Plan
+
+## Overview
+
+Task 21 requires implementing AI-powered content generation for the mind map application. This feature will allow users to select a node, ask a question, and receive AI-generated content that is automatically structured as mind map nodes and appended as children to the selected node.
+
+## Design Requirements
+
+### AI Configuration Security
+- **Local Command Line Setup**: Users configure AI models through local command-line commands
+- **API Key Security**: API keys must not be exposed to the application or stored in plain text
+- **Environment Variables**: Use environment variables for configuration management
+- **No Data Leakage**: Private data including API keys must remain secure
+
+### AI Prompt Engineering
+- **Context Awareness**: AI should receive relevant context from the current mind map
+- **Structured Output**: AI responses should be formatted as mind map structure
+- **No Chat History**: Each interaction should be independent
+- **Flexible Input**: Support various types of questions and content generation requests
+
+### User Interaction Flow
+- **Node Selection**: User selects a parent node for AI-generated content
+- **Question Input**: User inputs a question or content generation request
+- **AI Processing**: Application sends request to AI service with context
+- **Response Integration**: AI response is parsed and added as child nodes
+- **Error Handling**: Graceful handling of AI service failures
+
+## Implementation Plan
+
+### Phase 1: AI Configuration and Security Setup
+
+#### 1.1 Environment-Based Configuration
+```typescript
+// src/config/ai.ts
+interface AIConfig {
+  provider: 'openai' | 'anthropic' | 'local';
+  model: string;
+  apiKey?: string; // Loaded from environment, not stored in app
+  baseUrl?: string;
+  maxTokens: number;
+  temperature: number;
+}
+
+export const getAIConfig = (): AIConfig => {
+  return {
+    provider: (process.env.REACT_APP_AI_PROVIDER as 'openai' | 'anthropic' | 'local') || 'openai',
+    model: process.env.REACT_APP_AI_MODEL || 'gpt-3.5-turbo',
+    apiKey: process.env.REACT_APP_AI_API_KEY,
+    baseUrl: process.env.REACT_APP_AI_BASE_URL,
+    maxTokens: parseInt(process.env.REACT_APP_AI_MAX_TOKENS || '1000'),
+    temperature: parseFloat(process.env.REACT_APP_AI_TEMPERATURE || '0.7'),
+  };
+};
+```
+
+#### 1.2 Command-Line Configuration Script
+```bash
+#!/bin/bash
+# scripts/configure-ai.sh
+
+echo "AI Configuration Setup"
+echo "======================"
+
+read -p "Enter AI provider (openai/anthropic/local): " provider
+read -p "Enter model name: " model
+read -s -p "Enter API key (will not be stored): " api_key
+
+# Create .env file with user input
+cat > .env << EOF
+REACT_APP_AI_PROVIDER=$provider
+REACT_APP_AI_MODEL=$model
+REACT_APP_AI_API_KEY=$api_key
+REACT_APP_AI_MAX_TOKENS=1000
+REACT_APP_AI_TEMPERATURE=0.7
+EOF
+
+echo "Configuration saved to .env file"
+echo "Important: .env file should be added to .gitignore"
+```
+
+#### 1.3 Security Utilities
+```typescript
+// src/utils/ai-security.ts
+export const validateAIConfig = (config: AIConfig): boolean => {
+  if (!config.provider) return false;
+  if (!config.model) return false;
+  if (config.provider !== 'local' && !config.apiKey) return false;
+  return true;
+};
+
+export const sanitizeAIResponse = (response: string): string => {
+  // Remove any potentially sensitive information from AI responses
+  return response
+    .replace(/api[_-]?key/gi, '[API_KEY]')
+    .replace(/secret/gi, '[SECRET]')
+    .replace(/password/gi, '[PASSWORD]');
+};
+```
+
+### Phase 2: AI Service Integration
+
+#### 2.1 AI Service Layer
+```typescript
+// src/services/aiService.ts
+interface AIRequest {
+  question: string;
+  context: {
+    selectedNode: string;
+    parentNodes: string[];
+    mindMapContext: string;
+  };
+}
+
+interface AIResponse {
+  content: string;
+  structure: MindNode[];
+  error?: string;
+}
+
+export class AIService {
+  private config: AIConfig;
+
+  constructor(config: AIConfig) {
+    this.config = config;
+  }
+
+  async generateContent(request: AIRequest): Promise<AIResponse> {
+    try {
+      const prompt = this.buildPrompt(request);
+      const response = await this.callAI(prompt);
+      const structure = this.parseResponseToMindMap(response);
+      
+      return {
+        content: response,
+        structure,
+      };
+    } catch (error) {
+      return {
+        content: '',
+        structure: [],
+        error: error instanceof Error ? error.message : 'Unknown error',
+      };
+    }
+  }
+
+  private buildPrompt(request: AIRequest): string {
+    return `
+You are an AI assistant that helps create mind maps. Based on the user's question and the current mind map context, generate a structured response that can be organized as a mind map.
+
+Context:
+- Selected Node: ${request.context.selectedNode}
+- Parent Nodes: ${request.context.parentNodes.join(' → ')}
+- Mind Map Structure: ${request.context.mindMapContext}
+
+User Question: ${request.question}
+
+Please provide your response in a hierarchical format that can be parsed into a mind map structure. Use the following format:
+Main Topic
+    Subtopic 1
+        Detail 1
+        Detail 2
+    Subtopic 2
+        Detail 3
+    Subtopic 3
+
+Ensure the response is well-structured and directly addresses the user's question within the given context.
+`;
+  }
+
+  private async callAI(prompt: string): Promise<string> {
+    // Implementation depends on the AI provider
+    switch (this.config.provider) {
+      case 'openai':
+        return this.callOpenAI(prompt);
+      case 'anthropic':
+        return this.callAnthropic(prompt);
+      case 'local':
+        return this.callLocalAI(prompt);
+      default:
+        throw new Error(`Unsupported AI provider: ${this.config.provider}`);
+    }
+  }
+
+  private parseResponseToMindMap(response: string): MindNode[] {
+    // Parse the AI response into mind map structure
+    // Using existing textToMindMap utility
+    const lines = response.split('\n').filter(line => line.trim());
+    const mindMap = textToMindMap(lines.join('\n'));
+    return mindMap?.root.children || [];
+  }
+}
+```
+
+#### 2.2 OpenAI Integration
+```typescript
+// src/services/openai.ts
+export const callOpenAI = async (prompt: string, config: AIConfig): Promise<string> => {
+  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${config.apiKey}`,
+    },
+    body: JSON.stringify({
+      model: config.model,
+      messages: [
+        { role: 'user', content: prompt },
+      ],
+      max_tokens: config.maxTokens,
+      temperature: config.temperature,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`OpenAI API error: ${response.status} ${response.statusText}`);
+  }
+
+  const data = await response.json();
+  return data.choices[0]?.message?.content || '';
+};
+```
+
+### Phase 3: UI Components and Integration
+
+#### 3.1 AI Prompt Dialog Component
+```typescript
+// src/components/AIPromptDialog.tsx
+interface AIPromptDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSubmit: (question: string) => void;
+  isLoading: boolean;
+  error?: string;
+}
+
+export const AIPromptDialog: React.FC<AIPromptDialogProps> = ({
+  isOpen,
+  onClose,
+  onSubmit,
+  isLoading,
+  error,
+}) => {
+  const [question, setQuestion] = React.useState('');
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (question.trim()) {
+      onSubmit(question.trim());
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <DialogOverlay>
+      <DialogContent>
+        <h2>Ask AI</h2>
+        <form onSubmit={handleSubmit}>
+          <textarea
+            value={question}
+            onChange={(e) => setQuestion(e.target.value)}
+            placeholder="Enter your question or content generation request..."
+            rows={4}
+            disabled={isLoading}
+          />
+          {error && <ErrorMessage>{error}</ErrorMessage>}
+          <ButtonGroup>
+            <Button type="button" onClick={onClose} disabled={isLoading}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={isLoading || !question.trim()}>
+              {isLoading ? 'Generating...' : 'Generate'}
+            </Button>
+          </ButtonGroup>
+        </form>
+      </DialogContent>
+    </DialogOverlay>
+  );
+};
+```
+
+#### 3.2 Store Integration
+```typescript
+// src/store/mindmapStore.ts
+interface MindMapState {
+  // ... existing state
+  generateAIContent: (path: number[], question: string) => Promise<void>;
+  isAILoading: boolean;
+  aiError: string | null;
+}
+
+export const useMindMapStore = create<MindMapState>((set, get) => ({
+  // ... existing state
+  isAILoading: false,
+  aiError: null,
+  
+  generateAIContent: async (path: number[], question: string) => {
+    const { mindmap } = get();
+    const aiConfig = getAIConfig();
+    
+    if (!validateAIConfig(aiConfig)) {
+      set({ aiError: 'AI configuration is invalid. Please check your environment variables.' });
+      return;
+    }
+
+    set({ isAILoading: true, aiError: null });
+
+    try {
+      const aiService = new AIService(aiConfig);
+      const selectedNode = findNode(mindmap.root, path);
+      
+      if (!selectedNode) {
+        throw new Error('Selected node not found');
+      }
+
+      const context = {
+        selectedNode: selectedNode.text,
+        parentNodes: getNodePath(mindmap.root, path).map(node => node.text),
+        mindMapContext: mindMapToText({ root: selectedNode }),
+      };
+
+      const response = await aiService.generateContent({
+        question,
+        context,
+      });
+
+      if (response.error) {
+        throw new Error(response.error);
+      }
+
+      // Add AI-generated content as children to selected node
+      const newMindMap = { ...mindmap };
+      const targetNode = findNode(newMindMap.root, path);
+      if (targetNode) {
+        targetNode.children.push(...response.structure);
+        set({ 
+          mindmap: newMindMap,
+          isAILoading: false,
+          aiError: null,
+        });
+      }
+    } catch (error) {
+      set({ 
+        isAILoading: false,
+        aiError: error instanceof Error ? error.message : 'Unknown error occurred',
+      });
+    }
+  },
+}));
+```
+
+#### 3.3 Toolbar Integration
+```typescript
+// src/components/Toolbar.tsx
+export const Toolbar: React.FC = () => {
+  const { generateAIContent, isAILoading, aiError } = useMindMapStore();
+  const [isAIDialogOpen, setIsAIDialogOpen] = React.useState(false);
+  const [selectedPath, setSelectedPath] = React.useState<number[]>([]);
+
+  const handleAIRequest = async (question: string) => {
+    await generateAIContent(selectedPath, question);
+    setIsAIDialogOpen(false);
+  };
+
+  return (
+    <ToolbarContainer>
+      {/* ... existing toolbar buttons ... */}
+      <Button 
+        onClick={() => setIsAIDialogOpen(true)}
+        disabled={isAILoading}
+      >
+        {isAILoading ? 'AI Working...' : 'Ask AI'}
+      </Button>
+      
+      <AIPromptDialog
+        isOpen={isAIDialogOpen}
+        onClose={() => setIsAIDialogOpen(false)}
+        onSubmit={handleAIRequest}
+        isLoading={isAILoading}
+        error={aiError || undefined}
+      />
+    </ToolbarContainer>
+  );
+};
+```
+
+### Phase 4: Testing Strategy
+
+#### 4.1 Unit Tests
+```typescript
+// src/services/aiService.test.ts
+describe('AIService', () => {
+  it('should build context-aware prompts', () => {
+    const aiService = new AIService(mockConfig);
+    const request: AIRequest = {
+      question: 'What are the benefits of remote work?',
+      context: {
+        selectedNode: 'Work Models',
+        parentNodes: ['Company Strategy'],
+        mindMapContext: 'Work Models\n\tRemote Work\n\tOffice Work\n\tHybrid',
+      },
+    };
+
+    const prompt = aiService['buildPrompt'](request);
+    expect(prompt).toContain('Work Models');
+    expect(prompt).toContain('Company Strategy');
+    expect(prompt).toContain('benefits of remote work');
+  });
+
+  it('should parse AI responses to mind map structure', () => {
+    const aiService = new AIService(mockConfig);
+    const response = `Main Benefits
+    Flexibility
+    Cost Savings
+    Better Work-Life Balance
+    Increased Productivity`;
+
+    const structure = aiService['parseResponseToMindMap'](response);
+    expect(structure).toHaveLength(4);
+    expect(structure[0].text).toBe('Flexibility');
+  });
+
+  it('should handle AI service errors gracefully', async () => {
+    const aiService = new AIService(mockConfig);
+    jest.spyOn(aiService as any, 'callAI').mockRejectedValue(new Error('API Error'));
+
+    const response = await aiService.generateContent(mockRequest);
+    expect(response.error).toBe('API Error');
+    expect(response.structure).toHaveLength(0);
+  });
+});
+```
+
+#### 4.2 Integration Tests
+```typescript
+// src/store/mindmapStore.ai.test.ts
+describe('AI Integration', () => {
+  it('should add AI-generated content to selected node', async () => {
+    const { result } = renderHook(() => useMindMapStore());
+    
+    // Setup initial mind map
+    await act(async () => {
+      result.current.addNode([], 'Parent Node');
+    });
+
+    // Mock AI service
+    const mockAIResponse = {
+      content: 'AI Generated Content\n\tChild 1\n\tChild 2',
+      structure: [
+        { text: 'Child 1', children: [] },
+        { text: 'Child 2', children: [] },
+      ],
+    };
+
+    jest.spyOn(AIService.prototype, 'generateContent')
+      .mockResolvedValue(mockAIResponse);
+
+    // Generate AI content
+    await act(async () => {
+      await result.current.generateAIContent([0], 'Generate children');
+    });
+
+    // Verify AI content was added
+    expect(result.current.mindmap.root.children[0].children).toHaveLength(2);
+    expect(result.current.mindmap.root.children[0].children[0].text).toBe('Child 1');
+  });
+
+  it('should handle AI configuration errors', async () => {
+    const { result } = renderHook(() => useMindMapStore());
+    
+    // Test with invalid configuration
+    await act(async () => {
+      await result.current.generateAIContent([], 'Test question');
+    });
+
+    expect(result.current.aiError).toContain('AI configuration is invalid');
+  });
+});
+```
+
+#### 4.3 End-to-End Tests
+```typescript
+// cypress/e2e/ai-generation.cy.ts
+describe('AI Content Generation', () => {
+  it('should allow users to generate content with AI', () => {
+    cy.visit('/');
+    
+    // Add a parent node
+    cy.contains('Add Node').click();
+    cy.get('input[value="New Node"]').clear().type('Project Planning');
+    
+    // Select the node
+    cy.contains('Project Planning').click();
+    
+    // Open AI dialog
+    cy.contains('Ask AI').click();
+    
+    // Enter question
+    cy.get('textarea').type('What are the key phases of project planning?');
+    
+    // Submit
+    cy.contains('Generate').click();
+    
+    // Verify loading state
+    cy.contains('AI Working...').should('be.visible');
+    
+    // Verify AI-generated content appears
+    cy.contains('Initiation').should('be.visible');
+    cy.contains('Planning').should('be.visible');
+    cy.contains('Execution').should('be.visible');
+  });
+
+  it('should handle AI errors gracefully', () => {
+    cy.visit('/');
+    
+    // Mock AI error
+    cy.intercept('POST', '**/ai/generate', {
+      statusCode: 500,
+      body: { error: 'AI service unavailable' },
+    });
+    
+    // Try to generate content
+    cy.contains('Ask AI').click();
+    cy.get('textarea').type('Test question');
+    cy.contains('Generate').click();
+    
+    // Verify error message
+    cy.contains('AI service unavailable').should('be.visible');
+  });
+});
+```
+
+### Phase 5: Documentation and Deployment
+
+#### 5.1 Environment Setup Documentation
+```markdown
+# AI Configuration Guide
+
+## Prerequisites
+- Node.js 16+
+- API key for your chosen AI service
+
+## Setup Instructions
+
+1. **Configure Environment Variables**
+```bash
+# Copy the example environment file
+cp .env.example .env
+
+# Edit the .env file with your AI configuration
+```
+
+2. **Using the Configuration Script**
+```bash
+# Run the configuration script
+./scripts/configure-ai.sh
+
+# This will create a .env file with your configuration
+```
+
+3. **Environment Variables**
+```
+REACT_APP_AI_PROVIDER=openai|anthropic|local
+REACT_APP_AI_MODEL=gpt-3.5-turbo|claude-3-sonnet|custom
+REACT_APP_AI_API_KEY=your_api_key_here
+REACT_APP_AI_BASE_URL=optional_base_url
+REACT_APP_AI_MAX_TOKENS=1000
+REACT_APP_AI_TEMPERATURE=0.7
+```
+
+## Security Notes
+- Never commit .env files to version control
+- Use different API keys for development and production
+- Regularly rotate your API keys
+- Monitor API usage and costs
+```
+
+#### 5.2 User Documentation
+```markdown
+# AI Content Generation Guide
+
+## Overview
+The mind map application includes AI-powered content generation that allows you to automatically generate structured content based on your questions and the current mind map context.
+
+## How to Use
+
+1. **Select a Parent Node**
+   - Click on the node where you want to add AI-generated content
+   - The AI will create child nodes under this selected node
+
+2. **Open AI Dialog**
+   - Click the "Ask AI" button in the toolbar
+   - A dialog will appear where you can enter your question
+
+3. **Enter Your Question**
+   - Type your question or content generation request
+   - Be specific about what kind of content you want
+   - The AI will consider the current mind map context
+
+4. **Generate Content**
+   - Click "Generate" to send your request to the AI
+   - Wait for the AI to process and generate content
+   - The generated content will be automatically added as child nodes
+
+## Example Questions
+- "What are the key components of a business plan?"
+- "Generate pros and cons for remote work arrangements"
+- "What are the main challenges in software development?"
+- "Create a breakdown of marketing strategies"
+
+## Tips for Better Results
+- Be specific about the type of content you want
+- Consider the context of your selected node
+- Use clear, concise language
+- Ask for structured, hierarchical information when possible
+
+## Troubleshooting
+- If you see configuration errors, check your environment variables
+- If content generation fails, ensure your API key is valid
+- If responses are not useful, try rephrasing your question
+```
+
+## Success Criteria
+
+### Security Requirements
+- ✅ API keys never exposed in application code or UI
+- ✅ Configuration handled through environment variables
+- ✅ No sensitive data logged or stored in application
+- ✅ Secure communication with AI services
+
+### Functionality Requirements
+- ✅ Users can select nodes and generate AI content
+- ✅ AI responses are properly parsed into mind map structure
+- ✅ Context-aware prompts include relevant mind map information
+- ✅ Error handling for AI service failures
+
+### User Experience Requirements
+- ✅ Simple, intuitive interface for AI interactions
+- ✅ Clear feedback during AI processing
+- ✅ Helpful error messages when issues occur
+- ✅ Generated content integrates seamlessly with existing mind map
+
+### Technical Requirements
+- ✅ Modular architecture supporting multiple AI providers
+- ✅ Comprehensive test coverage for AI functionality
+- ✅ Performance optimized for AI API calls
+- ✅ Documentation for setup and usage
+
+## Implementation Timeline
+
+### Week 1: Foundation (Days 1-5)
+- **Day 1-2:** AI configuration and security setup
+- **Day 3:** AI service layer implementation
+- **Day 4:** Prompt engineering and response parsing
+- **Day 5:** Initial testing and validation
+
+### Week 2: Integration (Days 6-10)
+- **Day 6-7:** UI components and dialog implementation
+- **Day 8:** Store integration and state management
+- **Day 9:** Toolbar integration and user flow
+- **Day 10:** End-to-end functionality testing
+
+### Week 3: Refinement (Days 11-15)
+- **Day 11-12:** Comprehensive testing and bug fixes
+- **Day 13:** Performance optimization and error handling
+- **Day 14:** Documentation and user guides
+- **Day 15:** Final testing and deployment preparation
+
+## Risk Mitigation
+
+### Technical Risks
+- **AI Service Reliability:** Implement fallback mechanisms and error handling
+- **API Cost Management:** Add usage monitoring and limits
+- **Response Quality:** Implement prompt engineering best practices
+- **Performance:** Optimize API calls and response processing
+
+### User Experience Risks
+- **Discoverability:** Add clear UI indicators and tooltips
+- **Error Recovery:** Provide helpful error messages and retry options
+- **Content Quality:** Allow users to edit or regenerate AI content
+- **Privacy:** Ensure users understand how their data is used
+
+This comprehensive implementation plan ensures that AI content generation is integrated securely, effectively, and user-friendly into the mind map application while maintaining high standards of code quality and user experience.

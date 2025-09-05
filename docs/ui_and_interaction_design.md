@@ -68,12 +68,18 @@ The UI is a horizontally scrolling view of columns with a toolbar at the top:
     - **Load As:** Opens a file dialog to load and remembers the path.
     - **File Path Memory:** The application remembers the last used file paths for both JSON and text formats using localStorage.
 
-8.  **Manual Sorting:**
-    - The user can drag and drop a node within its column to reorder it among its siblings using react-beautiful-dnd.
+8.  **Copy/Paste Operations:**
+    - **Copy:** Select a node and press Ctrl+C (Cmd+C on Mac) to copy the node and its entire subtree to clipboard in text format.
+    - **Paste:** Select a node and press Ctrl+V (Cmd+V on Mac) to paste clipboard content as children to the selected node.
+    - Uses the existing text format for clipboard operations.
 
-9.  **Data Formats:**
-    - **JSON Format:** Structured data with `text`, `children`, and `selected_child_idx` properties.
-    - **Text Format:** Plain text with tabs representing hierarchy (compatible with classic mind map tools).
+9.  **AI Content Generation:**
+    - **AI Configuration:** Users configure AI models through local command-line commands for security.
+    - **Question Input:** Select a node and use the "Ask AI" feature to input a question.
+    - **AI Response:** The AI generates content in mind map structure and appends it as child nodes to the selected node.
+    - **Security:** API keys and sensitive data are handled locally without exposure to the application.
+
+10. **Data Formats:**
 
 ## Technical Implementation
 
@@ -81,12 +87,19 @@ The UI is a horizontally scrolling view of columns with a toolbar at the top:
 - **Zustand:** Used for state management with actions for node operations and file path memory.
 - **File Path Memory:** Stores JSON and text file paths separately with localStorage persistence.
 
+### AI Integration
+- **AI Configuration:** Environment variables and local command-line setup for secure API key management.
+- **Prompt Engineering:** Context-aware prompts that include relevant mind map context for accurate AI responses.
+- **Response Processing:** AI responses are parsed and converted to mind map node structure automatically.
+- **Error Handling:** Graceful handling of AI service failures and invalid response formats.
+
 ### Components
 - **App:** Main application component that renders Toolbar and MindMap.
 - **Toolbar:** Contains file operation buttons and displays current file path.
-- **MindMap:** Renders columns based on the selected path using drag-and-drop context.
-- **Column:** Renders a droppable column of nodes.
-- **Node:** Renders an individual draggable node with edit and delete controls.
+- **MindMap:** Renders columns based on the selected path and handles keyboard shortcuts.
+- **Column:** Renders a column of nodes.
+- **Node:** Renders an individual node with edit and delete controls.
+- **AI Prompt Dialog:** Modal dialog for inputting AI questions and configuration.
 
 ### Data Structure
 ```typescript
