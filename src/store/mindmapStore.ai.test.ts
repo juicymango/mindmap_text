@@ -21,7 +21,7 @@ jest.mock('../config/ai', () => ({
 }));
 
 describe('MindMapStore AI Integration', () => {
-  let store: ReturnType<typeof useMindMapStore>;
+  let store: any;
   let mockAIInstance: jest.Mocked<AIService>;
 
   beforeEach(() => {
@@ -220,7 +220,7 @@ describe('MindMapStore AI Integration', () => {
         resolvePromise = resolve;
       });
 
-      mockAIInstance.generateContent.mockReturnValue(promise);
+      mockAIInstance.generateContent.mockReturnValue(promise as any);
 
       const generatePromise = store.generateAIContent(selectedPath, question);
       
