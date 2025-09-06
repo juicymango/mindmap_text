@@ -3205,3 +3205,387 @@ describe('MindMapStore paste functionality', () => {
 - ✅ Clear documentation for new features
 
 This implementation plan ensures that the mind map application becomes more versatile with expanded AI provider support while fixing critical usability issues and streamlining the user interface.
+
+---
+
+## Task 28: Paste Bug Fix and AI Config Custom Model Input
+
+### Overview
+Task 28 addresses two critical issues:
+1. **Paste Bug Fix**: Root content in clipboard is currently discarded - should be added as last child of chosen node
+2. **AI Config Enhancement**: Allow custom model name input instead of limiting to dropdown selection
+
+### Phase 1: Paste Bug Fix
+
+#### 1.1 Current Problem Analysis
+The current paste implementation in `mindmapStore.ts` has a logic flaw where root content from clipboard is being discarded instead of being preserved and added as a child node.
+
+#### 1.2 Solution Design
+```typescript
+// src/store/mindmapStore.ts (Enhanced pasteNode method)
+pasteNode: async (path: number[]) => {
+  try {
+    let clipboardContent = '';
+    
+    // Try modern clipboard API first
+    if (navigator.clipboard && navigator.clipboard.readText) {
+      clipboardContent = await navigator.clipboard.readText();
+    } else {
+      // Fallback to document.execCommand
+      const textArea = document.createElement('textarea');
+      textArea.value = '';
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      
+      if (document.execCommand('paste')) {
+        clipboardContent = textArea.value;
+      }
+      
+      document.body.removeChild(textArea);
+    }
+
+    if (!clipboardContent.trim()) {
+      return; // Empty clipboard
+    }
+
+    const parsedMindMap = textToMindMap(clipboardContent);
+    if (!parsedMindMap) {
+      return; // Invalid content
+    }
+
+    const newMindMap = { ...get().mindmap };
+    const targetNode = findNode(newMindMap.root, path);
+    
+    if (!targetNode) {
+      return; // Target not found
+    }
+
+    // FIXED: Always preserve root content and add as child
+    if (path.length === 0) {
+      // Pasting to root node - preserve root text, add children
+      if (parsedMindMap.root.children.length > 0) {
+        targetNode.children.push(...parsedMindMap.root.children);
+      } else {
+        // If clipboard has only root with no children, add root as child
+        targetNode.children.push({
+          text: parsedMindMap.root.text,
+          children: []
+        });
+      }
+    } else {
+      // Pasting to non-root node - add all content as children
+      if (parsedMindMap.root.children.length > 0) {
+        targetNode.children.push(...parsedMindMap.root.children);
+      } else {
+        // If clipboard has only root with no children, add root as child
+        targetNode.children.push({
+          text: parsedMindMap.root.text,
+          children: []
+        });
+      }
+    }
+    
+    get().setSelectedChild(path, targetNode.children.length - 1);
+    set({ mindmap: newMindMap });
+  } catch (error) {
+    console.error('Failed to paste from clipboard:', error);
+  }
+},
+```
+
+#### 1.3 Test Cases for Paste Bug Fix
+```typescript
+// src/store/mindmapStore.test.ts (Enhanced tests)
+describe('Enhanced paste functionality', () => {
+  it('should preserve root content when pasting to root node', async () => {
+    const { result } = renderHook(() => useMindMapStore());
+
+    // Mock clipboard with root and children
+    (navigator.clipboard.readText as jest.Mock).mockResolvedValue('Root Content\n\tChild 1\n\tChild 2');
+
+    await act(async () => {
+      await result.current.pasteNode([]);
+    });
+
+    expect(result.current.mindmap.root.text).toBe('Root'); // Original root preserved
+    expect(result.current.mindmap.root.children).toHaveLength(2); // Children added
+    expect(result.current.mindmap.root.children[0].text).toBe('Child 1');
+    expect(result.current.mindmap.root.children[1].text).toBe('Child 2');
+  });
+
+  it('should add standalone root as child when pasting to root', async () => {
+    const { result } = renderHook(() => useMindMapStore());
+
+    // Mock clipboard with standalone root (no children)
+    (navigator.clipboard.readText as jest.Mock).mockResolvedValue('Standalone Root');
+
+    await act(async () => {
+      await result.current.pasteNode([]);
+    });
+
+    expect(result.current.mindmap.root.text).toBe('Root'); // Original root preserved
+    expect(result.current.mindmap.root.children).toHaveLength(1); // Added as child
+    expect(result.current.mindmap.root.children[0].text).toBe('Standalone Root');
+  });
+
+  it('should add root content as children when pasting to non-root node', async () => {
+    const { result } = renderHook(() => useMindMapStore());
+
+    // Setup target node
+    act(() => {
+      result.current.addNode([], 'Target Node');
+    });
+
+    // Mock clipboard with root and children
+    (navigator.clipboard.readText as jest.Mock).mockResolvedValue('Root Content\n\tChild 1\n\tChild 2');
+
+    await act(async () => {
+      await result.current.pasteNode([0]);
+    });
+
+    expect(result.current.mindmap.root.children[0].text).toBe('Target Node'); // Target preserved
+    expect(result.current.mindmap.root.children[0].children).toHaveLength(2); // Children added
+    expect(result.current.mindmap.root.children[0].children[0].text).toBe('Child 1');
+    expect(result.current.mindmap.root.children[0].children[1].text).toBe('Child 2');
+  });
+});
+```
+
+### Phase 2: AI Config Custom Model Input
+
+#### 2.1 Current Problem Analysis
+The current AI configuration dialog only allows model selection from a predefined dropdown, limiting users to the models we've explicitly configured.
+
+#### 2.2 Solution Design
+```typescript
+// src/components/AIConfigDialog.tsx (Enhanced with custom model input)
+export const AIConfigDialog: React.FC<AIConfigDialogProps> = ({
+  isOpen,
+  onClose,
+  onSave,
+  currentConfig,
+}) => {
+  const [config, setConfig] = useState<AIConfig>(currentConfig);
+  const [useCustomModel, setUseCustomModel] = useState(false);
+
+  const selectedProvider = AI_PROVIDERS[config.provider];
+  const models = selectedProvider?.models || [];
+
+  const handleSave = () => {
+    onSave(config);
+    onClose();
+  };
+
+  return (
+    <Dialog isOpen={isOpen} onClose={onClose}>
+      <DialogTitle>AI Configuration</DialogTitle>
+      <DialogContent>
+        <FormGroup>
+          <Label>Provider</Label>
+          <Select
+            value={config.provider}
+            onChange={(e) => {
+              const provider = e.target.value as AIProvider;
+              const selectedProvider = AI_PROVIDERS[provider];
+              setConfig({
+                ...config,
+                provider,
+                model: selectedProvider?.models[0] || '',
+              });
+              setUseCustomModel(false);
+            }}
+          >
+            {Object.entries(AI_PROVIDERS).map(([key, provider]) => (
+              <option key={key} value={key}>
+                {provider.name}
+              </option>
+            ))}
+          </Select>
+        </FormGroup>
+
+        <FormGroup>
+          <Label>Model</Label>
+          {!useCustomModel && models.length > 0 && (
+            <Select
+              value={config.model}
+              onChange={(e) => setConfig({ ...config, model: e.target.value })}
+            >
+              {models.map((model) => (
+                <option key={model} value={model}>
+                  {model}
+                </option>
+              ))}
+            </Select>
+          )}
+          {useCustomModel || models.length === 0 ? (
+            <Input
+              type="text"
+              value={config.model}
+              onChange={(e) => setConfig({ ...config, model: e.target.value })}
+              placeholder="Enter custom model name"
+            />
+          ) : null}
+          {models.length > 0 && (
+            <CheckboxContainer>
+              <Checkbox
+                type="checkbox"
+                checked={useCustomModel}
+                onChange={(e) => setUseCustomModel(e.target.checked)}
+              />
+              <CheckboxLabel>Use custom model name</CheckboxLabel>
+            </CheckboxContainer>
+          )}
+        </FormGroup>
+
+        {/* ... existing fields for apiKey, maxTokens, temperature */}
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose}>Cancel</Button>
+        <Button onClick={handleSave} primary>
+          Save
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+};
+```
+
+#### 2.3 Test Cases for Custom Model Input
+```typescript
+// src/components/AIConfigDialog.test.tsx (Enhanced tests)
+describe('AIConfigDialog with custom model input', () => {
+  it('should allow custom model input when checkbox is checked', () => {
+    const mockOnSave = jest.fn();
+    const mockConfig: AIConfig = {
+      provider: 'openai',
+      model: 'gpt-4',
+      apiKey: 'test-key',
+      maxTokens: 1000,
+      temperature: 0.7,
+    };
+
+    render(
+      <AIConfigDialog
+        isOpen={true}
+        onClose={jest.fn()}
+        onSave={mockOnSave}
+        currentConfig={mockConfig}
+      />
+    );
+
+    // Enable custom model input
+    const checkbox = screen.getByLabelText('Use custom model name');
+    fireEvent.click(checkbox);
+
+    // Should show text input instead of select
+    expect(screen.getByPlaceholderText('Enter custom model name')).toBeInTheDocument();
+    expect(screen.queryByDisplayValue('gpt-4')).not.toBeInTheDocument();
+
+    // Should be able to enter custom model name
+    const input = screen.getByPlaceholderText('Enter custom model name');
+    fireEvent.change(input, { target: { value: 'gpt-4-turbo-preview' } });
+    
+    fireEvent.click(screen.getByText('Save'));
+    
+    expect(mockOnSave).toHaveBeenCalledWith({
+      ...mockConfig,
+      model: 'gpt-4-turbo-preview',
+    });
+  });
+
+  it('should show custom input by default for providers with no predefined models', () => {
+    const mockOnSave = jest.fn();
+    const mockConfig: AIConfig = {
+      provider: 'local',
+      model: 'custom-model',
+      apiKey: '',
+      maxTokens: 1000,
+      temperature: 0.7,
+    };
+
+    render(
+      <AIConfigDialog
+        isOpen={true}
+        onClose={jest.fn()}
+        onSave={mockOnSave}
+        currentConfig={mockConfig}
+      />
+    );
+
+    // Should show text input directly for providers with no models
+    expect(screen.getByPlaceholderText('Enter custom model name')).toBeInTheDocument();
+    expect(screen.queryByLabelText('Use custom model name')).not.toBeInTheDocument();
+  });
+});
+```
+
+### Phase 3: Implementation Strategy
+
+#### 3.1 Implementation Order
+1. **Priority 1**: Fix paste bug (critical usability issue)
+2. **Priority 2**: Add custom model input (feature enhancement)
+3. **Priority 3**: Update tests and documentation
+
+#### 3.2 Risk Assessment
+- **Low Risk**: Paste bug fix is well-contained and has clear test cases
+- **Medium Risk**: Custom model input requires UI changes but maintains backward compatibility
+- **No Breaking Changes**: Both changes enhance existing functionality without removing features
+
+### Phase 4: Testing Strategy
+
+#### 4.1 Paste Functionality Tests
+- Test root content preservation when pasting to root
+- Test standalone root addition as child
+- Test root content addition as children to non-root nodes
+- Test edge cases (empty clipboard, invalid content)
+
+#### 4.2 AI Config Tests
+- Test custom model input functionality
+- Test checkbox toggle behavior
+- Test provider switching with custom models
+- Test validation and error handling
+
+#### 4.3 Integration Tests
+- Test complete paste workflow with clipboard operations
+- Test AI configuration with custom models
+- Test backward compatibility with existing configurations
+
+### Phase 5: Implementation Timeline
+
+#### Day 1: Paste Bug Fix
+- **Morning**: Analyze current paste implementation and identify root cause
+- **Afternoon**: Implement fix and write comprehensive tests
+- **Evening**: Verify fix works with all clipboard scenarios
+
+#### Day 2: AI Config Enhancement
+- **Morning**: Design custom model input UI
+- **Afternoon**: Implement custom model functionality
+- **Evening**: Test with all providers and edge cases
+
+#### Day 3: Finalization
+- **Morning**: Update documentation files
+- **Afternoon**: Run comprehensive test suite
+- **Evening**: Final verification and commit
+
+## Success Criteria
+
+### Functional Requirements
+- ✅ Root content from clipboard is preserved and added as last child
+- ✅ Custom model names can be entered for any AI provider
+- ✅ All existing functionality remains intact
+- ✅ Comprehensive test coverage for new features
+
+### Technical Requirements
+- ✅ TypeScript compilation without errors
+- ✅ All tests passing
+- ✅ No breaking changes to existing API
+- ✅ Proper error handling and user feedback
+
+### User Experience Requirements
+- ✅ Intuitive paste behavior that preserves user content
+- ✅ Flexible AI configuration with custom model support
+- ✅ Clear UI indicators for custom model input
+- ✅ Seamless integration with existing workflow
+
+This implementation plan addresses both critical issues in Task 28 while maintaining backward compatibility and providing enhanced functionality for users.

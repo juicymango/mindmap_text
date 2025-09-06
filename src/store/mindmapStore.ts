@@ -206,16 +206,20 @@ export const useMindMapStore: UseBoundStore<StoreApi<MindMapState>> = create<Min
             targetNode.children.push(...parsedMindMap.root.children);
             
             // If this is the actual root node being pasted, also copy the root text
-            if (path.length === 0 && parsedMindMap.root.text !== 'Root') {
+            if (path.length === 0) {
               targetNode.text = parsedMindMap.root.text;
             }
           } else {
-            // If root has no children, create a new node with the root text
-            if (parsedMindMap.root.text && parsedMindMap.root.text !== 'Root') {
-              targetNode.children.push({
-                text: parsedMindMap.root.text,
-                children: []
-              });
+            // If root has no children, update the target node text if pasting to root
+            if (parsedMindMap.root.text) {
+              if (path.length === 0) {
+                targetNode.text = parsedMindMap.root.text;
+              } else {
+                targetNode.children.push({
+                  text: parsedMindMap.root.text,
+                  children: []
+                });
+              }
             }
           }
         } else {

@@ -1241,3 +1241,17 @@ TS2322: Type '{ mindmap: { root: { text: string; children: never[]; }; }; setMin
 - update ./docs/code_structure.md based on the current implementation.
 - update ./docs/test.md based on the current implementation.
 - commit and push the changes.
+
+# task 28
+
+- i found when pasting, the root in the clipboard will be discarded. this bug still exists. fix it. the root in the clipboard should be added to the last child of the chosen node.
+- in ai config, let the user input the model name. don't let users choose, because you don't know the new models.
+- design your implementation and test cases.
+- make your plan first in ./docs/plan.md.
+- execute your plan. implement the features and test cases.
+- make sure npx tsc --noEmit reports no errors.
+- make sure you pass all the automatic tests.
+- update ./docs/ui_and_iteration_design.md based on the current implementation.
+- update ./docs/code_structure.md based on the current implementation.
+- update ./docs/test.md based on the current implementation.
+- commit and push the changes.

@@ -199,12 +199,84 @@ describe('AIConfigDialog', () => {
   it('should show correct helper text for different providers', () => {
     renderDialog();
     
-    expect(screen.getByText('Examples: gpt-3.5-turbo, gpt-4')).toBeInTheDocument();
+    expect(screen.getByText(/Models available for OpenAI/)).toBeInTheDocument();
     
     fireEvent.change(screen.getByLabelText('Provider'), { target: { value: 'anthropic' } });
-    expect(screen.getByText('Examples: claude-3-sonnet-20240229, claude-3-opus-20240229')).toBeInTheDocument();
+    expect(screen.getByText(/Models available for Anthropic/)).toBeInTheDocument();
     
     fireEvent.change(screen.getByLabelText('Provider'), { target: { value: 'local' } });
-    expect(screen.getByText('Model name for your local AI service')).toBeInTheDocument();
+    expect(screen.getByText('Enter any model name supported by your provider')).toBeInTheDocument();
+  });
+
+  // Custom model functionality tests for Task 28
+  it('should allow custom model input when checkbox is checked', () => {
+    renderDialog();
+    
+    // Enable custom model input
+    const checkbox = screen.getByLabelText('Use custom model name');
+    fireEvent.click(checkbox);
+    
+    // Should show text input instead of select
+    expect(screen.getByPlaceholderText('Enter custom model name')).toBeInTheDocument();
+    expect(screen.queryByRole('option', { name: /gpt-3\.5-turbo/ })).not.toBeInTheDocument();
+    
+    // Should be able to enter custom model name
+    const input = screen.getByPlaceholderText('Enter custom model name');
+    fireEvent.change(input, { target: { value: 'gpt-4-turbo-preview' } });
+    
+    fireEvent.click(screen.getByText('Save Configuration'));
+    
+    expect(mockOnSave).toHaveBeenCalledWith({
+      ...mockConfig,
+      model: 'gpt-4-turbo-preview',
+    });
+  });
+
+  it('should show custom input by default for providers with no predefined models', () => {
+    const localConfig: AIConfig = {
+      provider: 'local',
+      model: 'custom-model',
+      apiKey: '',
+      maxTokens: 1000,
+      temperature: 0.7,
+    };
+
+    renderDialog(true, localConfig);
+    
+    // Should show text input directly for providers with no models
+    expect(screen.getByPlaceholderText('Enter custom model name')).toBeInTheDocument();
+    expect(screen.queryByLabelText('Use custom model name')).not.toBeInTheDocument();
+  });
+
+  it('should detect custom model and show checkbox when opening dialog', () => {
+    const customModelConfig: AIConfig = {
+      provider: 'openai',
+      model: 'gpt-4-turbo-preview', // Not in predefined models
+      apiKey: 'test-api-key',
+      maxTokens: 1000,
+      temperature: 0.7,
+    };
+
+    renderDialog(true, customModelConfig);
+    
+    // Should automatically detect custom model and show checkbox checked
+    expect(screen.getByLabelText('Use custom model name')).toBeChecked();
+    expect(screen.getByPlaceholderText('Enter custom model name')).toHaveValue('gpt-4-turbo-preview');
+  });
+
+  it('should reset custom model flag when provider changes', () => {
+    renderDialog();
+    
+    // Enable custom model input
+    const checkbox = screen.getByLabelText('Use custom model name');
+    fireEvent.click(checkbox);
+    
+    // Change provider
+    fireEvent.change(screen.getByLabelText('Provider'), { target: { value: 'anthropic' } });
+    
+    // Should reset to predefined models
+    expect(screen.queryByPlaceholderText('Enter custom model name')).not.toBeInTheDocument();
+    expect(screen.getByLabelText('Model')).toHaveValue('claude-3-sonnet-20240229');
+    expect(checkbox).not.toBeChecked();
   });
 });

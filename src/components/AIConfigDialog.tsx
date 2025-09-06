@@ -130,6 +130,25 @@ const Button = styled.button<{ variant?: 'primary' | 'secondary' }>`
   }
 `;
 
+const CheckboxContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+`;
+
+const Checkbox = styled.input`
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+`;
+
+const CheckboxLabel = styled.label`
+  font-size: 14px;
+  color: #555;
+  cursor: pointer;
+`;
+
 const TestConnectionButton = styled.button`
   background-color: #28a745;
   color: white;
@@ -168,11 +187,15 @@ export const AIConfigDialog: React.FC<AIConfigDialogProps> = ({
   const [config, setConfig] = React.useState<AIConfig>(currentConfig);
   const [isTesting, setIsTesting] = React.useState(false);
   const [testResult, setTestResult] = React.useState<string | null>(null);
+  const [useCustomModel, setUseCustomModel] = React.useState(false);
 
   React.useEffect(() => {
     if (isOpen) {
       setConfig(currentConfig);
       setTestResult(null);
+      // Check if current model is not in predefined models list
+      const providerModels = AI_PROVIDERS[currentConfig.provider].models;
+      setUseCustomModel(!providerModels.includes(currentConfig.model));
     }
   }, [isOpen, currentConfig]);
 
@@ -186,6 +209,7 @@ export const AIConfigDialog: React.FC<AIConfigDialogProps> = ({
       temperature: newProviderConfig.temperature.default,
       baseUrl: provider === 'local' ? prev.baseUrl : newProviderConfig.baseUrl,
     }));
+    setUseCustomModel(false);
   };
 
   const handleInputChange = (field: keyof AIConfig, value: string | number) => {
@@ -260,7 +284,7 @@ export const AIConfigDialog: React.FC<AIConfigDialogProps> = ({
 
         <FormGroup>
           <Label htmlFor="model">Model</Label>
-          {AI_PROVIDERS[config.provider].models.length > 0 ? (
+          {!useCustomModel && AI_PROVIDERS[config.provider].models.length > 0 ? (
             <Select
               id="model"
               value={config.model}
@@ -276,11 +300,25 @@ export const AIConfigDialog: React.FC<AIConfigDialogProps> = ({
               type="text"
               value={config.model}
               onChange={(e) => handleInputChange('model', e.target.value)}
-              placeholder="Enter model name"
+              placeholder="Enter custom model name"
             />
           )}
+          {AI_PROVIDERS[config.provider].models.length > 0 && (
+            <CheckboxContainer>
+              <Checkbox
+                type="checkbox"
+                id="customModel"
+                checked={useCustomModel}
+                onChange={(e) => setUseCustomModel(e.target.checked)}
+              />
+              <CheckboxLabel htmlFor="customModel">Use custom model name</CheckboxLabel>
+            </CheckboxContainer>
+          )}
           <HelperText>
-            Models available for {AI_PROVIDERS[config.provider].name}: {AI_PROVIDERS[config.provider].models.join(', ') || 'Custom models'}
+            {useCustomModel 
+              ? 'Enter any model name supported by your provider'
+              : `Models available for ${AI_PROVIDERS[config.provider].name}: ${AI_PROVIDERS[config.provider].models.join(', ') || 'Custom models'}`
+            }
           </HelperText>
         </FormGroup>
 

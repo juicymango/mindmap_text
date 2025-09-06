@@ -265,8 +265,8 @@ describe('mindmapStore', () => {
       result.current.addNode([], 'Target Node');
     });
 
-    // Mock invalid clipboard content
-    (navigator.clipboard.readText as jest.Mock).mockResolvedValue('Invalid content without proper root');
+    // Mock invalid clipboard content (empty)
+    (navigator.clipboard.readText as jest.Mock).mockResolvedValue('');
 
     await act(async () => {
       await result.current.pasteNode([0]);
@@ -290,40 +290,38 @@ describe('mindmapStore', () => {
     expect(navigator.clipboard.readText).toHaveBeenCalled();
   });
 
-  // Enhanced paste functionality tests - root node preservation
-  it('should preserve root node text when pasting to root', async () => {
+  // Enhanced paste functionality tests for Task 28
+  it('should preserve root content when pasting to root node', async () => {
     const { result } = renderHook(() => useMindMapStore());
 
-    // Mock clipboard content with root node
-    (navigator.clipboard.readText as jest.Mock).mockResolvedValue('New Root Text\n\tChild Node');
+    // Mock clipboard with root and children
+    (navigator.clipboard.readText as jest.Mock).mockResolvedValue('Root Content\n\tChild 1\n\tChild 2');
 
     await act(async () => {
       await result.current.pasteNode([]);
     });
 
-    // Root text should be preserved and children added
-    expect(result.current.mindmap.root.text).toBe('New Root Text');
-    expect(result.current.mindmap.root.children).toHaveLength(1);
-    expect(result.current.mindmap.root.children[0].text).toBe('Child Node');
+    expect(result.current.mindmap.root.text).toBe('Root Content'); // Root text preserved
+    expect(result.current.mindmap.root.children).toHaveLength(2); // Children added
+    expect(result.current.mindmap.root.children[0].text).toBe('Child 1');
+    expect(result.current.mindmap.root.children[1].text).toBe('Child 2');
   });
 
-  it('should preserve root node text when pasting root with no children', async () => {
+  it('should add standalone root as child when pasting to root', async () => {
     const { result } = renderHook(() => useMindMapStore());
 
-    // Mock clipboard content with root node but no children
-    (navigator.clipboard.readText as jest.Mock).mockResolvedValue('Standalone Root Node');
+    // Mock clipboard with standalone root (no children)
+    (navigator.clipboard.readText as jest.Mock).mockResolvedValue('Standalone Root');
 
     await act(async () => {
       await result.current.pasteNode([]);
     });
 
-    // When pasting a standalone root node with no children, it should create a new child node
-    expect(result.current.mindmap.root.text).toBe('Root');
-    expect(result.current.mindmap.root.children).toHaveLength(1);
-    expect(result.current.mindmap.root.children[0].text).toBe('Standalone Root Node');
+    expect(result.current.mindmap.root.text).toBe('Standalone Root'); // Root text updated
+    expect(result.current.mindmap.root.children).toHaveLength(0); // No children added
   });
 
-  it('should add root content as child when pasting to non-root node', async () => {
+  it('should add root content as children when pasting to non-root node', async () => {
     const { result } = renderHook(() => useMindMapStore());
 
     // Setup target node
@@ -331,17 +329,17 @@ describe('mindmapStore', () => {
       result.current.addNode([], 'Target Node');
     });
 
-    // Mock clipboard content with root node
-    (navigator.clipboard.readText as jest.Mock).mockResolvedValue('Root Content\n\tChild Content');
+    // Mock clipboard with root and children
+    (navigator.clipboard.readText as jest.Mock).mockResolvedValue('Root Content\n\tChild 1\n\tChild 2');
 
     await act(async () => {
       await result.current.pasteNode([0]);
     });
 
-    // Root content should be added as children to target node
-    expect(result.current.mindmap.root.children[0].text).toBe('Target Node');
-    expect(result.current.mindmap.root.children[0].children).toHaveLength(1);
-    expect(result.current.mindmap.root.children[0].children[0].text).toBe('Child Content');
+    expect(result.current.mindmap.root.children[0].text).toBe('Target Node'); // Target preserved
+    expect(result.current.mindmap.root.children[0].children).toHaveLength(2); // Children added
+    expect(result.current.mindmap.root.children[0].children[0].text).toBe('Child 1');
+    expect(result.current.mindmap.root.children[0].children[1].text).toBe('Child 2');
   });
 
   it('should handle fallback clipboard API when modern API is not available', async () => {

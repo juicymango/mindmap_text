@@ -104,6 +104,7 @@
   - Click the "AI Config" button to open the configuration dialog.
   - Select from 7 AI providers: OpenAI, Anthropic, DeepSeek, GLM, Kimi, Qwen, or Local AI.
   - Configure provider-specific settings including model, API key, and parameters.
+  - Use predefined model selections or enter custom model names using the checkbox option.
   - Test the configuration using the "Test Configuration" button.
   - Configuration should be saved and persist across browser sessions.
 
@@ -124,9 +125,10 @@
   - Copy should work with both modern clipboard API and fallback methods.
 
 - **Paste with Root Node Preservation:**
-  - When pasting content to the root node, the root text should be preserved.
+  - When pasting content to the root node, the root text should be preserved and updated with the pasted root text.
   - When pasting content with a root node that has children, the children should be added to the target.
-  - When pasting a standalone root node (no children), it should be added as a child node.
+  - When pasting a standalone root node (no children) to the root, the root text should be updated.
+  - When pasting a standalone root node (no children) to non-root nodes, it should be added as a child node.
   - When pasting to non-root nodes, root content should be added as children.
 
 - **Cross-Browser Clipboard Support:**
@@ -268,6 +270,9 @@ The project uses ESLint with TypeScript support to prevent common errors:
 - Test pasteNode functionality with valid clipboard content
 - Test pasteNode error handling with invalid clipboard data
 - Test pasteNode graceful error handling
+- Test enhanced paste functionality for root content preservation
+- Test standalone root node pasting behavior
+- Test root content addition as children to non-root nodes
 - Test findNode and findParent helper functions
 
 ### File Utils Tests (`src/utils/file.test.ts`)
@@ -322,6 +327,17 @@ The project uses ESLint with TypeScript support to prevent common errors:
 - Test save/load As functionality
 - Test format detection and file path memory
 - Test button grouping and layout
+
+#### AI Config Dialog Tests (`src/components/AIConfigDialog.test.tsx`)
+- Test dialog rendering and basic functionality
+- Test provider change behavior
+- Test API key and base URL field visibility
+- Test configuration validation
+- Test custom model input functionality
+- Test custom model checkbox toggle behavior
+- Test automatic detection of custom models
+- Test provider switching with custom models
+- Test local provider default custom input behavior
 
 ## Integration Tests
 
