@@ -1,4 +1,4 @@
-import { AIConfig } from '../config/ai';
+import { AIConfig, AI_PROVIDERS } from '../config/ai';
 import { MindNode } from '../types';
 import { textToMindMap } from '../utils/textFormat';
 
@@ -19,9 +19,11 @@ export interface AIResponse {
 
 export class AIService {
   private config: AIConfig;
+  private providerConfig: typeof AI_PROVIDERS[keyof typeof AI_PROVIDERS];
 
   constructor(config: AIConfig) {
     this.config = config;
+    this.providerConfig = AI_PROVIDERS[config.provider];
   }
 
   async generateContent(request: AIRequest): Promise<AIResponse> {
@@ -73,6 +75,14 @@ Ensure the response is well-structured and directly addresses the user's questio
         return this.callOpenAI(prompt);
       case 'anthropic':
         return this.callAnthropic(prompt);
+      case 'deepseek':
+        return this.callDeepSeek(prompt);
+      case 'glm':
+        return this.callGLM(prompt);
+      case 'kimi':
+        return this.callKimi(prompt);
+      case 'qwen':
+        return this.callQwen(prompt);
       case 'local':
         return this.callLocalAI(prompt);
       default:
@@ -157,6 +167,106 @@ Ensure the response is well-structured and directly addresses the user's questio
 
     const data = await response.json();
     return data.choices[0]?.message?.content || '';
+  }
+
+  private async callDeepSeek(prompt: string): Promise<string> {
+    const response = await fetch(`${this.providerConfig.baseUrl}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${this.config.apiKey}`,
+      },
+      body: JSON.stringify({
+        model: this.config.model,
+        messages: [{ role: 'user', content: prompt }],
+        max_tokens: this.config.maxTokens,
+        temperature: this.config.temperature,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`DeepSeek API error: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data.choices[0]?.message?.content || '';
+  }
+
+  private async callGLM(prompt: string): Promise<string> {
+    const response = await fetch(`${this.providerConfig.baseUrl}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${this.config.apiKey}`,
+      },
+      body: JSON.stringify({
+        model: this.config.model,
+        messages: [{ role: 'user', content: prompt }],
+        max_tokens: this.config.maxTokens,
+        temperature: this.config.temperature,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`GLM API error: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data.choices[0]?.message?.content || '';
+  }
+
+  private async callKimi(prompt: string): Promise<string> {
+    const response = await fetch(`${this.providerConfig.baseUrl}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${this.config.apiKey}`,
+      },
+      body: JSON.stringify({
+        model: this.config.model,
+        messages: [{ role: 'user', content: prompt }],
+        max_tokens: this.config.maxTokens,
+        temperature: this.config.temperature,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Kimi API error: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data.choices[0]?.message?.content || '';
+  }
+
+  private async callQwen(prompt: string): Promise<string> {
+    if (!this.providerConfig.baseUrl) {
+      throw new Error('Base URL is required for Qwen provider');
+    }
+
+    const response = await fetch(this.providerConfig.baseUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${this.config.apiKey}`,
+      },
+      body: JSON.stringify({
+        model: this.config.model,
+        input: {
+          messages: [{ role: 'user', content: prompt }],
+        },
+        parameters: {
+          max_tokens: this.config.maxTokens,
+          temperature: this.config.temperature,
+        },
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Qwen API error: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data.output?.text || '';
   }
 
   private parseResponseToMindMap(response: string): MindNode[] {

@@ -297,7 +297,7 @@ mindmap-app/
 
 ### `src/components/Toolbar.tsx`
 
--   **Function:** Renders the toolbar with save/load buttons and file path display.
+-   **Function:** Renders the toolbar with Save As/Load As buttons, AI functionality, and file path display.
 -   **Structure:**
     ```typescript
     import React from 'react';
@@ -423,9 +423,49 @@ mindmap-app/
     };
     ```
 
+### `src/config/ai.ts`
+
+-   **Function:** Contains AI configuration and provider settings for 7 supported AI providers (OpenAI, Anthropic, DeepSeek, GLM, Kimi, Qwen, and Local AI).
+-   **Structure:**
+    ```typescript
+    import { MindNode } from '../types';
+
+    export type AIProvider = 'openai' | 'anthropic' | 'local' | 'deepseek' | 'glm' | 'kimi' | 'qwen';
+
+    export interface AIConfig {
+      provider: AIProvider;
+      model: string;
+      apiKey?: string;
+      baseUrl?: string;
+      maxTokens: number;
+      temperature: number;
+    }
+
+    export interface AIProviderConfig {
+      name: string;
+      baseUrl?: string;
+      models: string[];
+      defaultModel: string;
+      maxTokens: { min: number; max: number; default: number };
+      temperature: { min: number; max: number; default: number };
+      supportsApiKey: boolean;
+      documentation: string;
+    }
+
+    export const AI_PROVIDERS: Record<AIProvider, AIProviderConfig> = {
+      openai: { /* OpenAI configuration */ },
+      anthropic: { /* Anthropic configuration */ },
+      deepseek: { /* DeepSeek configuration */ },
+      glm: { /* GLM configuration */ },
+      kimi: { /* Kimi configuration */ },
+      qwen: { /* Qwen configuration */ },
+      local: { /* Local AI configuration */ }
+    };
+    ```
+
 ### `src/store/mindmapStore.ts`
 
--   **Function:** Zustand store for the mind map with file path memory and localStorage persistence.
+-   **Function:** Zustand store for the mind map with file path memory, localStorage persistence, AI functionality, and enhanced clipboard operations.
 -   **Structure:**
     ```typescript
     import { create, StoreApi, UseBoundStore } from 'zustand';
@@ -586,7 +626,7 @@ mindmap-app/
 
 ### `src/types/index.ts`
 
--   **Function:** Contains TypeScript types for the application.
+-   **Function:** Contains TypeScript types for the application including mind map structures and file formats.
 -   **Structure:**
     ```typescript
     export interface MindNode {
@@ -773,6 +813,93 @@ mindmap-app/
       });
 
       return { root };
+    };
+    ```
+
+### `src/services/aiService.ts`
+
+-   **Function:** Provides AI service integration with 7 supported providers (OpenAI, Anthropic, DeepSeek, GLM, Kimi, Qwen, and Local AI) for content generation.
+-   **Structure:**
+    ```typescript
+    import { AIConfig, AI_PROVIDERS } from '../config/ai';
+    import { MindNode } from '../types';
+    import { textToMindMap } from '../utils/textFormat';
+
+    export interface AIRequest {
+      question: string;
+      context: {
+        selectedNode: string;
+        parentNodes: string[];
+        mindMapContext: string;
+      };
+    }
+
+    export interface AIResponse {
+      content: string;
+      structure: MindNode[];
+      error?: string;
+    }
+
+    export class AIService {
+      private config: AIConfig;
+      private providerConfig: typeof AI_PROVIDERS[keyof typeof AI_PROVIDERS];
+
+      constructor(config: AIConfig) {
+        this.config = config;
+        this.providerConfig = AI_PROVIDERS[config.provider];
+      }
+
+      async generateContent(request: AIRequest): Promise<AIResponse> {
+        // Main method for generating AI content
+      }
+
+      private async callOpenAI(prompt: string): Promise<string> {
+        // OpenAI API integration
+      }
+
+      private async callAnthropic(prompt: string): Promise<string> {
+        // Anthropic API integration
+      }
+
+      private async callDeepSeek(prompt: string): Promise<string> {
+        // DeepSeek API integration
+      }
+
+      private async callGLM(prompt: string): Promise<string> {
+        // GLM API integration
+      }
+
+      private async callKimi(prompt: string): Promise<string> {
+        // Kimi API integration
+      }
+
+      private async callQwen(prompt: string): Promise<string> {
+        // Qwen API integration
+      }
+
+      private async callLocalAI(prompt: string): Promise<string> {
+        // Local AI API integration
+      }
+    }
+    ```
+
+### `src/utils/aiConfigStorage.ts`
+
+-   **Function:** Handles localStorage persistence for AI configuration with secure storage practices.
+-   **Structure:**
+    ```typescript
+    import { AIConfig } from '../config/ai';
+
+    export const getStoredAIConfig = (): AIConfig => {
+      // Retrieve AI config from localStorage with fallback to defaults
+    };
+
+    export const saveAIConfig = (config: AIConfig): void => {
+      // Save AI config to localStorage
+    };
+
+    export const clearAIConfig = (): void => {
+      // Clear AI config from localStorage
     };
     ```
 

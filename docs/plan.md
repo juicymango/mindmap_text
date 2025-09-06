@@ -2529,3 +2529,679 @@ describe('AI Error Handling', () => {
 - **Privacy Concerns**: Be transparent about data usage and storage
 
 This implementation plan ensures that users have complete visibility and control over the AI process while maintaining a clean, intuitive interface that doesn't overwhelm with technical details. The phased approach allows for incremental improvement while preserving the existing functionality.
+
+---
+
+# Task 27: AI Provider Expansion and UI Improvements Implementation Plan
+
+## Overview
+
+Task 27 focuses on expanding AI provider support, fixing critical bugs, and streamlining the user interface by removing redundant functionality. This enhancement will improve the versatility and usability of the mind map application.
+
+## Current State Analysis
+
+### Existing AI Implementation
+- **Supported Providers**: OpenAI, Anthropic, Local AI
+- **Configuration**: User-friendly dialog with localStorage persistence
+- **Process**: Transparent AI interaction with input/output visibility
+- **Error Handling**: Comprehensive error analysis with actionable suggestions
+
+### Areas for Improvement
+1. **Provider Limitation**: Missing support for popular Chinese AI models
+2. **Paste Bug**: Root node content is discarded during paste operations
+3. **UI Clutter**: Save/Load buttons are redundant with Save As/Load As functionality
+
+## Implementation Plan
+
+### Phase 1: AI Provider Expansion
+
+#### 1.1 New AI Provider Integration
+```typescript
+// src/config/ai.ts (Enhanced)
+export type AIProvider = 'openai' | 'anthropic' | 'local' | 'deepseek' | 'glm' | 'kimi' | 'qwen';
+
+export interface AIProviderConfig {
+  name: string;
+  baseUrl?: string;
+  models: string[];
+  defaultModel: string;
+  maxTokens: {
+    min: number;
+    max: number;
+    default: number;
+  };
+  temperature: {
+    min: number;
+    max: number;
+    default: number;
+  };
+  supportsApiKey: boolean;
+  documentation: string;
+}
+
+export const AI_PROVIDERS: Record<AIProvider, AIProviderConfig> = {
+  openai: {
+    name: 'OpenAI',
+    models: ['gpt-3.5-turbo', 'gpt-4', 'gpt-4-turbo', 'gpt-4o'],
+    defaultModel: 'gpt-3.5-turbo',
+    maxTokens: { min: 1, max: 8000, default: 1000 },
+    temperature: { min: 0, max: 2, default: 0.7 },
+    supportsApiKey: true,
+    documentation: 'https://platform.openai.com/docs/api-reference'
+  },
+  anthropic: {
+    name: 'Anthropic',
+    models: ['claude-3-sonnet-20240229', 'claude-3-opus-20240229', 'claude-3-haiku-20240307'],
+    defaultModel: 'claude-3-sonnet-20240229',
+    maxTokens: { min: 1, max: 8000, default: 1000 },
+    temperature: { min: 0, max: 1, default: 0.7 },
+    supportsApiKey: true,
+    documentation: 'https://docs.anthropic.com/claude/docs'
+  },
+  deepseek: {
+    name: 'DeepSeek',
+    baseUrl: 'https://api.deepseek.com',
+    models: ['deepseek-chat', 'deepseek-coder'],
+    defaultModel: 'deepseek-chat',
+    maxTokens: { min: 1, max: 8000, default: 1000 },
+    temperature: { min: 0, max: 2, default: 0.7 },
+    supportsApiKey: true,
+    documentation: 'https://platform.deepseek.com/'
+  },
+  glm: {
+    name: 'GLM',
+    baseUrl: 'https://open.bigmodel.cn/api/paas/v4',
+    models: ['glm-4', 'glm-3-turbo', 'glm-4v'],
+    defaultModel: 'glm-4',
+    maxTokens: { min: 1, max: 8000, default: 1000 },
+    temperature: { min: 0, max: 1, default: 0.7 },
+    supportsApiKey: true,
+    documentation: 'https://open.bigmodel.cn/'
+  },
+  kimi: {
+    name: 'Kimi',
+    baseUrl: 'https://api.moonshot.cn/v1',
+    models: ['moonshot-v1-8k', 'moonshot-v1-32k', 'moonshot-v1-128k'],
+    defaultModel: 'moonshot-v1-8k',
+    maxTokens: { min: 1, max: 128000, default: 1000 },
+    temperature: { min: 0, max: 1, default: 0.3 },
+    supportsApiKey: true,
+    documentation: 'https://platform.moonshot.cn/docs/'
+  },
+  qwen: {
+    name: 'Qwen',
+    baseUrl: 'https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation',
+    models: ['qwen-turbo', 'qwen-plus', 'qwen-max', 'qwen-max-longcontext'],
+    defaultModel: 'qwen-turbo',
+    maxTokens: { min: 1, max: 8000, default: 1000 },
+    temperature: { min: 0, max: 2, default: 0.7 },
+    supportsApiKey: true,
+    documentation: 'https://help.aliyun.com/zh/dashscope/'
+  },
+  local: {
+    name: 'Local AI',
+    models: [],
+    defaultModel: '',
+    maxTokens: { min: 1, max: 8000, default: 1000 },
+    temperature: { min: 0, max: 2, default: 0.7 },
+    supportsApiKey: false,
+    documentation: ''
+  }
+};
+```
+
+#### 1.2 Enhanced AI Service
+```typescript
+// src/services/aiService.ts (Enhanced)
+export class AIService {
+  private config: AIConfig;
+  private providerConfig: AIProviderConfig;
+
+  constructor(config: AIConfig) {
+    this.config = config;
+    this.providerConfig = AI_PROVIDERS[config.provider];
+  }
+
+  async generateContent(request: AIRequest): Promise<AIResponse> {
+    const prompt = this.buildPrompt(request);
+    
+    try {
+      let response;
+      switch (this.config.provider) {
+        case 'openai':
+          response = await this.callOpenAI(prompt);
+          break;
+        case 'anthropic':
+          response = await this.callAnthropic(prompt);
+          break;
+        case 'deepseek':
+          response = await this.callDeepSeek(prompt);
+          break;
+        case 'glm':
+          response = await this.callGLM(prompt);
+          break;
+        case 'kimi':
+          response = await this.callKimi(prompt);
+          break;
+        case 'qwen':
+          response = await this.callQwen(prompt);
+          break;
+        case 'local':
+          response = await this.callLocal(prompt);
+          break;
+        default:
+          throw new Error(`Unsupported provider: ${this.config.provider}`);
+      }
+
+      return this.parseResponse(response);
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  private async callDeepSeek(prompt: string): Promise<any> {
+    const response = await fetch(`${this.providerConfig.baseUrl}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${this.config.apiKey}`,
+      },
+      body: JSON.stringify({
+        model: this.config.model,
+        messages: [{ role: 'user', content: prompt }],
+        max_tokens: this.config.maxTokens,
+        temperature: this.config.temperature,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`DeepSeek API error: ${response.status} ${response.statusText}`);
+    }
+
+    return response.json();
+  }
+
+  private async callGLM(prompt: string): Promise<any> {
+    const response = await fetch(`${this.providerConfig.baseUrl}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${this.config.apiKey}`,
+      },
+      body: JSON.stringify({
+        model: this.config.model,
+        messages: [{ role: 'user', content: prompt }],
+        max_tokens: this.config.maxTokens,
+        temperature: this.config.temperature,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`GLM API error: ${response.status} ${response.statusText}`);
+    }
+
+    return response.json();
+  }
+
+  private async callKimi(prompt: string): Promise<any> {
+    const response = await fetch(`${this.providerConfig.baseUrl}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${this.config.apiKey}`,
+      },
+      body: JSON.stringify({
+        model: this.config.model,
+        messages: [{ role: 'user', content: prompt }],
+        max_tokens: this.config.maxTokens,
+        temperature: this.config.temperature,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Kimi API error: ${response.status} ${response.statusText}`);
+    }
+
+    return response.json();
+  }
+
+  private async callQwen(prompt: string): Promise<any> {
+    const response = await fetch(this.providerConfig.baseUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${this.config.apiKey}`,
+      },
+      body: JSON.stringify({
+        model: this.config.model,
+        input: {
+          messages: [{ role: 'user', content: prompt }],
+        },
+        parameters: {
+          max_tokens: this.config.maxTokens,
+          temperature: this.config.temperature,
+        },
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Qwen API error: ${response.status} ${response.statusText}`);
+    }
+
+    return response.json();
+  }
+}
+```
+
+#### 1.3 Updated AI Configuration Dialog
+```typescript
+// src/components/AIConfigDialog.tsx (Enhanced)
+export const AIConfigDialog: React.FC<AIConfigDialogProps> = ({
+  isOpen,
+  onClose,
+  onSave,
+  currentConfig,
+}) => {
+  const [config, setConfig] = React.useState(currentConfig);
+  const [testStatus, setTestStatus] = React.useState<'idle' | 'testing' | 'success' | 'error'>('idle');
+  const [testError, setTestError] = React.useState('');
+  
+  const providerConfig = AI_PROVIDERS[config.provider];
+
+  const handleProviderChange = (provider: AIProvider) => {
+    const newProviderConfig = AI_PROVIDERS[provider];
+    setConfig({
+      ...config,
+      provider,
+      model: newProviderConfig.defaultModel,
+      maxTokens: newProviderConfig.maxTokens.default,
+      temperature: newProviderConfig.temperature.default,
+      baseUrl: provider === 'local' ? config.baseUrl : undefined,
+    });
+  };
+
+  return (
+    <DialogOverlay>
+      <DialogContent>
+        <h2>AI Configuration</h2>
+        <form onSubmit={(e) => {
+          e.preventDefault();
+          onSave(config);
+        }}>
+          <ConfigSection>
+            <label>Provider</label>
+            <select 
+              value={config.provider} 
+              onChange={(e) => handleProviderChange(e.target.value as AIProvider)}
+            >
+              {Object.entries(AI_PROVIDERS).map(([key, provider]) => (
+                <option key={key} value={key}>
+                  {provider.name}
+                </option>
+              ))}
+            </select>
+          </ConfigSection>
+
+          <ConfigSection>
+            <label>Model</label>
+            {providerConfig.models.length > 0 ? (
+              <select 
+                value={config.model} 
+                onChange={(e) => setConfig({...config, model: e.target.value})}
+              >
+                {providerConfig.models.map(model => (
+                  <option key={model} value={model}>{model}</option>
+                ))}
+              </select>
+            ) : (
+              <input 
+                type="text" 
+                value={config.model} 
+                onChange={(e) => setConfig({...config, model: e.target.value})}
+                placeholder="Enter model name"
+              />
+            )}
+          </ConfigSection>
+
+          {providerConfig.supportsApiKey && (
+            <ConfigSection>
+              <label>API Key</label>
+              <input 
+                type="password" 
+                value={config.apiKey || ''} 
+                onChange={(e) => setConfig({...config, apiKey: e.target.value})}
+                placeholder="Enter your API key"
+              />
+            </ConfigSection>
+          )}
+
+          {config.provider === 'local' && (
+            <ConfigSection>
+              <label>Base URL</label>
+              <input 
+                type="text" 
+                value={config.baseUrl || ''} 
+                onChange={(e) => setConfig({...config, baseUrl: e.target.value})}
+                placeholder="http://localhost:8000"
+              />
+            </ConfigSection>
+          )}
+
+          <ConfigSection>
+            <label>Max Tokens ({config.maxTokens})</label>
+            <input 
+              type="range" 
+              min={providerConfig.maxTokens.min}
+              max={providerConfig.maxTokens.max}
+              value={config.maxTokens} 
+              onChange={(e) => setConfig({...config, maxTokens: parseInt(e.target.value)})}
+            />
+            <TokenDisplay>{config.maxTokens}</TokenDisplay>
+          </ConfigSection>
+
+          <ConfigSection>
+            <label>Temperature ({config.temperature})</label>
+            <input 
+              type="range" 
+              min={providerConfig.temperature.min}
+              max={providerConfig.temperature.max}
+              step="0.1"
+              value={config.temperature} 
+              onChange={(e) => setConfig({...config, temperature: parseFloat(e.target.value)})}
+            />
+            <TemperatureDisplay>{config.temperature}</TemperatureDisplay>
+          </ConfigSection>
+
+          <HelperText>
+            Models available for {providerConfig.name}: {providerConfig.models.join(', ') || 'Custom models'}
+          </HelperText>
+
+          <TestSection>
+            <Button type="button" onClick={handleTest} disabled={testStatus === 'testing'}>
+              {testStatus === 'testing' ? 'Testing...' : 'Test Configuration'}
+            </Button>
+            {testStatus === 'success' && <TestSuccess>✓ Configuration works!</TestSuccess>}
+            {testStatus === 'error' && <TestError>{testError}</TestError>}
+          </TestSection>
+
+          <ButtonGroup>
+            <Button type="button" onClick={onClose}>Cancel</Button>
+            <Button type="submit" variant="primary">Save Configuration</Button>
+          </ButtonGroup>
+        </form>
+      </DialogContent>
+    </DialogOverlay>
+  );
+};
+```
+
+### Phase 2: Paste Bug Fix
+
+#### 2.1 Root Node Preservation in Paste
+```typescript
+// src/store/mindmapStore.ts (Enhanced)
+export const useMindMapStore = create<MindMapState>((set, get) => ({
+  // ... existing state
+  
+  pasteNode: async (path: number[]) => {
+    const { mindmap } = get();
+    
+    try {
+      let clipboardContent;
+      
+      // Try modern clipboard API first
+      if (navigator.clipboard && navigator.clipboard.readText) {
+        clipboardContent = await navigator.clipboard.readText();
+      } else {
+        // Fallback to older method
+        clipboardContent = await new Promise((resolve, reject) => {
+          const textarea = document.createElement('textarea');
+          textarea.value = '';
+          document.body.appendChild(textarea);
+          textarea.select();
+          
+          const success = document.execCommand('paste');
+          document.body.removeChild(textarea);
+          
+          if (success) {
+            resolve(textarea.value);
+          } else {
+            reject(new Error('Failed to paste from clipboard'));
+          }
+        });
+      }
+      
+      if (!clipboardContent.trim()) {
+        return; // Empty clipboard
+      }
+      
+      // Parse clipboard content as mind map structure
+      const parsedMindMap = textToMindMap(clipboardContent);
+      
+      // Create new mind map with updated structure
+      const newMindMap = { ...mindmap };
+      const targetNode = findNode([newMindMap.root], path);
+      
+      if (targetNode) {
+        // Handle root node preservation
+        if (parsedMindMap.root) {
+          // If clipboard has a single root node, add its children as siblings
+          if (parsedMindMap.root.children && parsedMindMap.root.children.length > 0) {
+            targetNode.children.push(...parsedMindMap.root.children);
+            
+            // If this is the actual root node being pasted, also copy the root text
+            if (path.length === 0 && parsedMindMap.root.text !== 'Root') {
+              targetNode.text = parsedMindMap.root.text;
+            }
+          } else {
+            // If root has no children, create a new node with the root text
+            if (parsedMindMap.root.text && parsedMindMap.root.text !== 'Root') {
+              targetNode.children.push({
+                text: parsedMindMap.root.text,
+                children: []
+              });
+            }
+          }
+        } else {
+          // Fallback: treat entire content as a single node
+          targetNode.children.push({
+            text: clipboardContent.trim(),
+            children: []
+          });
+        }
+        
+        get().setSelectedChild(path, targetNode.children.length - 1);
+        set({ mindmap: newMindMap });
+      }
+    } catch (error) {
+      console.error('Failed to paste from clipboard:', error);
+      // Optionally show error to user
+    }
+  },
+}));
+```
+
+### Phase 3: UI Streamlining
+
+#### 3.1 Remove Save/Load Buttons
+```typescript
+// src/components/Toolbar.tsx (Enhanced)
+export const Toolbar: React.FC = () => {
+  // ... existing state
+  
+  return (
+    <ToolbarContainer>
+      <ButtonGroup>
+        <Button onClick={handleSaveAsJSON}>
+          Save As JSON
+        </Button>
+        <Button onClick={handleSaveAsText}>
+          Save As Text
+        </Button>
+        <Button onClick={handleLoadAs}>
+          Load As
+        </Button>
+      </ButtonGroup>
+      
+      {/* ... existing AI buttons and other UI */}
+      
+      <CurrentFilePath>
+        {jsonFilePath || textFilePath || 'No file selected'}
+      </CurrentFilePath>
+    </ToolbarContainer>
+  );
+};
+```
+
+### Phase 4: Testing Strategy
+
+#### 4.1 AI Provider Tests
+```typescript
+// src/components/AIConfigDialog.test.tsx (Enhanced)
+describe('AIConfigDialog with new providers', () => {
+  const providers = ['openai', 'anthropic', 'deepseek', 'glm', 'kimi', 'qwen', 'local'];
+  
+  providers.forEach(provider => {
+    it(`should handle ${provider} provider configuration`, () => {
+      const mockOnSave = jest.fn();
+      const mockConfig: AIConfig = {
+        provider: provider as any,
+        model: 'test-model',
+        apiKey: 'test-key',
+        maxTokens: 1000,
+        temperature: 0.7,
+      };
+
+      render(
+        <AIConfigDialog
+          isOpen={true}
+          onClose={jest.fn()}
+          onSave={mockOnSave}
+          currentConfig={mockConfig}
+        />
+      );
+
+      expect(screen.getByText(AI_PROVIDERS[provider as any].name)).toBeInTheDocument();
+    });
+  });
+
+  it('should show correct models for each provider', () => {
+    const mockOnSave = jest.fn();
+    const mockConfig: AIConfig = {
+      provider: 'deepseek',
+      model: 'deepseek-chat',
+      apiKey: 'test-key',
+      maxTokens: 1000,
+      temperature: 0.7,
+    };
+
+    render(
+      <AIConfigDialog
+        isOpen={true}
+        onClose={jest.fn()}
+        onSave={mockOnSave}
+        currentConfig={mockConfig}
+      />
+    );
+
+    expect(screen.getByText('deepseek-chat')).toBeInTheDocument();
+    expect(screen.getByText('deepseek-coder')).toBeInTheDocument();
+  });
+});
+```
+
+#### 4.2 Paste Bug Tests
+```typescript
+// src/store/mindmapStore.test.ts (Enhanced)
+describe('MindMapStore paste functionality', () => {
+  it('should preserve root node content when pasting', async () => {
+    const { result } = renderHook(() => useMindMapStore(), {
+      wrapper: StoreProvider,
+    });
+
+    // Mock clipboard with root content
+    const clipboardContent = 'Root Node\n\tChild 1\n\tChild 2';
+    Object.assign(navigator, {
+      clipboard: {
+        readText: jest.fn().mockResolvedValue(clipboardContent),
+      },
+    });
+
+    // Setup initial mindmap
+    act(() => {
+      result.current.setMindmap({
+        root: { text: 'Original Root', children: [] },
+      });
+    });
+
+    // Paste at root level
+    await act(async () => {
+      await result.current.pasteNode([]);
+    });
+
+    expect(result.current.mindmap.root.text).toBe('Root Node'); // Root text preserved
+    expect(result.current.mindmap.root.children).toHaveLength(2); // Children added
+  });
+
+  it('should handle empty clipboard gracefully', async () => {
+    const { result } = renderHook(() => useMindMapStore(), {
+      wrapper: StoreProvider,
+    });
+
+    // Mock empty clipboard
+    Object.assign(navigator, {
+      clipboard: {
+        readText: jest.fn().mockResolvedValue(''),
+      },
+    });
+
+    // Setup initial mindmap
+    act(() => {
+      result.current.setMindmap({
+        root: { text: 'Root', children: [] },
+      });
+    });
+
+    // Attempt paste
+    await act(async () => {
+      await result.current.pasteNode([]);
+    });
+
+    // Mindmap should remain unchanged
+    expect(result.current.mindmap.root.children).toHaveLength(0);
+  });
+});
+```
+
+### Phase 5: Implementation Timeline
+
+#### Week 1: Foundation (Days 1-3)
+- **Day 1**: AI provider expansion and configuration updates
+- **Day 2**: Enhanced AI service with new provider support
+- **Day 3**: Paste bug fixing and testing
+
+#### Week 1: Integration (Days 4-5)
+- **Day 4**: UI streamlining and button removal
+- **Day 5**: Comprehensive testing and documentation updates
+
+## Success Criteria
+
+### Functional Requirements
+- ✅ Support for DeepSeek, GLM, Kimi, and Qwen AI providers
+- ✅ Root node preservation during paste operations
+- ✅ Clean UI with only Save As/Load As buttons
+- ✅ Comprehensive test coverage for new features
+
+### Technical Requirements
+- ✅ TypeScript compilation without errors
+- ✅ All tests passing
+- ✅ Backward compatibility maintained
+- ✅ Performance optimizations for new providers
+
+### User Experience Requirements
+- ✅ Intuitive provider selection with model suggestions
+- ✅ Seamless paste functionality with root preservation
+- ✅ Streamlined interface without redundant controls
+- ✅ Clear documentation for new features
+
+This implementation plan ensures that the mind map application becomes more versatile with expanded AI provider support while fixing critical usability issues and streamlining the user interface.

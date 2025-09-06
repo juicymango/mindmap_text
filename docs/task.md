@@ -1227,3 +1227,17 @@ TS2322: Type '{ mindmap: { root: { text: string; children: never[]; }; }; setMin
 - make sure you pass all the automatic tests.
 - commit and push the changes.
 
+# task 27
+
+- let the ask ai feature support deepseek, glm, kimi, qwen.
+- i found when pasting, the root in the clipboard will be discarded. this is a bug. fix it.
+- delete the save and load button and the relevant code. they are not working as expected. keep the save as, load as.
+- design your implementation and test cases.
+- make your plan first in ./docs/plan.md.
+- execute your plan. implement the features and test cases.
+- make sure npx tsc --noEmit reports no errors.
+- make sure you pass all the automatic tests.
+- update ./docs/ui_and_iteration_design.md based on the current implementation.
+- update ./docs/code_structure.md based on the current implementation.
+- update ./docs/test.md based on the current implementation.
+- commit and push the changes.

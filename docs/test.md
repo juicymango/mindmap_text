@@ -50,29 +50,21 @@
 
 ## File Operations
 
-- **Save the mind map:**
-  - Click the "Save" button.
-  - The current state of the mind map should be saved to the remembered file path.
-  - If no file path is remembered, the button should be disabled.
-- **Load a mind map:**
-  - Click the "Load" button.
-  - The mind map should be loaded from the remembered file path.
-  - If no file path is remembered, the button should be disabled.
 - **Save As JSON:**
   - Click the "Save As JSON" button.
   - A file dialog should appear.
   - Selecting a file path should save the mind map in JSON format.
-  - The file path should be remembered for future save operations.
+  - The file path should be remembered for future reference.
 - **Save As Text:**
   - Click the "Save As Text" button.
   - A file dialog should appear.
   - Selecting a file path should save the mind map in text format with tab hierarchy.
-  - The file path should be remembered for future save operations.
+  - The file path should be remembered for future reference.
 - **Load As:**
   - Click the "Load As" button.
   - A file dialog should appear.
   - Selecting a file should load the mind map and detect the format automatically.
-  - The file path should be remembered for future load operations.
+  - The file path should be remembered for future reference.
 
 ## File Path Memory Feature
 
@@ -98,6 +90,54 @@
   - The toolbar should display the current remembered file path.
   - When no file is selected, it should show "No file selected".
   - The display should update immediately when a new file is saved or loaded.
+
+## AI Functionality
+
+- **AI Content Generation:**
+  - Select a node in the mind map.
+  - Click the "Ask AI" button.
+  - Enter a question or prompt in the dialog.
+  - AI should generate hierarchical content that gets added as children to the selected node.
+  - The generated content should be properly formatted as a mind map structure.
+
+- **AI Configuration:**
+  - Click the "AI Config" button to open the configuration dialog.
+  - Select from 7 AI providers: OpenAI, Anthropic, DeepSeek, GLM, Kimi, Qwen, or Local AI.
+  - Configure provider-specific settings including model, API key, and parameters.
+  - Test the configuration using the "Test Configuration" button.
+  - Configuration should be saved and persist across browser sessions.
+
+- **AI Provider Support:**
+  - **OpenAI:** Support for GPT-3.5-turbo, GPT-4, GPT-4-turbo, and GPT-4o models.
+  - **Anthropic:** Support for Claude 3 models (Sonnet, Opus, Haiku).
+  - **DeepSeek:** Support for DeepSeek-chat and DeepSeek-coder models.
+  - **GLM:** Support for GLM-4, GLM-3-turbo, and GLM-4v models.
+  - **Kimi:** Support for Moonshot models with various context lengths.
+  - **Qwen:** Support for Qwen-turbo, Qwen-plus, Qwen-max, and Qwen-max-longcontext models.
+  - **Local AI:** Support for custom local AI endpoints with configurable base URL.
+
+## Enhanced Clipboard Operations
+
+- **Copy Node Structure:**
+  - Right-click or use keyboard shortcut to copy a node and its entire subtree.
+  - The clipboard should contain the hierarchical text representation.
+  - Copy should work with both modern clipboard API and fallback methods.
+
+- **Paste with Root Node Preservation:**
+  - When pasting content to the root node, the root text should be preserved.
+  - When pasting content with a root node that has children, the children should be added to the target.
+  - When pasting a standalone root node (no children), it should be added as a child node.
+  - When pasting to non-root nodes, root content should be added as children.
+
+- **Cross-Browser Clipboard Support:**
+  - Modern browsers: Use Clipboard API for reliable copy/paste operations.
+  - Legacy browsers: Fallback to document.execCommand for broader compatibility.
+  - Error handling should gracefully handle clipboard permission denials.
+
+- **Paste Validation:**
+  - Invalid clipboard content should be rejected without breaking the application.
+  - Empty clipboard should be handled gracefully.
+  - Malformed hierarchical text should be parsed safely or ignored.
 
 - **File format detection:**
   - Files with .json extension should be loaded as JSON format.

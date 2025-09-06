@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import { AIConfig } from '../config/ai';
+import { AIConfig, AI_PROVIDERS, AIProvider } from '../config/ai';
 
 interface AIConfigDialogProps {
   isOpen: boolean;
@@ -176,6 +176,18 @@ export const AIConfigDialog: React.FC<AIConfigDialogProps> = ({
     }
   }, [isOpen, currentConfig]);
 
+  const handleProviderChange = (provider: AIProvider) => {
+    const newProviderConfig = AI_PROVIDERS[provider];
+    setConfig(prev => ({
+      ...prev,
+      provider,
+      model: newProviderConfig.defaultModel,
+      maxTokens: newProviderConfig.maxTokens.default,
+      temperature: newProviderConfig.temperature.default,
+      baseUrl: provider === 'local' ? prev.baseUrl : newProviderConfig.baseUrl,
+    }));
+  };
+
   const handleInputChange = (field: keyof AIConfig, value: string | number) => {
     setConfig(prev => ({
       ...prev,
@@ -195,7 +207,9 @@ export const AIConfigDialog: React.FC<AIConfigDialogProps> = ({
       if (!config.model) {
         throw new Error('Model is required');
       }
-      if (config.provider !== 'local' && !config.apiKey) {
+      
+      const providerConfig = AI_PROVIDERS[config.provider];
+      if (providerConfig.supportsApiKey && !config.apiKey) {
         throw new Error('API key is required for this provider');
       }
       if (config.provider === 'local' && !config.baseUrl) {
@@ -233,32 +247,44 @@ export const AIConfigDialog: React.FC<AIConfigDialogProps> = ({
           <Select
             id="provider"
             value={config.provider}
-            onChange={(e) => handleInputChange('provider', e.target.value as 'openai' | 'anthropic' | 'local')}
+            onChange={(e) => handleProviderChange(e.target.value as AIProvider)}
           >
-            <option value="openai">OpenAI</option>
-            <option value="anthropic">Anthropic</option>
-            <option value="local">Local AI</option>
+            {Object.entries(AI_PROVIDERS).map(([key, provider]) => (
+              <option key={key} value={key}>
+                {provider.name}
+              </option>
+            ))}
           </Select>
           <HelperText>Select your AI service provider</HelperText>
         </FormGroup>
 
         <FormGroup>
           <Label htmlFor="model">Model</Label>
-          <Input
-            id="model"
-            type="text"
-            value={config.model}
-            onChange={(e) => handleInputChange('model', e.target.value)}
-            placeholder="e.g., gpt-3.5-turbo, claude-3-sonnet-20240229"
-          />
+          {AI_PROVIDERS[config.provider].models.length > 0 ? (
+            <Select
+              id="model"
+              value={config.model}
+              onChange={(e) => handleInputChange('model', e.target.value)}
+            >
+              {AI_PROVIDERS[config.provider].models.map(model => (
+                <option key={model} value={model}>{model}</option>
+              ))}
+            </Select>
+          ) : (
+            <Input
+              id="model"
+              type="text"
+              value={config.model}
+              onChange={(e) => handleInputChange('model', e.target.value)}
+              placeholder="Enter model name"
+            />
+          )}
           <HelperText>
-            {config.provider === 'openai' && 'Examples: gpt-3.5-turbo, gpt-4'}
-            {config.provider === 'anthropic' && 'Examples: claude-3-sonnet-20240229, claude-3-opus-20240229'}
-            {config.provider === 'local' && 'Model name for your local AI service'}
+            Models available for {AI_PROVIDERS[config.provider].name}: {AI_PROVIDERS[config.provider].models.join(', ') || 'Custom models'}
           </HelperText>
         </FormGroup>
 
-        {config.provider !== 'local' && (
+        {AI_PROVIDERS[config.provider].supportsApiKey && (
           <FormGroup>
             <Label htmlFor="apiKey">API Key</Label>
             <Input
@@ -294,8 +320,8 @@ export const AIConfigDialog: React.FC<AIConfigDialogProps> = ({
           <RangeInput
             id="maxTokens"
             type="range"
-            min="100"
-            max="4000"
+            min={AI_PROVIDERS[config.provider].maxTokens.min}
+            max={AI_PROVIDERS[config.provider].maxTokens.max}
             value={config.maxTokens}
             onChange={(e) => handleInputChange('maxTokens', parseInt(e.target.value))}
           />
@@ -310,8 +336,8 @@ export const AIConfigDialog: React.FC<AIConfigDialogProps> = ({
           <RangeInput
             id="temperature"
             type="range"
-            min="0"
-            max="2"
+            min={AI_PROVIDERS[config.provider].temperature.min}
+            max={AI_PROVIDERS[config.provider].temperature.max}
             step="0.1"
             value={config.temperature}
             onChange={(e) => handleInputChange('temperature', parseFloat(e.target.value))}

@@ -224,6 +224,203 @@ describe('AIService', () => {
         'Base URL is required for local AI provider'
       );
     });
+
+    // Tests for new AI providers
+    it('should call DeepSeek API correctly', async () => {
+      const deepseekService = new AIService({
+        ...mockAIConfig,
+        provider: 'deepseek',
+      });
+
+      const mockResponse = {
+        choices: [{ message: { content: 'DeepSeek response' } }],
+      };
+      
+      (fetch as jest.Mock).mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(mockResponse),
+      });
+
+      const result = await (deepseekService as any).callDeepSeek('Test prompt');
+      
+      expect(fetch).toHaveBeenCalledWith(
+        'https://api.deepseek.com/chat/completions',
+        expect.objectContaining({
+          method: 'POST',
+          headers: expect.objectContaining({
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer test-api-key',
+          }),
+          body: expect.stringContaining('"model":"gpt-3.5-turbo"'),
+        })
+      );
+      
+      expect(result).toBe('DeepSeek response');
+    });
+
+    it('should call GLM API correctly', async () => {
+      const glmService = new AIService({
+        ...mockAIConfig,
+        provider: 'glm',
+      });
+
+      const mockResponse = {
+        choices: [{ message: { content: 'GLM response' } }],
+      };
+      
+      (fetch as jest.Mock).mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(mockResponse),
+      });
+
+      const result = await (glmService as any).callGLM('Test prompt');
+      
+      expect(fetch).toHaveBeenCalledWith(
+        'https://open.bigmodel.cn/api/paas/v4/chat/completions',
+        expect.objectContaining({
+          method: 'POST',
+          headers: expect.objectContaining({
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer test-api-key',
+          }),
+          body: expect.stringContaining('"model":"gpt-3.5-turbo"'),
+        })
+      );
+      
+      expect(result).toBe('GLM response');
+    });
+
+    it('should call Kimi API correctly', async () => {
+      const kimiService = new AIService({
+        ...mockAIConfig,
+        provider: 'kimi',
+      });
+
+      const mockResponse = {
+        choices: [{ message: { content: 'Kimi response' } }],
+      };
+      
+      (fetch as jest.Mock).mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(mockResponse),
+      });
+
+      const result = await (kimiService as any).callKimi('Test prompt');
+      
+      expect(fetch).toHaveBeenCalledWith(
+        'https://api.moonshot.cn/v1/chat/completions',
+        expect.objectContaining({
+          method: 'POST',
+          headers: expect.objectContaining({
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer test-api-key',
+          }),
+          body: expect.stringContaining('"model":"gpt-3.5-turbo"'),
+        })
+      );
+      
+      expect(result).toBe('Kimi response');
+    });
+
+    it('should call Qwen API correctly', async () => {
+      const qwenService = new AIService({
+        ...mockAIConfig,
+        provider: 'qwen',
+      });
+
+      const mockResponse = {
+        output: { text: 'Qwen response' },
+      };
+      
+      (fetch as jest.Mock).mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(mockResponse),
+      });
+
+      const result = await (qwenService as any).callQwen('Test prompt');
+      
+      expect(fetch).toHaveBeenCalledWith(
+        'https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation',
+        expect.objectContaining({
+          method: 'POST',
+          headers: expect.objectContaining({
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer test-api-key',
+          }),
+          body: expect.stringContaining('"model":"gpt-3.5-turbo"'),
+        })
+      );
+      
+      expect(result).toBe('Qwen response');
+    });
+
+    it('should handle DeepSeek API errors', async () => {
+      const deepseekService = new AIService({
+        ...mockAIConfig,
+        provider: 'deepseek',
+      });
+
+      (fetch as jest.Mock).mockResolvedValueOnce({
+        ok: false,
+        status: 401,
+        statusText: 'Unauthorized',
+      });
+
+      await expect((deepseekService as any).callDeepSeek('Test prompt')).rejects.toThrow(
+        'DeepSeek API error: 401 Unauthorized'
+      );
+    });
+
+    it('should handle GLM API errors', async () => {
+      const glmService = new AIService({
+        ...mockAIConfig,
+        provider: 'glm',
+      });
+
+      (fetch as jest.Mock).mockResolvedValueOnce({
+        ok: false,
+        status: 429,
+        statusText: 'Too Many Requests',
+      });
+
+      await expect((glmService as any).callGLM('Test prompt')).rejects.toThrow(
+        'GLM API error: 429 Too Many Requests'
+      );
+    });
+
+    it('should handle Kimi API errors', async () => {
+      const kimiService = new AIService({
+        ...mockAIConfig,
+        provider: 'kimi',
+      });
+
+      (fetch as jest.Mock).mockResolvedValueOnce({
+        ok: false,
+        status: 500,
+        statusText: 'Internal Server Error',
+      });
+
+      await expect((kimiService as any).callKimi('Test prompt')).rejects.toThrow(
+        'Kimi API error: 500 Internal Server Error'
+      );
+    });
+
+    it('should handle Qwen API errors', async () => {
+      const qwenService = new AIService({
+        ...mockAIConfig,
+        provider: 'qwen',
+      });
+
+      (fetch as jest.Mock).mockResolvedValueOnce({
+        ok: false,
+        status: 400,
+        statusText: 'Bad Request',
+      });
+
+      await expect((qwenService as any).callQwen('Test prompt')).rejects.toThrow(
+        'Qwen API error: 400 Bad Request'
+      );
+    });
   });
 
   describe('generateContent', () => {

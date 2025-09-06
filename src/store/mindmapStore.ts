@@ -2,7 +2,7 @@ import { create, StoreApi, UseBoundStore } from 'zustand';
 import { MindMap, MindNode } from '../types';
 import { mindMapToText, textToMindMap } from '../utils/textFormat';
 import { AIService } from '../services/aiService';
-import { getAIConfig, validateAIConfig, getNodePath, AIConfig } from '../config/ai';
+import { validateAIConfig, getNodePath, AIConfig } from '../config/ai';
 import { getStoredAIConfig, saveAIConfig } from '../utils/aiConfigStorage';
 
 export interface MindMapState {
@@ -160,26 +160,78 @@ export const useMindMapStore: UseBoundStore<StoreApi<MindMapState>> = create<Min
     }
   },
   pasteNode: async (path: number[]) => {
+    const { mindmap } = get();
+    
     try {
-      const clipboardText = await navigator.clipboard.readText();
-      const parsedMindMap = textToMindMap(clipboardText);
+      let clipboardContent: string;
       
-      if (!parsedMindMap) {
-        throw new Error('Invalid clipboard format');
+      // Try modern clipboard API first
+      if (navigator.clipboard && navigator.clipboard.readText) {
+        clipboardContent = await navigator.clipboard.readText();
+      } else {
+        // Fallback to older method
+        clipboardContent = await new Promise<string>((resolve, reject) => {
+          const textarea = document.createElement('textarea');
+          textarea.value = '';
+          document.body.appendChild(textarea);
+          textarea.select();
+          
+          const success = document.execCommand('paste');
+          document.body.removeChild(textarea);
+          
+          if (success) {
+            resolve(textarea.value);
+          } else {
+            reject(new Error('Failed to paste from clipboard'));
+          }
+        });
       }
       
-      // Add parsed nodes as children to target node
-      const { mindmap } = get();
+      if (!clipboardContent.trim()) {
+        return; // Empty clipboard
+      }
+      
+      // Parse clipboard content as mind map structure
+      const parsedMindMap = textToMindMap(clipboardContent);
+      
+      // Create new mind map with updated structure
       const newMindMap = { ...mindmap };
       const targetNode = findNode(newMindMap.root, path);
+      
       if (targetNode) {
-        targetNode.children.push(...parsedMindMap.root.children);
-        // Update selected child to show pasted content
+        // Handle root node preservation
+        if (parsedMindMap?.root) {
+          // If clipboard has a single root node, add its children as siblings
+          if (parsedMindMap.root.children && parsedMindMap.root.children.length > 0) {
+            targetNode.children.push(...parsedMindMap.root.children);
+            
+            // If this is the actual root node being pasted, also copy the root text
+            if (path.length === 0 && parsedMindMap.root.text !== 'Root') {
+              targetNode.text = parsedMindMap.root.text;
+            }
+          } else {
+            // If root has no children, create a new node with the root text
+            if (parsedMindMap.root.text && parsedMindMap.root.text !== 'Root') {
+              targetNode.children.push({
+                text: parsedMindMap.root.text,
+                children: []
+              });
+            }
+          }
+        } else {
+          // Fallback: treat entire content as a single node
+          targetNode.children.push({
+            text: clipboardContent.trim(),
+            children: []
+          });
+        }
+        
         get().setSelectedChild(path, targetNode.children.length - 1);
         set({ mindmap: newMindMap });
       }
     } catch (error) {
       console.error('Failed to paste from clipboard:', error);
+      // Optionally show error to user
     }
   },
   generateAIContent: async (path: number[], question: string) => {

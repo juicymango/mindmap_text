@@ -1,6 +1,6 @@
 import React from 'react';
 import { useMindMapStore } from '../store/mindmapStore';
-import { saveToFile, saveAsFile, loadFromFile } from '../utils/file';
+import { saveAsFile, loadFromFile } from '../utils/file';
 import { FileFormat } from '../types';
 import { AIPromptDialog } from './AIPromptDialog';
 import { AIConfigDialog } from './AIConfigDialog';
@@ -49,39 +49,9 @@ export const Toolbar: React.FC = () => {
   const { selectedPath } = useSelectedPath();
   const [isAIDialogOpen, setIsAIDialogOpen] = React.useState(false);
 
-  const handleSave = async () => {
-    if (jsonFilePath) {
-      saveToFile(mindmap, jsonFilePath);
-    } else if (textFilePath) {
-      saveToFile(mindmap, textFilePath);
-    } else {
-      const path = await saveAsFile(mindmap, 'json');
-      if (path) {
-        setJsonFilePath(path);
-      }
-    }
-  };
-
   const handleSaveAs = async (format: FileFormat) => {
     const path = await saveAsFile(mindmap, format);
     if (path) {
-      if (format === 'json') {
-        setJsonFilePath(path);
-      } else {
-        setTextFilePath(path);
-      }
-    }
-  };
-
-  const handleLoad = async () => {
-    const filePath = jsonFilePath || textFilePath;
-    if (!filePath) return;
-    
-    const { mindmap: newMindMap, path } = await loadFromFile(filePath);
-    
-    if (newMindMap) {
-      setMindmap(newMindMap);
-      const format = path.endsWith('.txt') ? 'text' : 'json';
       if (format === 'json') {
         setJsonFilePath(path);
       } else {
@@ -131,24 +101,16 @@ export const Toolbar: React.FC = () => {
     return jsonFilePath || textFilePath || 'No file selected';
   };
 
-  const hasFilePath = jsonFilePath || textFilePath;
-
   return (
     <ToolbarContainer>
       <button onClick={handleAddNode}>Add Node</button>
       
       <ButtonGroup>
-        <button onClick={handleSave} disabled={!hasFilePath}>
-          Save
-        </button>
         <button onClick={() => handleSaveAs('json')}>Save As JSON</button>
         <button onClick={() => handleSaveAs('text')}>Save As Text</button>
       </ButtonGroup>
       
       <ButtonGroup>
-        <button onClick={handleLoad} disabled={!hasFilePath}>
-          Load
-        </button>
         <button onClick={handleLoadAs}>Load As</button>
       </ButtonGroup>
       

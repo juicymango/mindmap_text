@@ -290,6 +290,183 @@ describe('mindmapStore', () => {
     expect(navigator.clipboard.readText).toHaveBeenCalled();
   });
 
+  // Enhanced paste functionality tests - root node preservation
+  it('should preserve root node text when pasting to root', async () => {
+    const { result } = renderHook(() => useMindMapStore());
+
+    // Mock clipboard content with root node
+    (navigator.clipboard.readText as jest.Mock).mockResolvedValue('New Root Text\n\tChild Node');
+
+    await act(async () => {
+      await result.current.pasteNode([]);
+    });
+
+    // Root text should be preserved and children added
+    expect(result.current.mindmap.root.text).toBe('New Root Text');
+    expect(result.current.mindmap.root.children).toHaveLength(1);
+    expect(result.current.mindmap.root.children[0].text).toBe('Child Node');
+  });
+
+  it('should preserve root node text when pasting root with no children', async () => {
+    const { result } = renderHook(() => useMindMapStore());
+
+    // Mock clipboard content with root node but no children
+    (navigator.clipboard.readText as jest.Mock).mockResolvedValue('Standalone Root Node');
+
+    await act(async () => {
+      await result.current.pasteNode([]);
+    });
+
+    // When pasting a standalone root node with no children, it should create a new child node
+    expect(result.current.mindmap.root.text).toBe('Root');
+    expect(result.current.mindmap.root.children).toHaveLength(1);
+    expect(result.current.mindmap.root.children[0].text).toBe('Standalone Root Node');
+  });
+
+  it('should add root content as child when pasting to non-root node', async () => {
+    const { result } = renderHook(() => useMindMapStore());
+
+    // Setup target node
+    act(() => {
+      result.current.addNode([], 'Target Node');
+    });
+
+    // Mock clipboard content with root node
+    (navigator.clipboard.readText as jest.Mock).mockResolvedValue('Root Content\n\tChild Content');
+
+    await act(async () => {
+      await result.current.pasteNode([0]);
+    });
+
+    // Root content should be added as children to target node
+    expect(result.current.mindmap.root.children[0].text).toBe('Target Node');
+    expect(result.current.mindmap.root.children[0].children).toHaveLength(1);
+    expect(result.current.mindmap.root.children[0].children[0].text).toBe('Child Content');
+  });
+
+  it('should handle fallback clipboard API when modern API is not available', async () => {
+    const { result } = renderHook(() => useMindMapStore());
+
+    // Setup target node
+    act(() => {
+      result.current.addNode([], 'Target Node');
+    });
+
+    // Mock modern clipboard API as unavailable
+    const originalClipboard = navigator.clipboard;
+    Object.assign(navigator, {
+      clipboard: { readText: undefined }
+    });
+
+    // Mock document.execCommand fallback
+    const mockTextArea = {
+      value: 'Fallback Content\n\tChild Content',
+      select: jest.fn(),
+      blur: jest.fn()
+    };
+    document.createElement = jest.fn().mockReturnValue(mockTextArea);
+    document.body.appendChild = jest.fn();
+    document.body.removeChild = jest.fn();
+    (document.execCommand as jest.Mock).mockImplementation((command) => {
+      if (command === 'paste') {
+        mockTextArea.value = 'Fallback Content\n\tChild Content';
+        return true;
+      }
+      return false;
+    });
+
+    await act(async () => {
+      await result.current.pasteNode([0]);
+    });
+
+    // Should have used fallback and added content
+    expect(result.current.mindmap.root.children[0].children).toHaveLength(1);
+    expect(result.current.mindmap.root.children[0].children[0].text).toBe('Child Content');
+
+    // Restore clipboard
+    Object.assign(navigator, { clipboard: originalClipboard });
+  });
+
+  // AI configuration tests
+  it('should initialize with default AI configuration', () => {
+    const { result } = renderHook(() => useMindMapStore());
+
+    expect(result.current.aiConfig).toBeDefined();
+    expect(result.current.aiConfig.provider).toBeDefined();
+    expect(result.current.aiConfig.model).toBeDefined();
+    expect(result.current.aiConfig.maxTokens).toBeGreaterThan(0);
+    expect(result.current.aiConfig.temperature).toBeGreaterThanOrEqual(0);
+  });
+
+  it('should update AI configuration', () => {
+    const { result } = renderHook(() => useMindMapStore());
+
+    const newConfig = {
+      provider: 'openai' as const,
+      model: 'gpt-4',
+      apiKey: 'test-key',
+      maxTokens: 2000,
+      temperature: 0.8
+    };
+
+    act(() => {
+      result.current.updateAIConfig(newConfig);
+    });
+
+    expect(result.current.aiConfig.provider).toBe('openai');
+    expect(result.current.aiConfig.model).toBe('gpt-4');
+    expect(result.current.aiConfig.apiKey).toBe('test-key');
+    expect(result.current.aiConfig.maxTokens).toBe(2000);
+    expect(result.current.aiConfig.temperature).toBe(0.8);
+  });
+
+  it('should manage AI config dialog state', () => {
+    const { result } = renderHook(() => useMindMapStore());
+
+    expect(result.current.aiConfigDialogOpen).toBe(false);
+
+    act(() => {
+      result.current.setAIConfigDialogOpen(true);
+    });
+
+    expect(result.current.aiConfigDialogOpen).toBe(true);
+
+    act(() => {
+      result.current.setAIConfigDialogOpen(false);
+    });
+
+    expect(result.current.aiConfigDialogOpen).toBe(false);
+  });
+
+  it('should track AI process history', async () => {
+    const { result } = renderHook(() => useMindMapStore());
+
+    expect(result.current.aiProcessHistory).toHaveLength(0);
+
+    // Mock a successful AI process
+    jest.useFakeTimers();
+    const mockDate = new Date('2023-01-01T00:00:00.000Z');
+    jest.setSystemTime(mockDate);
+
+    const testEntry = {
+      id: 'test-id',
+      timestamp: mockDate,
+      question: 'Test question',
+      prompt: 'Test prompt',
+      response: 'Test response',
+      success: true
+    };
+
+    act(() => {
+      result.current.aiProcessHistory = [...result.current.aiProcessHistory, testEntry];
+    });
+
+    expect(result.current.aiProcessHistory).toHaveLength(1);
+    expect(result.current.aiProcessHistory[0]).toEqual(testEntry);
+
+    jest.useRealTimers();
+  });
+
   // Helper function tests
   it('should find node correctly', () => {
     const { result } = renderHook(() => useMindMapStore());
