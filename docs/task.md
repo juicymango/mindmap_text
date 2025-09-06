@@ -1255,3 +1255,87 @@ TS2322: Type '{ mindmap: { root: { text: string; children: never[]; }; }; setMin
 - update ./docs/code_structure.md based on the current implementation.
 - update ./docs/test.md based on the current implementation.
 - commit and push the changes.
+
+# task 29
+
+- i found when pasting, the root in the clipboard will be discarded. this bug still exists. the root in the clipboard should be added to the last child of the chosen node.
+    - tell me why.
+    - tell me where are the relevant codes.
+    - list the file paths and functions for both the implementation and the test cases.
+- i didn't see new nodes added to the mind map after asking ai. i also find the ai response truncated.
+    - tell me why.
+    - tell me where are the relevant codes.
+    - list the file paths and functions for both the implementation and the test cases.
+- append your answer to ./docs/task.md.
+- don't implement.
+- commit and push the changes.
+
+## Task 29 Analysis
+
+### Issue 1: Paste Bug - Root Content Discarded
+
+**Why this happens:**
+
+The paste bug occurs because of the current implementation in `src/store/mindmapStore.ts` in the `pasteNode` function. The issue is in the logic that handles how root content from clipboard is processed.
+
+**Relevant code locations:**
+
+**Implementation:**
+- `src/store/mindmapStore.ts` - `pasteNode` function (lines 162-236)
+- `src/utils/textFormat.ts` - `textToMindMap` function (lines 13-57)
+
+**Test cases:**
+- `src/store/mindmapStore.test.ts` - Enhanced paste functionality tests (lines 293-343)
+
+**Analysis of the problem:**
+
+1. In `pasteNode`, when clipboard content is parsed using `textToMindMap`, it creates a MindMap object with a root node
+2. The current logic has a flaw in how it handles the root text when pasting:
+   - If the pasted root has children, it adds the children but only updates the root text under certain conditions
+   - If the pasted root has no children (standalone root), it may not preserve the root content correctly
+3. The logic at lines 208-211 and 213-220 has conditional checks that may not handle all scenarios properly
+
+**Specific problem areas:**
+- Line 210: `if (path.length === 0 && parsedMindMap.root.text !== 'Root')` - This condition prevents root text update if the pasted root text is "Root"
+- Lines 214-219: When root has no children, it only adds it as a child node instead of potentially updating the target node's text
+
+### Issue 2: AI Content Not Appearing and Response Truncated
+
+**Why this happens:**
+
+The AI content issues are likely caused by problems in the AI generation and parsing pipeline.
+
+**Relevant code locations:**
+
+**Implementation:**
+- `src/store/mindmapStore.ts` - `generateAIContent` function (lines 237-324)
+- `src/services/aiService.ts` - AI service implementation
+- `src/config/ai.ts` - AI configuration and prompt building
+
+**Test cases:**
+- `src/store/mindmapStore.ai.test.ts` - AI functionality tests
+- `src/integration/aiWorkflow.test.tsx` - Integration tests
+
+**Analysis of the problem:**
+
+1. **New nodes not appearing**: This could be due to:
+   - Issues in the `generateAIContent` function where AI response parsing fails
+   - Problems with how the AI response structure is converted to mind map nodes
+   - State management issues where the mind map is not updated correctly
+
+2. **AI response truncated**: This could be caused by:
+   - Token limits in the AI configuration
+   - Issues with prompt engineering that don't properly guide the AI to generate complete responses
+   - Problems with response parsing that cuts off content prematurely
+
+**Specific problem areas:**
+- In `generateAIContent`, the AI response is processed and added to the mind map, but there may be issues with:
+  - Line 296: `targetNode.children.push(...response.structure);` - The response.structure may not be properly formatted
+  - Lines 255-272: Prompt building may not be optimal for generating complete mind map structures
+  - Error handling may be masking issues where AI responses are partially processed
+
+**Additional concerns:**
+- The AI service may not be properly handling different response formats
+- There might be issues with how the AI response is validated and converted to the expected node structure
+- The maxTokens configuration might be too restrictive for complex mind map generation
+- The prompt may not be providing clear enough instructions for hierarchical content generation
