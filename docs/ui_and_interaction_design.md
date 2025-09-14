@@ -76,6 +76,8 @@ The UI is a horizontally scrolling view of columns with a toolbar at the top:
     - **Paste:** Select a node and press Ctrl+V (Cmd+V on Mac) to paste clipboard content as children to the selected node.
     - Uses the existing text format for clipboard operations with auxiliary root node handling.
     - The auxiliary root node is automatically managed during copy/paste operations to ensure proper hierarchy preservation.
+    - **Copy Logic Enhancement:** Fixed compatibility with auxiliary root node logic - when copying, the node becomes a child of the auxiliary root in the temporary structure, ensuring the copied content is preserved correctly in text format.
+    - **Paste Logic Enhancement:** Fixed auxiliary root handling for both root and non-root targets - when pasting to root, the root text is updated and children are added; when pasting to non-root nodes, the auxiliary root's children are added directly to maintain proper hierarchy.
 
 9.  **AI Content Generation with Transparency:**
     - **AI Configuration:** Users configure AI models through a user-friendly dialog interface with support for OpenAI, Anthropic, and Local AI providers.

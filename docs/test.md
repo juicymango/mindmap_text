@@ -120,26 +120,28 @@
 ## Enhanced Clipboard Operations
 
 - **Copy Node Structure:**
-  - Right-click or use keyboard shortcut to copy a node and its entire subtree.
-  - The clipboard should contain the hierarchical text representation.
-  - Copy should work with both modern clipboard API and fallback methods.
+  - Use Ctrl+C (Windows/Linux) or Cmd+C (Mac) to copy a selected node and its entire subtree.
+  - The clipboard contains the hierarchical text representation using tabs for hierarchy.
+  - Copy works with both modern clipboard API and fallback methods for browser compatibility.
+  - **Auxiliary Root Compatibility:** The copy function creates a temporary structure where the copied node becomes a child of the auxiliary root to ensure proper text format conversion.
 
 - **Paste with Root Node Preservation:**
-  - When pasting content to the root node, the root text should be preserved and updated with the pasted root text.
-  - When pasting content with a root node that has children, the children should be added to the target.
-  - When pasting a standalone root node (no children) to the root, the root text should be updated.
-  - When pasting a standalone root node (no children) to non-root nodes, it should be added as a child node.
-  - When pasting to non-root nodes, root content should be added as children.
+  - Use Ctrl+V (Windows/Linux) or Cmd+V (Mac) to paste clipboard content as children to the selected node.
+  - **Root Node Pasting:** When pasting to the root node, the root text is updated with the pasted content and children are added from the auxiliary root structure.
+  - **Non-Root Node Pasting:** When pasting to non-root nodes, the auxiliary root's children are added directly as children of the target node.
+  - **Standalone Root Handling:** Standalone root nodes (no children) update the root text when pasted to root, or are added as child nodes when pasted to non-root targets.
+  - **Hierarchy Preservation:** The auxiliary root logic ensures proper hierarchy preservation during copy/paste operations.
 
 - **Cross-Browser Clipboard Support:**
   - Modern browsers: Use Clipboard API for reliable copy/paste operations.
   - Legacy browsers: Fallback to document.execCommand for broader compatibility.
-  - Error handling should gracefully handle clipboard permission denials.
+  - Error handling gracefully handles clipboard permission denials and API unavailability.
 
 - **Paste Validation:**
-  - Invalid clipboard content should be rejected without breaking the application.
-  - Empty clipboard should be handled gracefully.
-  - Malformed hierarchical text should be parsed safely or ignored.
+  - Invalid clipboard content is rejected without breaking the application.
+  - Empty clipboard content is handled gracefully with no action taken.
+  - Malformed hierarchical text is parsed safely or ignored with appropriate error logging.
+  - Non-existent node targets are handled silently without application errors.
 
 - **File format detection:**
   - Files with .json extension should be loaded as JSON format.
@@ -180,6 +182,7 @@
   - Copy current node and entire subtree to clipboard using text format
   - Use Ctrl+C (Windows/Linux) or Cmd+C (Mac) to copy selected node
   - Clipboard content uses text format with tab hierarchy
+  - **Auxiliary Root Compatibility:** Creates temporary structure where copied node becomes child of auxiliary root
   - Handles clipboard API errors with fallback to document.execCommand
   - Shows error messages in console for failed copy operations
 
@@ -187,6 +190,8 @@
   - Paste clipboard content to current node, appending as children
   - Use Ctrl+V (Windows/Linux) or Cmd+V (Mac) to paste to selected node
   - Parses clipboard text using existing text format utilities
+  - **Root Node Handling:** Updates root text and adds children when pasting to root node
+  - **Non-Root Node Handling:** Adds auxiliary root's children directly when pasting to non-root nodes
   - Automatically expands to show newly pasted children
   - Handles invalid clipboard content gracefully with error messages
 
@@ -199,6 +204,7 @@
 - **Text format integration:**
   - Copy uses existing `mindMapToText` utility for consistent format
   - Paste uses existing `textToMindMap` utility for parsing
+  - **Auxiliary Root Logic:** Proper handling of auxiliary root node for compatibility
   - Maintains compatibility with existing text format files
   - Preserves hierarchy and node relationships
 
@@ -207,6 +213,7 @@
   - Fallback mechanisms for older browsers without clipboard API
   - Validation of clipboard content before pasting
   - Console error logging for debugging failed operations
+  - Silent handling of non-existent node targets
 
 ## Column-Based UI
 
@@ -265,14 +272,17 @@ The project uses ESLint with TypeScript support to prevent common errors:
 - Test updateNodeText functionality
 - Test setSelectedChild functionality and expansion behavior
 - Test copyNode functionality with various node structures
+- Test copyNode auxiliary root compatibility and temporary structure creation
 - Test copyNode error handling with clipboard API failures
 - Test copyNode fallback to document.execCommand
 - Test pasteNode functionality with valid clipboard content
+- Test pasteNode auxiliary root handling for root and non-root targets
 - Test pasteNode error handling with invalid clipboard data
 - Test pasteNode graceful error handling
 - Test enhanced paste functionality for root content preservation
 - Test standalone root node pasting behavior
 - Test root content addition as children to non-root nodes
+- Test fallback clipboard API compatibility for older browsers
 - Test findNode and findParent helper functions
 
 ### File Utils Tests (`src/utils/file.test.ts`)

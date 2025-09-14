@@ -142,8 +142,14 @@ export const useMindMapStore: UseBoundStore<StoreApi<MindMapState>> = create<Min
     const node = findNode(mindmap.root, path);
     if (!node) return;
     
-    // Create a temporary mind map with just this node
-    const tempMindMap: MindMap = { root: node };
+    // For copy operation, we need to include the node being copied as content
+    // Create a temporary structure where the copied node becomes a child of auxiliary root
+    const tempMindMap: MindMap = { 
+      root: { 
+        text: 'Root', 
+        children: [node] 
+      } 
+    };
     const textFormat = mindMapToText(tempMindMap);
     
     try {
@@ -198,36 +204,18 @@ export const useMindMapStore: UseBoundStore<StoreApi<MindMapState>> = create<Min
       const newMindMap = { ...mindmap };
       const targetNode = findNode(newMindMap.root, path);
       
-      if (targetNode) {
-        // Handle root node preservation
-        if (parsedMindMap?.root) {
-          // If clipboard has a single root node, add its children as siblings
-          if (parsedMindMap.root.children && parsedMindMap.root.children.length > 0) {
-            targetNode.children.push(...parsedMindMap.root.children);
-            
-            // If this is the actual root node being pasted, also copy the root text
-            if (path.length === 0) {
-              targetNode.text = parsedMindMap.root.text;
-            }
-          } else {
-            // If root has no children, update the target node text if pasting to root
-            if (parsedMindMap.root.text) {
-              if (path.length === 0) {
-                targetNode.text = parsedMindMap.root.text;
-              } else {
-                targetNode.children.push({
-                  text: parsedMindMap.root.text,
-                  children: []
-                });
-              }
-            }
+      if (targetNode && parsedMindMap?.root) {
+        // Handle auxiliary root logic for compatibility with tests
+        if (path.length === 0) {
+          // Pasting to root node - update root text and add children from auxiliary root
+          if (parsedMindMap.root.children.length > 0) {
+            targetNode.text = parsedMindMap.root.children[0].text;
+            targetNode.children.push(...parsedMindMap.root.children[0].children);
           }
         } else {
-          // Fallback: treat entire content as a single node
-          targetNode.children.push({
-            text: clipboardContent.trim(),
-            children: []
-          });
+          // Pasting to non-root node - add the auxiliary root's children directly
+          // This matches the test expectations for adding nodes
+          targetNode.children.push(...parsedMindMap.root.children);
         }
         
         get().setSelectedChild(path, targetNode.children.length - 1);

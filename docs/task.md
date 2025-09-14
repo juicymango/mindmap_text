@@ -1522,3 +1522,15 @@ This process ensures all test files are discovered and executed regardless of th
 - update ./docs/code_structure.md based on the current implementation.
 - update ./docs/test.md based on the current implementation.
 - commit and push the changes.
+
+# task 34
+
+- the logic of copyNode is not compatible of the logic that "the Root is an auxiliary node".
+- there are also other bugs in mindmapStore.
+- fix all the bugs in mindmapStore.
+- make sure npx tsc --noEmit reports no errors.
+- make sure npm test -- --watchAll=false passes all the tests in mindmapStore.test.ts.
+- update ./docs/ui_and_iteration_design.md based on the current implementation.
+- update ./docs/code_structure.md based on the current implementation.
+- update ./docs/test.md based on the current implementation.
+- commit and push the changes.

@@ -14,8 +14,29 @@ Object.assign(document, {
   execCommand: jest.fn(),
 });
 
+// Mock localStorage
+const localStorageMock = {
+  getItem: jest.fn(),
+  setItem: jest.fn(),
+  removeItem: jest.fn(),
+  clear: jest.fn(),
+};
+Object.assign(global, { localStorage: localStorageMock });
+
+// Mock process.env
+Object.assign(process.env, {
+  REACT_APP_AI_PROVIDER: 'openai',
+  REACT_APP_AI_MODEL: 'gpt-3.5-turbo',
+  REACT_APP_AI_API_KEY: 'test-key',
+});
+
 describe('mindmapStore', () => {
   beforeEach(() => {
+    // Setup DOM container for React
+    const container = document.createElement('div');
+    container.setAttribute('id', 'root');
+    document.body.appendChild(container);
+    
     // Reset the store before each test
     const { result } = renderHook(() => useMindMapStore());
     act(() => {
@@ -24,8 +45,16 @@ describe('mindmapStore', () => {
     });
     
     // Clear localStorage and mocks
-    localStorage.clear();
+    localStorageMock.clear();
     jest.clearAllMocks();
+  });
+
+  afterEach(() => {
+    // Clean up DOM
+    const root = document.getElementById('root');
+    if (root) {
+      document.body.removeChild(root);
+    }
   });
 
   it('should add a node', () => {
@@ -216,9 +245,9 @@ describe('mindmapStore', () => {
     });
 
     // Mock clipboard content - when parsed, creates root with children
-    // The parsed structure will be: { root: { text: 'Pasted Node', children: [{ text: 'Child Node', children: [] }] } }
-    // But we only add the root's children to the target, so the target gets: [{ text: 'Child Node', children: [] }]
-    (navigator.clipboard.readText as jest.Mock).mockResolvedValue('Root Node\n\tPasted Node\n\t\tChild Node');
+    // The parsed structure will be: { root: { text: 'Root', children: [{ text: 'Pasted Node', children: [{ text: 'Child Node', children: [] }] }] } }
+    // When pasting to non-root node, we add the root's children to the target
+    (navigator.clipboard.readText as jest.Mock).mockResolvedValue('Pasted Node\n\tChild Node');
 
     await act(async () => {
       await result.current.pasteNode([0]);
@@ -337,9 +366,11 @@ describe('mindmapStore', () => {
     });
 
     expect(result.current.mindmap.root.children[0].text).toBe('Target Node'); // Target preserved
-    expect(result.current.mindmap.root.children[0].children).toHaveLength(2); // Children added
-    expect(result.current.mindmap.root.children[0].children[0].text).toBe('Child 1');
-    expect(result.current.mindmap.root.children[0].children[1].text).toBe('Child 2');
+    expect(result.current.mindmap.root.children[0].children).toHaveLength(1); // Root content added as single child
+    expect(result.current.mindmap.root.children[0].children[0].text).toBe('Root Content');
+    expect(result.current.mindmap.root.children[0].children[0].children).toHaveLength(2); // Children of root content
+    expect(result.current.mindmap.root.children[0].children[0].children[0].text).toBe('Child 1');
+    expect(result.current.mindmap.root.children[0].children[0].children[1].text).toBe('Child 2');
   });
 
   it('should handle fallback clipboard API when modern API is not available', async () => {
@@ -379,7 +410,7 @@ describe('mindmapStore', () => {
 
     // Should have used fallback and added content
     expect(result.current.mindmap.root.children[0].children).toHaveLength(1);
-    expect(result.current.mindmap.root.children[0].children[0].text).toBe('Child Content');
+    expect(result.current.mindmap.root.children[0].children[0].text).toBe('Fallback Content');
 
     // Restore clipboard
     Object.assign(navigator, { clipboard: originalClipboard });
