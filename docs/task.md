@@ -1339,3 +1339,66 @@ The AI content issues are likely caused by problems in the AI generation and par
 - There might be issues with how the AI response is validated and converted to the expected node structure
 - The maxTokens configuration might be too restrictive for complex mind map generation
 - The prompt may not be providing clear enough instructions for hierarchical content generation
+
+# task 30
+
+- read the source code.
+- tell me where textToMindMap is defined.
+- tell me all the places that use textToMindMap. explain the scenarios.
+- append your answer to ./docs/task.md.
+- do not implement.
+- commit and push the changes.
+
+## Task 30 Analysis
+
+### textToMindMap Function Location
+
+**Definition:**
+`textToMindMap` is defined in `/src/utils/textFormat.ts` at lines 13-57.
+
+**Function signature:**
+```typescript
+export const textToMindMap = (text: string): MindMap | null => {
+```
+
+### Usage Scenarios
+
+**1. Clipboard Paste Functionality** (`src/store/mindmapStore.ts:195`)
+- **Scenario**: When user pastes content (Ctrl+V/Cmd+V)
+- **Purpose**: Parse clipboard text content into mind map structure
+- **Context**: Used in `pasteNode` function to convert text clipboard data to hierarchical mind map nodes
+- **Line**: `const parsedMindMap = textToMindMap(clipboardContent);`
+
+**2. AI Service Response Parsing** (`src/services/aiService.ts:274`)
+- **Scenario**: When AI generates content and needs to be parsed into mind map format
+- **Purpose**: Convert AI response text into mind map node structure
+- **Context**: Used in `parseResponseToMindMap` method to parse AI-generated hierarchical content
+- **Line**: `const mindMap = textToMindMap(lines.join('\n'));`
+
+**3. File Loading - Text Format** (`src/utils/file.ts:66`)
+- **Scenario**: When user loads a text file containing mind map data
+- **Purpose**: Parse text file content into mind map structure
+- **Context**: Used in file reading process when file is detected as text format (tab-indented)
+- **Line**: `const parsedMindMap = textToMindMap(text);`
+
+**4. Testing** (`src/utils/textFormat.test.ts`)
+- **Scenario**: Unit testing of text format conversion functionality
+- **Purpose**: Verify that text parsing works correctly for various input formats
+- **Context**: Test cases validate correct parsing of tab-indented hierarchical text
+- **Lines**: Multiple test assertions using `textToMindMap(text)`
+
+### Implementation Details
+
+The `textToMindMap` function:
+- Parses tab-indented text into hierarchical mind map structure
+- Uses a stack-based approach to maintain parent-child relationships
+- Handles depth calculation by counting leading tabs
+- Returns `null` for empty or invalid input
+- Creates a root node from the first line (must have depth 0)
+- Builds child nodes based on indentation levels
+
+### Key Characteristics
+- **Input**: String with tab-indented hierarchical structure
+- **Output**: MindMap object with root and children, or null if parsing fails
+- **Error Handling**: Returns null for invalid input rather than throwing
+- **Format Expectation**: First line must be root (no tabs), subsequent lines use tabs for hierarchy
