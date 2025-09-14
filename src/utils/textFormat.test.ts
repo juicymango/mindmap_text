@@ -18,14 +18,14 @@ describe('textFormat', () => {
           ],
         },
       };
-      const expectedText = 'Root\n\tChild 1\n\t\tGrandchild 1\n\tChild 2';
+      const expectedText = 'Child 1\n\tGrandchild 1\nChild 2';
       expect(mindMapToText(mindMap)).toBe(expectedText);
     });
   });
 
   describe('textToMindMap', () => {
     it('should convert text to a mind map', () => {
-      const text = 'Root\n\tChild 1\n\t\tGrandchild 1\n\tChild 2';
+      const text = 'Child 1\n\tGrandchild 1\nChild 2';
       const expectedMindMap: MindMap = {
         root: {
           text: 'Root',

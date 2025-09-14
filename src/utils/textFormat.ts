@@ -2,11 +2,14 @@ import { MindMap, MindNode } from '../types';
 
 export const mindMapToText = (mindMap: MindMap): string => {
   const lines: string[] = [];
+  // Skip the root node (auxiliary node) and start from its children
+  mindMap.root.children.forEach(child => traverse(child, 0));
+  
   function traverse(node: MindNode, depth: number) {
     lines.push('\t'.repeat(depth) + node.text);
     node.children.forEach(child => traverse(child, depth + 1));
   }
-  traverse(mindMap.root, 0);
+  
   return lines.join('\n');
 };
 
@@ -31,11 +34,14 @@ export const textToMindMap = (text: string): MindMap | null => {
       return depth;
   }
 
-  const firstLine = lines.shift()!;
+  // Check if first line has depth > 0 (invalid text format)
+  const firstLine = lines[0];
   if (getDepth(firstLine) !== 0) {
       return null;
   }
-  const root: MindNode = { text: firstLine.trim(), children: [] };
+
+  // Create auxiliary root node that won't appear in the text output
+  const root: MindNode = { text: 'Root', children: [] };
   const parentStack: MindNode[] = [root];
 
   lines.forEach(line => {
@@ -43,7 +49,11 @@ export const textToMindMap = (text: string): MindMap | null => {
     const text = line.trim();
     const newNode: MindNode = { text, children: [] };
 
-    while (parentStack.length > depth) {
+    // All lines in the text should be children of the auxiliary root
+    // So we adjust the depth accordingly
+    const adjustedDepth = depth + 1;
+
+    while (parentStack.length > adjustedDepth) {
       parentStack.pop();
     }
 

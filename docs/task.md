@@ -1497,3 +1497,15 @@ function findTestFiles(rootDir) {
 ```
 
 This process ensures all test files are discovered and executed regardless of their location within the `src/` directory structure.
+
+# task 32
+
+- i modify test cases in ./src/utils/textFormat.test.ts. please detect the diff to understand my modification.
+- the "Root" is an auxiliary node. it is automatically added in textToMindMap and removed in mindMapToText.
+- based on the test cases, please modify the implementation of textToMindMap and mindMapToText.
+- make sure npx tsc --noEmit reports no errors.
+- use npm test -- --watchAll=false to test. make sure you pass all the automatic tests.
+- update ./docs/ui_and_iteration_design.md based on the current implementation.
+- update ./docs/code_structure.md based on the current implementation.
+- update ./docs/test.md based on the current implementation.
+- commit and push the changes.

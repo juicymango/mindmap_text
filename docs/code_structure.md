@@ -754,18 +754,21 @@ mindmap-app/
 
 ### `src/utils/textFormat.ts`
 
--   **Function:** Contains utility functions for converting between mind map and text format.
+-   **Function:** Contains utility functions for converting between mind map and text format with auxiliary root node handling.
 -   **Structure:**
     ```typescript
     import { MindMap, MindNode } from '../types';
 
     export const mindMapToText = (mindMap: MindMap): string => {
       const lines: string[] = [];
+      // Skip the root node (auxiliary node) and start from its children
+      mindMap.root.children.forEach(child => traverse(child, 0));
+      
       function traverse(node: MindNode, depth: number) {
         lines.push('\t'.repeat(depth) + node.text);
         node.children.forEach(child => traverse(child, depth + 1));
       }
-      traverse(mindMap.root, 0);
+      
       return lines.join('\n');
     };
 
@@ -790,11 +793,14 @@ mindmap-app/
           return depth;
       }
 
-      const firstLine = lines.shift()!;
+      // Check if first line has depth > 0 (invalid text format)
+      const firstLine = lines[0];
       if (getDepth(firstLine) !== 0) {
           return null;
       }
-      const root: MindNode = { text: firstLine.trim(), children: [] };
+
+      // Create auxiliary root node that won't appear in the text output
+      const root: MindNode = { text: 'Root', children: [] };
       const parentStack: MindNode[] = [root];
 
       lines.forEach(line => {
@@ -802,7 +808,11 @@ mindmap-app/
         const text = line.trim();
         const newNode: MindNode = { text, children: [] };
 
-        while (parentStack.length > depth) {
+        // All lines in the text should be children of the auxiliary root
+        // So we adjust the depth accordingly
+        const adjustedDepth = depth + 1;
+
+        while (parentStack.length > adjustedDepth) {
           parentStack.pop();
         }
 
@@ -815,6 +825,12 @@ mindmap-app/
       return { root };
     };
     ```
+
+**Key Features:**
+- **Auxiliary Root Node:** The "Root" node is treated as an auxiliary node that's automatically added in `textToMindMap` and removed in `mindMapToText`
+- **Text Format:** Uses tab-indented hierarchical structure where the first line becomes the first child of the auxiliary root
+- **Validation:** Returns null for invalid input (empty text or text starting with tabs)
+- **Consistency:** Ensures round-trip conversion between mind map and text formats
 
 ### `src/services/aiService.ts`
 

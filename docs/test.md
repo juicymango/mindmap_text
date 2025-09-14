@@ -286,12 +286,14 @@ The project uses ESLint with TypeScript support to prevent common errors:
 - Test downloadFile functionality
 
 ### Text Format Tests (`src/utils/textFormat.test.ts`)
-- Test mindMapToText conversion with various hierarchies
-- Test textToMindMap parsing with valid tab structures
-- Test textToMindMap with empty input
-- Test textToMindMap with invalid indentation
-- Test textToMindMap with multiline content
-- Test round-trip conversion (mindMapToText -> textToMindMap)
+- Test mindMapToText conversion with auxiliary root node handling (skips root, starts from children)
+- Test textToMindMap parsing with automatic auxiliary root node creation
+- Test textToMindMap with empty input (returns null)
+- Test textToMindMap with invalid indentation (first line starts with tab, returns null)
+- Test textToMindMap with multiline content and hierarchical structure
+- Test round-trip conversion (mindMapToText -> textToMindMap) preserving auxiliary root behavior
+- Test that auxiliary root node "Root" is not included in text output
+- Test that text input creates proper auxiliary root structure in mind map
 
 ### Component Tests
 
