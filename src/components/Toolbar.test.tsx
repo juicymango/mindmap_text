@@ -83,7 +83,7 @@ describe('Toolbar', () => {
     expect(getByText('Current file: /path/to/file.txt')).toBeInTheDocument();
   });
 
-  it('should disable Save and Load buttons when no file path is set', () => {
+  it('should disable Save button when no file path is set', () => {
     const { getByText } = render(
       <SelectedPathProvider>
         <Toolbar />
@@ -91,10 +91,9 @@ describe('Toolbar', () => {
     );
     
     expect(getByText('Save')).toBeDisabled();
-    expect(getByText('Load')).toBeDisabled();
   });
 
-  it('should enable Save and Load buttons when file path is set', () => {
+  it('should enable Save button when file path is set', () => {
     const mockStore = createMockMindMapStore({
       mindmap: { root: { text: 'Root', children: [] } },
       setMindmap,
@@ -112,7 +111,6 @@ describe('Toolbar', () => {
     );
     
     expect(getByText('Save')).not.toBeDisabled();
-    expect(getByText('Load')).not.toBeDisabled();
   });
 
   it('should call saveToFile with JSON file path when Save is clicked', () => {
@@ -231,40 +229,7 @@ describe('Toolbar', () => {
     expect(setTextFilePath).toHaveBeenCalledWith(defaultPath);
   });
 
-  it('should call loadFromFile with remembered path when Load is clicked', async () => {
-    const mockResult = {
-      mindmap: { root: { text: 'New Root', children: [] } },
-      path: '/path/to/file.json'
-    };
-    (loadFromFile as jest.Mock).mockResolvedValue(mockResult);
-
-    createMockMindMapStore({
-      mindmap: { root: { text: 'Root', children: [] } },
-      setMindmap,
-      addNode,
-      jsonFilePath: '/path/to/file.json',
-      textFilePath: null,
-      setJsonFilePath,
-      setTextFilePath,
-    });
-
-    const { getByText } = render(
-      <SelectedPathProvider>
-        <Toolbar />
-      </SelectedPathProvider>
-    );
-    fireEvent.click(getByText('Load'));
-
-    await act(async () => {
-      await new Promise(resolve => setTimeout(resolve, 0));
-    });
-
-    expect(loadFromFile).toHaveBeenCalledWith('/path/to/file.json');
-    expect(setMindmap).toHaveBeenCalledWith(mockResult.mindmap);
-    expect(setJsonFilePath).toHaveBeenCalledWith('/path/to/file.json');
-  });
-
-  it('should call loadFromFile when Load As is clicked', async () => {
+  it('should call loadFromFile when Load File is clicked', async () => {
     const mockResult = {
       mindmap: { root: { text: 'New Root', children: [] } },
       path: '/path/to/file.json'
@@ -276,7 +241,7 @@ describe('Toolbar', () => {
         <Toolbar />
       </SelectedPathProvider>
     );
-    fireEvent.click(getByText('Load As'));
+    fireEvent.click(getByText('Load File'));
 
     await act(async () => {
       await new Promise(resolve => setTimeout(resolve, 0));

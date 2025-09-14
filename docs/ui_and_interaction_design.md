@@ -17,8 +17,7 @@ The UI is a horizontally scrolling view of columns with a toolbar at the top:
 
 ```
 +-------------------------------------------------------------+
-| Toolbar: [Add Node] [Save] [Save As] [Load] [Load As]     |
-|         [Ask AI] [AI Config]                                |
+| Toolbar: [Add Node] [Save] [Save As] [Load File]             |
 | Current file: /path/to/file.json                            |
 +-------------------------------------------------------------+
 | Column 1 (Root) | Column 2         | Column 3         |
@@ -62,11 +61,10 @@ The UI is a horizontally scrolling view of columns with a toolbar at the top:
     - Deletion removes the node and all its children.
 
 7.  **File Operations:**
-    - **Save:** Saves the mind map to the remembered file path. If no path is remembered, defaults to JSON format.
+    - **Save:** Saves the mind map to the remembered file path. If no path is remembered, the button is disabled.
     - **Save As JSON:** Saves as JSON format using the default file name "mindmap.json" and remembers the path.
     - **Save As Text:** Saves as text format using the default file name "mindmap.txt" and remembers the path. The auxiliary root node is automatically excluded from the text output.
-    - **Load:** Loads from the remembered file path, detecting format automatically.
-    - **Load As:** Opens a file dialog to load and remembers the path.
+    - **Load File:** Opens a file dialog to load and automatically remembers the path based on the file format.
     - **File Path Memory:** The application remembers the last used file paths for both JSON and text formats using localStorage.
     - **Text Format Handling:** Text files use tab-indented format where the auxiliary root node is automatically created during loading and excluded during saving.
     - **Default File Names:** Save operations use default file names ("mindmap.json" and "mindmap.txt") instead of prompting users to choose file locations.
@@ -79,14 +77,6 @@ The UI is a horizontally scrolling view of columns with a toolbar at the top:
     - **Copy Logic Enhancement:** Fixed compatibility with auxiliary root node logic - when copying, the node becomes a child of the auxiliary root in the temporary structure, ensuring the copied content is preserved correctly in text format.
     - **Paste Logic Enhancement:** Fixed auxiliary root handling for both root and non-root targets - when pasting to root, the root text is updated and children are added; when pasting to non-root nodes, the auxiliary root's children are added directly to maintain proper hierarchy.
 
-9.  **AI Content Generation with Transparency:**
-    - **AI Configuration:** Users configure AI models through a user-friendly dialog interface with support for OpenAI, Anthropic, and Local AI providers.
-    - **Question Input:** Select a node and use the "Ask AI" feature to input a question through an enhanced dialog with process visibility.
-    - **Process Transparency:** Users can view their complete AI interaction history, including exact prompts sent to the AI and responses received.
-    - **Configuration Transparency:** Current AI settings are displayed in the prompt dialog for full visibility into the generation process.
-    - **AI Response:** The AI generates content in mind map structure and appends it as child nodes to the selected node.
-    - **Error Analysis:** AI errors are analyzed with detailed explanations and actionable suggestions for resolution.
-    - **Security:** API keys are stored locally with environment variable priority for sensitive data.
 
 10. **Data Formats:**
 
@@ -96,23 +86,13 @@ The UI is a horizontally scrolling view of columns with a toolbar at the top:
 - **Zustand:** Used for state management with actions for node operations and file path memory.
 - **File Path Memory:** Stores JSON and text file paths separately with localStorage persistence.
 
-### AI Integration
-- **AI Configuration:** User-friendly configuration dialog with support for multiple AI providers, local storage of preferences, and environment variable fallback for security.
-- **Process Transparency:** Complete AI interaction history tracking with detailed logging of prompts, responses, and error states.
-- **Enhanced Error Handling:** Intelligent error analysis with categorized error types, severity levels, and actionable suggestions.
-- **Prompt Engineering:** Context-aware prompts that include relevant mind map context for accurate AI responses.
-- **Response Processing:** AI responses are parsed and converted to mind map node structure automatically.
-- **Security:** API keys stored locally with environment variable priority, ensuring sensitive data is never exposed in the UI.
 
 ### Components
 - **App:** Main application component that renders Toolbar and MindMap.
-- **Toolbar:** Contains file operation buttons, AI features, and displays current file path.
+- **Toolbar:** Contains file operation buttons and displays current file path.
 - **MindMap:** Renders columns based on the selected path and handles keyboard shortcuts.
 - **Column:** Renders a column of nodes.
 - **Node:** Renders an individual node with edit and delete controls.
-- **AIPromptDialog:** Enhanced modal dialog for AI questions with process history, configuration transparency, and error display.
-- **AIConfigDialog:** User-friendly dialog for configuring AI settings with validation, testing, and provider-specific options.
-- **AIErrorDisplay:** Intelligent error display component with analysis, categorized suggestions, and technical details.
 
 ### Data Structure
 ```typescript

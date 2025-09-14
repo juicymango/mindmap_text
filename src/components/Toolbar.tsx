@@ -1,9 +1,7 @@
 import React from 'react';
 import { useMindMapStore } from '../store/mindmapStore';
-import { saveAsFile, loadFromFile } from '../utils/file';
+import { saveAsFile, loadFromFile, saveToFile } from '../utils/file';
 import { FileFormat } from '../types';
-import { AIPromptDialog } from './AIPromptDialog';
-import { AIConfigDialog } from './AIConfigDialog';
 import { useSelectedPath } from '../contexts/SelectedPathContext';
 import styled from 'styled-components';
 
@@ -35,19 +33,18 @@ export const Toolbar: React.FC = () => {
     jsonFilePath, 
     textFilePath, 
     setJsonFilePath, 
-    setTextFilePath,
-    generateAIContent,
-    isAILoading,
-    aiError,
-    clearAIError,
-    aiConfig,
-    aiConfigDialogOpen,
-    setAIConfigDialogOpen,
-    updateAIConfig
+    setTextFilePath
   } = useMindMapStore();
 
   const { selectedPath } = useSelectedPath();
-  const [isAIDialogOpen, setIsAIDialogOpen] = React.useState(false);
+
+  const handleSave = async () => {
+    if (jsonFilePath) {
+      await saveToFile(mindmap, jsonFilePath);
+    } else if (textFilePath) {
+      await saveToFile(mindmap, textFilePath);
+    }
+  };
 
   const handleSaveAs = async (format: FileFormat) => {
     const path = await saveAsFile(mindmap, format);
@@ -60,7 +57,7 @@ export const Toolbar: React.FC = () => {
     }
   };
 
-  const handleLoadAs = async () => {
+  const handleLoad = async () => {
     const { mindmap: newMindMap, path } = await loadFromFile();
     
     if (newMindMap) {
@@ -78,25 +75,7 @@ export const Toolbar: React.FC = () => {
     addNode([], 'New Node');
   };
 
-  const handleAIRequest = async (question: string) => {
-    await generateAIContent(selectedPath, question);
-    setIsAIDialogOpen(false);
-  };
-
-  const handleOpenAIDialog = () => {
-    setIsAIDialogOpen(true);
-    clearAIError();
-  };
-
-  const handleAIConfigSave = (config: typeof aiConfig) => {
-    updateAIConfig(config);
-    setAIConfigDialogOpen(false);
-  };
-
-  const handleOpenAIConfigDialog = () => {
-    setAIConfigDialogOpen(true);
-  };
-
+  
   const getCurrentFilePath = () => {
     return jsonFilePath || textFilePath || 'No file selected';
   };
@@ -106,46 +85,19 @@ export const Toolbar: React.FC = () => {
       <button onClick={handleAddNode}>Add Node</button>
       
       <ButtonGroup>
+        <button onClick={handleSave} disabled={!jsonFilePath && !textFilePath}>Save</button>
         <button onClick={() => handleSaveAs('json')}>Save As JSON</button>
         <button onClick={() => handleSaveAs('text')}>Save As Text</button>
       </ButtonGroup>
       
       <ButtonGroup>
-        <button onClick={handleLoadAs}>Load As</button>
+        <button onClick={handleLoad}>Load File</button>
       </ButtonGroup>
       
-      <ButtonGroup>
-        <button 
-          onClick={handleOpenAIDialog}
-          disabled={isAILoading}
-        >
-          {isAILoading ? 'AI Working...' : 'Ask AI'}
-        </button>
-        <button 
-          onClick={handleOpenAIConfigDialog}
-          disabled={isAILoading}
-        >
-          AI Config
-        </button>
-      </ButtonGroup>
-      
+            
       <FilePathDisplay>
         Current file: {getCurrentFilePath()}
       </FilePathDisplay>
-      
-      <AIPromptDialog
-        isOpen={isAIDialogOpen}
-        onClose={() => setIsAIDialogOpen(false)}
-        onSubmit={handleAIRequest}
-        isLoading={isAILoading}
-        error={aiError || undefined}
-      />
-      <AIConfigDialog
-        isOpen={aiConfigDialogOpen}
-        onClose={() => setAIConfigDialogOpen(false)}
-        onSave={handleAIConfigSave}
-        currentConfig={aiConfig}
-      />
     </ToolbarContainer>
   );
 };

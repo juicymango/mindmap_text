@@ -1534,3 +1534,15 @@ This process ensures all test files are discovered and executed regardless of th
 - update ./docs/code_structure.md based on the current implementation.
 - update ./docs/test.md based on the current implementation.
 - commit and push the changes.
+
+# task 35
+
+- i want to refactor the ai features.
+- remove all the code and all the test cases about ask ai or ai config.
+- but keep other functions work well.
+- make sure npx tsc --noEmit reports no errors. repeat until you fix all the bugs.
+- make sure npm test -- --watchAll=false passes all the tests. repeat until you fix all the bugs.
+- update ./docs/ui_and_iteration_design.md based on the current implementation.
+- update ./docs/code_structure.md based on the current implementation.
+- update ./docs/test.md based on the current implementation.
+- commit and push the changes.

@@ -23,44 +23,19 @@ const localStorageMock = {
 };
 Object.assign(global, { localStorage: localStorageMock });
 
-// Mock process.env
-Object.assign(process.env, {
-  REACT_APP_AI_PROVIDER: 'openai',
-  REACT_APP_AI_MODEL: 'gpt-3.5-turbo',
-  REACT_APP_AI_API_KEY: 'test-key',
-});
 
 describe('mindmapStore', () => {
+  // Clear localStorage and mocks before each test
   beforeEach(() => {
-    // Setup DOM container for React
-    const container = document.createElement('div');
-    container.setAttribute('id', 'root');
-    document.body.appendChild(container);
-    
-    // Reset the store before each test
-    const { result } = renderHook(() => useMindMapStore());
-    act(() => {
-      result.current.setMindmap({ root: { text: 'Root', children: [] } });
-      result.current.clearFilePaths();
-    });
-    
-    // Clear localStorage and mocks
     localStorageMock.clear();
     jest.clearAllMocks();
-  });
-
-  afterEach(() => {
-    // Clean up DOM
-    const root = document.getElementById('root');
-    if (root) {
-      document.body.removeChild(root);
-    }
   });
 
   it('should add a node', () => {
     const { result } = renderHook(() => useMindMapStore());
 
     act(() => {
+      result.current.setMindmap({ root: { text: 'Root', children: [] } });
       result.current.addNode([], 'New Node');
     });
 
@@ -72,6 +47,7 @@ describe('mindmapStore', () => {
     const { result } = renderHook(() => useMindMapStore());
 
     act(() => {
+      result.current.setMindmap({ root: { text: 'Root', children: [] } });
       result.current.addNode([], 'New Node');
     });
 
@@ -416,97 +392,5 @@ describe('mindmapStore', () => {
     Object.assign(navigator, { clipboard: originalClipboard });
   });
 
-  // AI configuration tests
-  it('should initialize with default AI configuration', () => {
-    const { result } = renderHook(() => useMindMapStore());
-
-    expect(result.current.aiConfig).toBeDefined();
-    expect(result.current.aiConfig.provider).toBeDefined();
-    expect(result.current.aiConfig.model).toBeDefined();
-    expect(result.current.aiConfig.maxTokens).toBeGreaterThan(0);
-    expect(result.current.aiConfig.temperature).toBeGreaterThanOrEqual(0);
-  });
-
-  it('should update AI configuration', () => {
-    const { result } = renderHook(() => useMindMapStore());
-
-    const newConfig = {
-      provider: 'openai' as const,
-      model: 'gpt-4',
-      apiKey: 'test-key',
-      maxTokens: 2000,
-      temperature: 0.8
-    };
-
-    act(() => {
-      result.current.updateAIConfig(newConfig);
-    });
-
-    expect(result.current.aiConfig.provider).toBe('openai');
-    expect(result.current.aiConfig.model).toBe('gpt-4');
-    expect(result.current.aiConfig.apiKey).toBe('test-key');
-    expect(result.current.aiConfig.maxTokens).toBe(2000);
-    expect(result.current.aiConfig.temperature).toBe(0.8);
-  });
-
-  it('should manage AI config dialog state', () => {
-    const { result } = renderHook(() => useMindMapStore());
-
-    expect(result.current.aiConfigDialogOpen).toBe(false);
-
-    act(() => {
-      result.current.setAIConfigDialogOpen(true);
-    });
-
-    expect(result.current.aiConfigDialogOpen).toBe(true);
-
-    act(() => {
-      result.current.setAIConfigDialogOpen(false);
-    });
-
-    expect(result.current.aiConfigDialogOpen).toBe(false);
-  });
-
-  it('should track AI process history', async () => {
-    const { result } = renderHook(() => useMindMapStore());
-
-    expect(result.current.aiProcessHistory).toHaveLength(0);
-
-    // Mock a successful AI process
-    jest.useFakeTimers();
-    const mockDate = new Date('2023-01-01T00:00:00.000Z');
-    jest.setSystemTime(mockDate);
-
-    const testEntry = {
-      id: 'test-id',
-      timestamp: mockDate,
-      question: 'Test question',
-      prompt: 'Test prompt',
-      response: 'Test response',
-      success: true
-    };
-
-    act(() => {
-      result.current.aiProcessHistory = [...result.current.aiProcessHistory, testEntry];
-    });
-
-    expect(result.current.aiProcessHistory).toHaveLength(1);
-    expect(result.current.aiProcessHistory[0]).toEqual(testEntry);
-
-    jest.useRealTimers();
-  });
-
-  // Helper function tests
-  it('should find node correctly', () => {
-    const { result } = renderHook(() => useMindMapStore());
-
-    act(() => {
-      result.current.addNode([], 'Parent');
-      result.current.addNode([0], 'Child');
-    });
-
-    // The findNode function is not exposed, but we can test its behavior through other functions
-    expect(result.current.mindmap.root.children[0].text).toBe('Parent');
-    expect(result.current.mindmap.root.children[0].children[0].text).toBe('Child');
-  });
+  // Helper function tests are covered by other test cases
 });

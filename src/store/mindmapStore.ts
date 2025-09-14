@@ -1,9 +1,6 @@
 import { create, StoreApi, UseBoundStore } from 'zustand';
 import { MindMap, MindNode } from '../types';
 import { mindMapToText, textToMindMap } from '../utils/textFormat';
-import { AIService } from '../services/aiService';
-import { validateAIConfig, getNodePath, AIConfig } from '../config/ai';
-import { getStoredAIConfig, saveAIConfig } from '../utils/aiConfigStorage';
 
 export interface MindMapState {
   mindmap: MindMap;
@@ -14,25 +11,6 @@ export interface MindMapState {
   copyNode: (path: number[]) => Promise<void>;
   pasteNode: (path: number[]) => Promise<void>;
   setSelectedChild: (parentPath: number[], childIndex: number | undefined) => void;
-  // AI functionality
-  generateAIContent: (path: number[], question: string) => Promise<void>;
-  isAILoading: boolean;
-  aiError: string | null;
-  clearAIError: () => void;
-  // AI configuration and transparency
-  aiConfig: AIConfig;
-  aiConfigDialogOpen: boolean;
-  setAIConfigDialogOpen: (open: boolean) => void;
-  updateAIConfig: (config: AIConfig) => void;
-  aiProcessHistory: Array<{
-    id: string;
-    timestamp: Date;
-    question: string;
-    prompt: string;
-    response: string;
-    success: boolean;
-    error?: string;
-  }>;
   // File path memory state
   jsonFilePath: string | null;
   textFilePath: string | null;
@@ -81,11 +59,6 @@ const getInitialFilePaths = () => {
 export const useMindMapStore: UseBoundStore<StoreApi<MindMapState>> = create<MindMapState>((set, get) => ({
   mindmap: { root: { text: 'Root', children: [] } },
   ...getInitialFilePaths(),
-  aiConfig: getStoredAIConfig(),
-  aiConfigDialogOpen: false,
-  aiProcessHistory: [],
-  isAILoading: false,
-  aiError: null,
   setMindmap: (mindmap: MindMap) => set({ mindmap }),
   addNode: (parentPath: number[], text: string) => {
     const { mindmap } = get();
@@ -225,104 +198,6 @@ export const useMindMapStore: UseBoundStore<StoreApi<MindMapState>> = create<Min
       console.error('Failed to paste from clipboard:', error);
       // Optionally show error to user
     }
-  },
-  generateAIContent: async (path: number[], question: string) => {
-    const { mindmap, aiConfig } = get();
-    
-    if (!validateAIConfig(aiConfig)) {
-      set({ aiError: 'AI configuration is invalid. Please check your settings.' });
-      return;
-    }
-
-    set({ isAILoading: true, aiError: null });
-
-    try {
-      const aiService = new AIService(aiConfig);
-      const selectedNode = findNode(mindmap.root, path);
-      
-      if (!selectedNode) {
-        throw new Error('Selected node not found');
-      }
-
-      const context = {
-        selectedNode: selectedNode.text,
-        parentNodes: getNodePath(mindmap.root, path).map(node => node.text),
-        mindMapContext: mindMapToText({ root: selectedNode }),
-      };
-
-      // Build the prompt for tracking
-      const prompt = `You are an AI assistant that helps create mind maps. Based on the user's question and the current mind map context, generate a structured response that can be organized as a mind map.
-
-Context:
-- Selected Node: ${context.selectedNode}
-- Parent Nodes: ${context.parentNodes.join(' → ')}
-- Mind Map Structure: ${context.mindMapContext}
-
-User Question: ${question}
-
-Please provide your response in a hierarchical format that can be parsed into a mind map structure.`;
-
-      const response = await aiService.generateContent({
-        question,
-        context,
-      });
-
-      if (response.error) {
-        throw new Error(response.error);
-      }
-
-      // Track the AI process
-      const processEntry = {
-        id: Date.now().toString(),
-        timestamp: new Date(),
-        question,
-        prompt,
-        response: response.content,
-        success: true,
-      };
-
-      // Add AI-generated content as children to selected node
-      const newMindMap = { ...mindmap };
-      const targetNode = findNode(newMindMap.root, path);
-      if (targetNode) {
-        targetNode.children.push(...response.structure);
-        // Update selected child to show pasted content
-        get().setSelectedChild(path, targetNode.children.length - 1);
-        set({ 
-          mindmap: newMindMap,
-          isAILoading: false,
-          aiError: null,
-          aiProcessHistory: [...get().aiProcessHistory, processEntry],
-        });
-      }
-    } catch (error) {
-      // Track failed process
-      const processEntry = {
-        id: Date.now().toString(),
-        timestamp: new Date(),
-        question,
-        prompt: 'Failed to build prompt',
-        response: '',
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error occurred',
-      };
-
-      set({ 
-        isAILoading: false,
-        aiError: error instanceof Error ? error.message : 'Unknown error occurred',
-        aiProcessHistory: [...get().aiProcessHistory, processEntry],
-      });
-    }
-  },
-  clearAIError: () => {
-    set({ aiError: null });
-  },
-  setAIConfigDialogOpen: (open: boolean) => {
-    set({ aiConfigDialogOpen: open });
-  },
-  updateAIConfig: (config: AIConfig) => {
-    saveAIConfig(config);
-    set({ aiConfig: config });
   },
   clearFilePaths: () => {
     set({ jsonFilePath: null, textFilePath: null });

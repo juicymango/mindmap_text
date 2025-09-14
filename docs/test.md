@@ -60,8 +60,8 @@
   - A file dialog should appear.
   - Selecting a file path should save the mind map in text format with tab hierarchy.
   - The file path should be remembered for future reference.
-- **Load As:**
-  - Click the "Load As" button.
+- **Load File:**
+  - Click the "Load File" button.
   - A file dialog should appear.
   - Selecting a file should load the mind map and detect the format automatically.
   - The file path should be remembered for future reference.
@@ -81,9 +81,8 @@
   - The file format should be detected from the file extension (.txt).
 
 - **Load with file path memory:**
-  - Load a file using "Load As" button.
+  - Load a file using "Load File" button.
   - The file path should be remembered and displayed in the toolbar.
-  - Click "Load" button - should load from the remembered path without prompting.
   - The file format should be automatically detected from the file extension.
 
 - **File path display:**
@@ -91,31 +90,6 @@
   - When no file is selected, it should show "No file selected".
   - The display should update immediately when a new file is saved or loaded.
 
-## AI Functionality
-
-- **AI Content Generation:**
-  - Select a node in the mind map.
-  - Click the "Ask AI" button.
-  - Enter a question or prompt in the dialog.
-  - AI should generate hierarchical content that gets added as children to the selected node.
-  - The generated content should be properly formatted as a mind map structure.
-
-- **AI Configuration:**
-  - Click the "AI Config" button to open the configuration dialog.
-  - Select from 7 AI providers: OpenAI, Anthropic, DeepSeek, GLM, Kimi, Qwen, or Local AI.
-  - Configure provider-specific settings including model, API key, and parameters.
-  - Use predefined model selections or enter custom model names using the checkbox option.
-  - Test the configuration using the "Test Configuration" button.
-  - Configuration should be saved and persist across browser sessions.
-
-- **AI Provider Support:**
-  - **OpenAI:** Support for GPT-3.5-turbo, GPT-4, GPT-4-turbo, and GPT-4o models.
-  - **Anthropic:** Support for Claude 3 models (Sonnet, Opus, Haiku).
-  - **DeepSeek:** Support for DeepSeek-chat and DeepSeek-coder models.
-  - **GLM:** Support for GLM-4, GLM-3-turbo, and GLM-4v models.
-  - **Kimi:** Support for Moonshot models with various context lengths.
-  - **Qwen:** Support for Qwen-turbo, Qwen-plus, Qwen-max, and Qwen-max-longcontext models.
-  - **Local AI:** Support for custom local AI endpoints with configurable base URL.
 
 ## Enhanced Clipboard Operations
 
@@ -150,8 +124,7 @@
 
 - **Button state management:**
   - "Save" button should be disabled when no file path is remembered.
-  - "Load" button should be disabled when no file path is remembered.
-  - "Save As" and "Load As" buttons should always be enabled.
+  - "Save As" and "Load File" buttons should always be enabled.
 
 - **Error handling:**
   - If save operation fails, an appropriate error message should be shown in the console.
@@ -339,23 +312,12 @@ The project uses ESLint with TypeScript support to prevent common errors:
 #### Toolbar Component Tests (`src/components/Toolbar.test.tsx`)
 - Test file path display rendering
 - Test button states based on file path availability
-- Test save/load functionality with remembered paths
-- Test save/load As functionality
+- Test save functionality with remembered paths
+- Test save As functionality
+- Test load file functionality
 - Test saveAsFile calls with default file names ("mindmap.json" and "mindmap.txt")
 - Test format detection and file path memory
 - Test button grouping and layout
-- Test AI-related button states and functionality
-
-#### AI Config Dialog Tests (`src/components/AIConfigDialog.test.tsx`)
-- Test dialog rendering and basic functionality
-- Test provider change behavior
-- Test API key and base URL field visibility
-- Test configuration validation
-- Test custom model input functionality
-- Test custom model checkbox toggle behavior
-- Test automatic detection of custom models
-- Test provider switching with custom models
-- Test local provider default custom input behavior
 
 ## Integration Tests
 
