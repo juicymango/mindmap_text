@@ -1564,3 +1564,15 @@ This process ensures all test files are discovered and executed regardless of th
 - refactor ./README.md based on the docs.
 - note that we use apache 2.0 license. clarify it in ./README.md.
 - commit and push the changes.
+
+# task 38
+
+- write the best practice to ./docs/deploy.md about the folowing.
+    - deploy this project to github.io?
+    - config the cicd by github actions.
+    - manage the version.
+    - create pull request and merge the feature branch to main.
+    - outpuut a detail step by step process.
+- don't implement.
+- commit and push all the changes.
+
