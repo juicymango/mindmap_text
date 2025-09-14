@@ -29,6 +29,12 @@ describe('mindmapStore', () => {
   beforeEach(() => {
     localStorageMock.clear();
     jest.clearAllMocks();
+    
+    // Reset the store state to initial values
+    const { result } = renderHook(() => useMindMapStore());
+    act(() => {
+      result.current.reset();
+    });
   });
 
   it('should add a node', () => {

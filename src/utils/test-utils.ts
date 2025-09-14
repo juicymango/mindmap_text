@@ -21,6 +21,7 @@ export const createMockMindMapStore = (overrides: Partial<MindMapState> = {}) =>
     setJsonFilePath: jest.fn(),
     setTextFilePath: jest.fn(),
     clearFilePaths: jest.fn(),
+    reset: jest.fn(),
   };
   
   const mockStore = { ...baseState, ...overrides };

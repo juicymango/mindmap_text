@@ -17,6 +17,7 @@ export interface MindMapState {
   setJsonFilePath: (path: string | null) => void;
   setTextFilePath: (path: string | null) => void;
   clearFilePaths: () => void;
+  reset: () => void;
 }
 
 const findNode = (root: MindNode, path: number[]): MindNode | null => {
@@ -205,5 +206,12 @@ export const useMindMapStore: UseBoundStore<StoreApi<MindMapState>> = create<Min
       localStorage.removeItem('jsonFilePath');
       localStorage.removeItem('textFilePath');
     }
+  },
+  reset: () => {
+    set({ 
+      mindmap: { root: { text: 'Root', children: [] } },
+      jsonFilePath: null,
+      textFilePath: null,
+    });
   },
 }));
