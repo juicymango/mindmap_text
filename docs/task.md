@@ -1576,3 +1576,89 @@ This process ensures all test files are discovered and executed regardless of th
 - don't implement.
 - commit and push all the changes.
 
+# task 39
+
+[eslint] 
+src/components/Toolbar.tsx
+  Line 39:11:  'selectedPath' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+- i found the error when i run npm run build.
+- what is the error?
+- why is it not reported by npx tsc --noEmit?
+- how to pre check this kind of error before deployment?
+- append your answer to ./docs/task.md.
+- don't implement.
+- commit and push all the changes.
+
+## Task 39 Analysis - ESLint Error During Build
+
+### What is the error?
+
+The error is an **ESLint no-unused-vars warning** that occurs at `src/components/Toolbar.tsx:39:11`. Specifically:
+- Variable `selectedPath` is declared and assigned a value from `useSelectedPath()` hook
+- The variable is never actually used in the Toolbar component
+- ESLint flags this as a code quality issue
+
+### Why is it not reported by `npx tsc --noEmit`?
+
+**TypeScript Compiler (`tsc`) vs ESLint:**
+
+1. **Different Purposes:**
+   - `tsc --noEmit` only checks for **Type errors** (type safety, interface compatibility, etc.)
+   - ESLint checks for **code quality and style issues** (unused variables, code patterns, best practices)
+
+2. **TypeScript's Perspective:**
+   - TypeScript sees the variable declaration: `const { selectedPath } = useSelectedPath();`
+   - The type is correct (`selectedPath` has the expected type)
+   - TypeScript doesn't care if the variable is used or not - that's not its job
+   - No type errors = no warnings from `tsc`
+
+3. **ESLint's Perspective:**
+   - ESLint sees the variable is declared but never referenced
+   - This is considered a code smell (dead code, incomplete implementation)
+   - ESLint enforces code quality standards beyond just type safety
+
+### How to pre-check this kind of error before deployment?
+
+**Option 1: Run ESLint explicitly**
+```bash
+# Check if ESLint is available with Create React App
+npx eslint src --ext .ts,.tsx
+```
+
+**Option 2: Add ESLint script to package.json**
+```json
+{
+  "scripts": {
+    "lint": "eslint src --ext .ts,.tsx",
+    "lint:fix": "eslint src --ext .ts,.tsx --fix"
+  }
+}
+```
+
+**Option 3: Run ESLint as part of build process**
+Modify package.json:
+```json
+{
+  "scripts": {
+    "prebuild": "npm run lint",
+    "build": "react-scripts build"
+  }
+}
+```
+
+**Option 4: Use Create React App's built-in ESLint**
+CRA already includes ESLint in the build process, which is why you see the error during `npm run build`.
+
+**Option 5: IDE Integration**
+- Install ESLint plugin in your IDE (VS Code, etc.)
+- Configure IDE to show ESLint errors in real-time
+- This catches issues before you even run commands
+
+**Recommended Pre-deployment Checklist:**
+1. `npm test` - Run all tests
+2. `npx tsc --noEmit` - Check for TypeScript errors
+3. `npx eslint src --ext .ts,.tsx` - Check for code quality issues
+4. `npm run build` - Full build check (includes ESLint)
+
+This approach catches both TypeScript errors AND code quality issues before deployment.
