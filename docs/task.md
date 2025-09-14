@@ -1402,3 +1402,98 @@ The `textToMindMap` function:
 - **Output**: MindMap object with root and children, or null if parsing fails
 - **Error Handling**: Returns null for invalid input rather than throwing
 - **Format Expectation**: First line must be root (no tabs), subsequent lines use tabs for hierarchy
+
+# task 31
+
+- when i type npm test, what scripts will be runned? output the full process how to locate the test files.
+- append your answer to ./docs/task.md.
+- do not implement.
+- commit and push the changes.
+
+## Task 31 Analysis - npm Test Process
+
+### Script Execution Process
+
+When you run `npm test`, the following process occurs:
+
+**1. Package.json Script Resolution**
+- `npm test` executes the script defined in `package.json` under `"scripts": { "test": "react-scripts test" }`
+- This runs `react-scripts test` which is Create React App's built-in test runner
+
+**2. React Scripts Test Runner**
+- Uses Jest as the underlying test framework (version 27+ with react-scripts 5.0.1)
+- Launches in watch mode by default (interactive mode)
+- Automatically finds and runs test files based on Jest's default configuration
+
+### Test File Location Process
+
+**Step-by-step file discovery:**
+
+1. **Root Directory**: Starts from project root (`/`)
+2. **Recursive Search**: Searches recursively through all directories
+3. **Pattern Matching**: Looks for files matching these patterns:
+   - `**/__tests__/**/*.{js,jsx,ts,tsx}`
+   - `**/*.{test,spec}.{js,jsx,ts,tsx}`
+
+**4. Test Files Found (17 total):**
+
+**Component Tests:**
+- `src/App.test.tsx`
+- `src/components/App.test.tsx`
+- `src/components/AIErrorDisplay.test.tsx`
+- `src/components/AIPromptDialog.test.tsx`
+- `src/components/Toolbar.test.tsx`
+- `src/components/AIConfigDialog.test.tsx`
+- `src/components/MindMap.test.tsx`
+- `src/components/Node.test.tsx`
+- `src/components/Column.test.tsx`
+
+**Service Tests:**
+- `src/services/aiService.test.ts`
+
+**Store Tests:**
+- `src/store/mindmapStore.test.ts`
+- `src/store/mindmapStore.ai.test.ts`
+
+**Utility Tests:**
+- `src/utils/aiErrorHandling.test.ts`
+- `src/utils/aiConfigStorage.test.ts`
+- `src/utils/file.test.ts`
+- `src/utils/textFormat.test.ts`
+
+**Integration Tests:**
+- `src/integration/aiWorkflow.test.tsx`
+
+### Test Configuration
+
+**Jest Configuration (via react-scripts):**
+- **Setup**: `src/setupTests.ts` - loads `@testing-library/jest-dom`
+- **Test Environment**: jsdom (browser-like environment)
+- **File Extensions**: `.js`, `.jsx`, `.ts`, `.tsx`
+- **Coverage**: Disabled by default (can be enabled with `--coverage`)
+- **Transform**: Babel transformation for TypeScript/JSX
+
+**Test Execution Order:**
+1. Runs setup tests (`setupTests.ts`)
+2. Executes test files in alphabetical order
+3. Runs `beforeEach`/`afterEach` hooks for each test
+4. Executes individual test cases within each file
+
+**Key Features:**
+- **Watch Mode**: Automatically re-runs tests on file changes
+- **Interactive CLI**: Provides options to filter tests, update snapshots, quit
+- **File Filtering**: Press `p` to filter by filename, `t` to filter by test name
+- **Coverage Reports**: Run `npm test -- --coverage` for coverage reports
+
+**Test Discovery Algorithm:**
+```javascript
+// Simplified version of how Jest finds test files
+function findTestFiles(rootDir) {
+  return findFiles(rootDir, [
+    '**/__tests__/**/*.{js,jsx,ts,tsx}',
+    '**/*.{test,spec}.{js,jsx,ts,tsx}'
+  ]);
+}
+```
+
+This process ensures all test files are discovered and executed regardless of their location within the `src/` directory structure.
