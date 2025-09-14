@@ -670,23 +670,9 @@ mindmap-app/
     };
 
     export const saveAsFile = async (mindmap: MindMap, format: FileFormat = 'json'): Promise<string> => {
-      return new Promise((resolve) => {
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.accept = format === 'text' ? '.txt' : '.json';
-        input.setAttribute('nwsaveas', `mindmap.${format === 'text' ? 'txt' : 'json'}`);
-        
-        input.onchange = (event) => {
-          const file = (event.target as HTMLInputElement).files?.[0];
-          if (file) {
-            saveToFile(mindmap, file.name);
-            resolve(file.name);
-          } else {
-            resolve('');
-          }
-        };
-        input.click();
-      });
+      const defaultFileName = `mindmap.${format === 'text' ? 'txt' : 'json'}`;
+      saveToFile(mindmap, defaultFileName);
+      return defaultFileName;
     };
 
     export const loadFromFile = async (filePath?: string): Promise<{ mindmap: MindMap | null, path: string }> => {

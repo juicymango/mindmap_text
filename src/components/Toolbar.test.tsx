@@ -188,8 +188,8 @@ describe('Toolbar', () => {
   });
 
   it('should call saveAsFile when Save As JSON is clicked', async () => {
-    const mockPath = '/path/to/newfile.json';
-    (saveAsFile as jest.Mock).mockResolvedValue(mockPath);
+    const defaultPath = 'mindmap.json';
+    (saveAsFile as jest.Mock).mockResolvedValue(defaultPath);
 
     const { getByText } = render(
       <SelectedPathProvider>
@@ -206,12 +206,12 @@ describe('Toolbar', () => {
       { root: { text: 'Root', children: [] } },
       'json'
     );
-    expect(setJsonFilePath).toHaveBeenCalledWith(mockPath);
+    expect(setJsonFilePath).toHaveBeenCalledWith(defaultPath);
   });
 
   it('should call saveAsFile when Save As Text is clicked', async () => {
-    const mockPath = '/path/to/newfile.txt';
-    (saveAsFile as jest.Mock).mockResolvedValue(mockPath);
+    const defaultPath = 'mindmap.txt';
+    (saveAsFile as jest.Mock).mockResolvedValue(defaultPath);
 
     const { getByText } = render(
       <SelectedPathProvider>
@@ -228,7 +228,7 @@ describe('Toolbar', () => {
       { root: { text: 'Root', children: [] } },
       'text'
     );
-    expect(setTextFilePath).toHaveBeenCalledWith(mockPath);
+    expect(setTextFilePath).toHaveBeenCalledWith(defaultPath);
   });
 
   it('should call loadFromFile with remembered path when Load is clicked', async () => {

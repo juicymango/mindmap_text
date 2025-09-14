@@ -279,7 +279,11 @@ The project uses ESLint with TypeScript support to prevent common errors:
 - Test format detection from file extension (case insensitive)
 - Test saveToFile with JSON format
 - Test saveToFile with text format
-- Test saveAsFile with different formats
+- Test saveAsFile with default JSON file name ("mindmap.json")
+- Test saveAsFile with default text file name ("mindmap.txt")
+- Test saveAsFile with no format specified (defaults to JSON)
+- Test saveAsFile blob content creation for JSON format
+- Test saveAsFile blob content creation for text format (excludes auxiliary root)
 - Test loadFromFile with JSON format
 - Test loadFromFile with text format
 - Test error handling for invalid files
@@ -327,8 +331,10 @@ The project uses ESLint with TypeScript support to prevent common errors:
 - Test button states based on file path availability
 - Test save/load functionality with remembered paths
 - Test save/load As functionality
+- Test saveAsFile calls with default file names ("mindmap.json" and "mindmap.txt")
 - Test format detection and file path memory
 - Test button grouping and layout
+- Test AI-related button states and functionality
 
 #### AI Config Dialog Tests (`src/components/AIConfigDialog.test.tsx`)
 - Test dialog rendering and basic functionality

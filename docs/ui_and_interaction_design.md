@@ -63,12 +63,13 @@ The UI is a horizontally scrolling view of columns with a toolbar at the top:
 
 7.  **File Operations:**
     - **Save:** Saves the mind map to the remembered file path. If no path is remembered, defaults to JSON format.
-    - **Save As JSON:** Opens a save dialog to save as JSON format and remembers the path.
-    - **Save As Text:** Opens a save dialog to save as text format and remembers the path. The auxiliary root node is automatically excluded from the text output.
+    - **Save As JSON:** Saves as JSON format using the default file name "mindmap.json" and remembers the path.
+    - **Save As Text:** Saves as text format using the default file name "mindmap.txt" and remembers the path. The auxiliary root node is automatically excluded from the text output.
     - **Load:** Loads from the remembered file path, detecting format automatically.
     - **Load As:** Opens a file dialog to load and remembers the path.
     - **File Path Memory:** The application remembers the last used file paths for both JSON and text formats using localStorage.
     - **Text Format Handling:** Text files use tab-indented format where the auxiliary root node is automatically created during loading and excluded during saving.
+    - **Default File Names:** Save operations use default file names ("mindmap.json" and "mindmap.txt") instead of prompting users to choose file locations.
 
 8.  **Copy/Paste Operations:**
     - **Copy:** Select a node and press Ctrl+C (Cmd+C on Mac) to copy the node and its entire subtree to clipboard in text format.

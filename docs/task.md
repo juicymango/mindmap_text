@@ -1509,3 +1509,16 @@ This process ensures all test files are discovered and executed regardless of th
 - update ./docs/code_structure.md based on the current implementation.
 - update ./docs/test.md based on the current implementation.
 - commit and push the changes.
+
+# task 33
+
+- modify save as json and save as text.
+- don't let the user to choose the file.
+- just use the default file name and directory.
+- implement it. also update the test cases.
+- make sure npx tsc --noEmit reports no errors.
+- use npm test -- --watchAll=false to test. make sure you pass all the automatic tests.
+- update ./docs/ui_and_iteration_design.md based on the current implementation.
+- update ./docs/code_structure.md based on the current implementation.
+- update ./docs/test.md based on the current implementation.
+- commit and push the changes.
