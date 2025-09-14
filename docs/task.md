@@ -1547,7 +1547,7 @@ This process ensures all test files are discovered and executed regardless of th
 - update ./docs/test.md based on the current implementation.
 - commit and push the changes.
 
-# task 35
+# task 36
 
 - there are still bugs in mindmapStore.
 - fix all the bugs in mindmapStore.
@@ -1556,4 +1556,11 @@ This process ensures all test files are discovered and executed regardless of th
 - update ./docs/ui_and_iteration_design.md based on the current implementation.
 - update ./docs/code_structure.md based on the current implementation.
 - update ./docs/test.md based on the current implementation.
+- commit and push the changes.
+
+# task 37
+
+- read all docs in ./docs/. understand this project.
+- refactor ./README.md based on the docs.
+- note that we use apache 2.0 license. clarify it in ./README.md.
 - commit and push the changes.
