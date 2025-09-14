@@ -1,46 +1,101 @@
-# Getting Started with Create React App
+# Mind Map Text
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Mind Map Text is a web-based mind mapping application that uses a column-based interface similar to macOS Finder to visualize and interact with hierarchical data. It's designed for users who prefer a text-based and keyboard-driven approach to mind mapping.
 
-## Available Scripts
+## Features
 
-In the project directory, you can run:
+*   **Column-Based UI:** Navigate your mind map in a familiar, intuitive column view.
+*   **Node Operations:** Easily add, delete, and edit nodes.
+*   **File Operations:** Save your mind maps as JSON or a simple, human-readable text format.
+*   **Copy and Paste:** Copy and paste nodes and their subtrees within the mind map.
+*   **Keyboard Shortcuts:** Optimized for keyboard-driven usage.
+*   **State Management:** Uses Zustand for efficient and predictable state management.
+*   **File Path Memory:** Remembers your last used file paths for quick saving and loading.
 
-### `npm start`
+## Demo
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+![UI Layout](https://i.imgur.com/rA8t1gY.png)
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+## Getting Started
 
-### `npm test`
+### Prerequisites
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+*   Node.js (v14 or later)
+*   npm
 
-### `npm run build`
+### Installation
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+1.  Clone the repository:
+    ```bash
+    git clone https://github.com/juicymango/mindmap_text.git
+    ```
+2.  Navigate to the project directory:
+    ```bash
+    cd mindmap_text
+    ```
+3.  Install the dependencies:
+    ```bash
+    npm install
+    ```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### Running the Application
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+```bash
+npm start
+```
 
-### `npm run eject`
+This will start the development server and open the application in your default browser at `http://localhost:3000`.
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+### Running Tests
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+```bash
+npm test
+```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+This will launch the test runner in interactive watch mode.
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+## Usage
 
-## Learn More
+*   **Add a node:** Click the "Add Node" button in the toolbar to add a new node to the root column.
+*   **Add a child node:** Click the "+" button on a node to add a child to it.
+*   **Delete a node:** Click the "x" button on a node to delete it and all its children.
+*   **Edit a node:** Double-click on a node's text to edit it.
+*   **Select a node:** Click on a node to select it. The children of the selected node will be displayed in the next column.
+*   **Copy and Paste:** Use `Ctrl+C` (or `Cmd+C` on Mac) to copy a selected node and its subtree, and `Ctrl+V` (or `Cmd+V` on Mac) to paste it as a child of another node.
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## File Formats
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+### JSON
+
+The mind map can be saved in a JSON format that represents the hierarchical structure of the nodes.
+
+```json
+{
+  "root": {
+    "text": "Root",
+    "children": [
+      {
+        "text": "Child 1",
+        "children": [],
+        "selected_child_idx": 0
+      }
+    ]
+  }
+}
+```
+
+### Text
+
+The mind map can also be saved in a simple, human-readable text format that uses tabs to represent the hierarchy.
+
+```
+Root
+	Child 1
+	Child 2
+		Grandchild 1
+	Child 3
+```
+
+## License
+
+This project is licensed under the Apache License 2.0. See the [LICENSE](LICENSE) file for details.
