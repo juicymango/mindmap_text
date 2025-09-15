@@ -40,7 +40,7 @@ const NodeContainer = styled.div<{ $nodeType: 'selected' | 'onPath' | 'withChild
 
 
 export const Node: React.FC<NodeProps> = ({ node, path, index, onSelect }) => {
-  const { mindmap, updateNodeText, setSelectedChild, addNode, deleteNode } = useMindMapStore();
+  const { mindmap, updateNodeText, setSelectedChild } = useMindMapStore();
   const { selectedPath } = useSelectedPath();
   const [isEditing, setIsEditing] = useState(false);
   const [text, setText] = useState(node.text);
@@ -62,16 +62,6 @@ export const Node: React.FC<NodeProps> = ({ node, path, index, onSelect }) => {
     const parentPath = path.slice(0, -1);
     setSelectedChild(parentPath, index);
     onSelect(path);
-  };
-
-  const handleAddChild = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    addNode(path, 'New Node');
-  };
-
-  const handleDelete = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    deleteNode(path);
   };
 
   const nodeType = getNodeType(node, path, selectedPath, mindmap.root);
@@ -101,34 +91,6 @@ export const Node: React.FC<NodeProps> = ({ node, path, index, onSelect }) => {
       ) : (
         node.text
       )}
-      <div>
-        <button 
-          onClick={handleAddChild}
-          style={{
-            backgroundColor: 'transparent',
-            border: '1px solid currentColor',
-            color: 'inherit',
-            padding: '2px 6px',
-            borderRadius: '2px',
-            cursor: 'pointer'
-          }}
-        >
-          +
-        </button>
-        <button 
-          onClick={handleDelete}
-          style={{
-            backgroundColor: 'transparent',
-            border: '1px solid currentColor',
-            color: 'inherit',
-            padding: '2px 6px',
-            borderRadius: '2px',
-            cursor: 'pointer'
-          }}
-        >
-          x
-        </button>
-      </div>
-    </NodeContainer>
+          </NodeContainer>
   );
 };

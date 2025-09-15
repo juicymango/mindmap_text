@@ -26,14 +26,30 @@ describe('Toolbar', () => {
     });
   });
 
-  it('should call addNode when "Add Node" button is clicked', () => {
+  it('should display disabled "Add Child" button when no node is selected', () => {
     render(
       <SelectedPathProvider>
         <Toolbar />
       </SelectedPathProvider>
     );
-    fireEvent.click(screen.getByText('Add Node'));
-    expect(addNode).toHaveBeenCalledWith([], 'New Node');
+    const addButton = screen.getByText('Add Child');
+    expect(addButton).toBeDisabled();
+  });
+
+  it('should display disabled node operation buttons when no node is selected', () => {
+    render(
+      <SelectedPathProvider>
+        <Toolbar />
+      </SelectedPathProvider>
+    );
+    expect(screen.getByText('Add Child')).toBeDisabled();
+    expect(screen.getByText('Delete')).toBeDisabled();
+    expect(screen.getByText('Move Up')).toBeDisabled();
+    expect(screen.getByText('Move Down')).toBeDisabled();
+    expect(screen.getByText('Copy JSON')).toBeDisabled();
+    expect(screen.getByText('Copy Text')).toBeDisabled();
+    expect(screen.getByText('Paste JSON')).toBeDisabled();
+    expect(screen.getByText('Paste Text')).toBeDisabled();
   });
 
   it('should display "No file selected" when no file path is set', () => {

@@ -3751,3 +3751,322 @@ src/
 5. ⏳ Comprehensive testing (Phase 4)
 6. ⏳ Update documentation
 7. ⏳ Final review and deployment
+
+---
+
+# Task 46: Node Operations Refactoring Implementation Plan
+
+## Overview
+Major refactoring to centralize node operations in the toolbar, add auxiliary root column, and remove inline node buttons. This will improve UI consistency and provide better user experience.
+
+## Implementation Phases
+
+### Phase 1: Auxiliary Root Column Implementation
+**Timeline: 3-4 hours**
+
+#### 1.1 Update MindMap Component Logic
+- **File**: `src/components/MindMap.tsx`
+- **Changes**: Modify `getColumns()` function to always include auxiliary root column
+- **Implementation**:
+  ```typescript
+  const getColumns = () => {
+    const columns: { path: number[]; nodes: MindNode[] }[] = [];
+    
+    // Add auxiliary root column first (always present)
+    columns.push({ path: [], nodes: [mindmap.root] });
+    
+    // Continue with existing column logic
+    let currentNode = mindmap.root;
+    let currentPath: number[] = [];
+    columns.push({ path: currentPath, nodes: currentNode.children });
+
+    while (true) {
+      const selectedChildIndex = currentNode.selected_child_idx ?? 0;
+      const selectedChild = currentNode.children[selectedChildIndex];
+      if (selectedChild) {
+        currentPath = [...currentPath, selectedChildIndex];
+        columns.push({ path: currentPath, nodes: selectedChild.children });
+        currentNode = selectedChild;
+      } else {
+        break;
+      }
+    }
+    return columns;
+  };
+  ```
+
+#### 1.2 Update Column Component for Root Node
+- **File**: `src/components/Column.tsx`
+- **Changes**: Handle special case for auxiliary root column (single node display)
+- **Implementation**: Modify rendering logic to handle single node columns differently
+
+#### 1.3 Update Node Component for Root Display
+- **File**: `src/components/Node.tsx`
+- **Changes**: Remove + and × buttons for auxiliary root node
+- **Implementation**: Conditional rendering based on path length
+
+### Phase 2: Toolbar Operations Implementation
+**Timeline: 4-5 hours**
+
+#### 2.1 Update Store Interface
+- **File**: `src/store/mindmapStore.ts`
+- **Changes**: Add new methods for move operations and format-specific copy/paste
+- **New Methods**:
+  ```typescript
+  moveNodeUp: (path: number[]) => void;
+  moveNodeDown: (path: number[]) => void;
+  copyNodeAsJson: (path: number[]) => Promise<void>;
+  copyNodeAsText: (path: number[]) => Promise<void>;
+  pasteNodeAsJson: (path: number[]) => Promise<void>;
+  pasteNodeAsText: (path: number[]) => Promise<void>;
+  ```
+
+#### 2.2 Implement Move Operations
+- **File**: `src/store/mindmapStore.ts`
+- **Logic**: 
+  - `moveNodeUp`: Swap with previous sibling, update parent's `selected_child_idx`
+  - `moveNodeDown`: Swap with next sibling, update parent's `selected_child_idx`
+- **Edge Cases**: Handle boundary conditions (first/last child)
+
+#### 2.3 Implement Format-Specific Copy/Paste
+- **File**: `src/store/mindmapStore.ts`
+- **Changes**: 
+  - `copyNodeAsJson`: Copy node as JSON string
+  - `copyNodeAsText`: Copy node as text format using `mindMapToText`
+  - `pasteNodeAsJson`: Parse JSON clipboard content and merge
+  - `pasteNodeAsText`: Parse text clipboard content and merge
+
+#### 2.4 Update Toolbar Component
+- **File**: `src/components/Toolbar.tsx`
+- **Changes**: 
+  - Remove "Add Node" button
+  - Add node operation buttons (disabled when no selection)
+  - Add button grouping and styling
+- **Implementation**:
+  ```typescript
+  const { selectedPath } = useSelectedPath();
+  const hasSelection = selectedPath.length > 0;
+  
+  // Button handlers
+  const handleAddChild = () => { /* add to selected node */ };
+  const handleDelete = () => { /* delete selected node */ };
+  const handleMoveUp = () => { /* move selected node up */ };
+  const handleMoveDown = () => { /* move selected node down */ };
+  const handleCopyJson = () => { /* copy as JSON */ };
+  const handleCopyText = () => { /* copy as text */ };
+  const handlePasteJson = () => { /* paste JSON */ };
+  const handlePasteText = () => { /* paste text */ };
+  ```
+
+### Phase 3: UI Cleanup and Keyboard Handler Removal
+**Timeline: 2-3 hours**
+
+#### 3.1 Remove Node Buttons
+- **File**: `src/components/Node.tsx`
+- **Changes**: Remove + and × button rendering and handlers
+- **Implementation**: Simplify Node component to display only text
+
+#### 3.2 Remove Keyboard Shortcuts
+- **File**: `src/components/MindMap.tsx`
+- **Changes**: Remove copy/paste keyboard event handlers
+- **Implementation**: Remove `handleKeyDown` function
+
+#### 3.3 Update SelectedPath Context
+- **File**: `src/contexts/SelectedPathContext.tsx`
+- **Changes**: Ensure proper selection state management
+- **Implementation**: Verify selection works with new auxiliary root column
+
+### Phase 4: Testing Implementation
+**Timeline: 4-5 hours**
+
+#### 4.1 Auxiliary Root Column Tests
+- **File**: `src/components/MindMap.test.tsx`
+- **Test Cases**:
+  - Auxiliary root column always present
+  - Single node display in auxiliary column
+  - Selection behavior with auxiliary root
+
+#### 4.2 Move Operation Tests
+- **File**: `src/store/mindmapStore.test.ts`
+- **Test Cases**:
+  - Move up/down functionality
+  - `selected_child_idx` updates
+  - Boundary conditions (first/last child)
+  - Edge cases (single child, empty children)
+
+#### 4.3 Format-Specific Copy/Paste Tests
+- **File**: `src/store/mindmapStore.test.ts`
+- **Test Cases**:
+  - JSON copy/paste functionality
+  - Text copy/paste functionality
+  - Error handling for invalid clipboard content
+  - Compatibility with existing copy/paste
+
+#### 4.4 Toolbar Operation Tests
+- **File**: `src/components/Toolbar.test.tsx`
+- **Test Cases**:
+  - Button state management (disabled/enabled)
+  - Operation button functionality
+  - Integration with store operations
+
+#### 4.5 Node Component Tests
+- **File**: `src/components/Node.test.tsx`
+- **Test Cases**:
+  - Node rendering without buttons
+  - Selection behavior
+  - Auxiliary root node special handling
+
+### Phase 5: Documentation Updates
+**Timeline: 2-3 hours**
+
+#### 5.1 Update UI Design Documentation
+- **File**: `docs/ui_and_interaction_design.md`
+- **Updates**: 
+  - New auxiliary root column design
+  - Toolbar-based operations
+  - Updated interaction patterns
+
+#### 5.2 Update Code Structure Documentation
+- **File**: `docs/code_structure.md`
+- **Updates**:
+  - New store methods
+  - Updated component interfaces
+  - Removed functionality documentation
+
+#### 5.3 Update Test Documentation
+- **File**: `docs/test.md`
+- **Updates**:
+  - New test cases
+  - Updated test coverage metrics
+  - Testing strategy for new features
+
+## Technical Implementation Details
+
+### Store Method Implementations
+
+#### Move Node Up
+```typescript
+moveNodeUp: (path: number[]) => {
+  const { mindmap } = get();
+  if (path.length === 0) return; // Can't move root
+  
+  const newMindMap = { ...mindmap };
+  const parent = findParent(newMindMap.root, path);
+  const nodeIndex = path[path.length - 1];
+  
+  if (parent && nodeIndex > 0) {
+    // Swap with previous sibling
+    [parent.children[nodeIndex], parent.children[nodeIndex - 1]] = 
+    [parent.children[nodeIndex - 1], parent.children[nodeIndex]];
+    
+    // Update selected_child_idx
+    parent.selected_child_idx = nodeIndex - 1;
+    set({ mindmap: newMindMap });
+  }
+}
+```
+
+#### Copy Node as JSON
+```typescript
+copyNodeAsJson: async (path: number[]) => {
+  const { mindmap } = get();
+  const node = findNode(mindmap.root, path);
+  if (!node) return;
+  
+  const jsonString = JSON.stringify(node, null, 2);
+  await navigator.clipboard.writeText(jsonString);
+}
+```
+
+#### Paste Node as JSON
+```typescript
+pasteNodeAsJson: async (path: number[]) => {
+  try {
+    const clipboardContent = await navigator.clipboard.readText();
+    const parsedNode = JSON.parse(clipboardContent);
+    
+    // Validate parsed node structure
+    if (parsedNode.text && Array.isArray(parsedNode.children)) {
+      const { mindmap } = get();
+      const newMindMap = { ...mindmap };
+      const targetNode = findNode(newMindMap.root, path);
+      
+      if (targetNode) {
+        targetNode.children.push(parsedNode);
+        get().setSelectedChild(path, targetNode.children.length - 1);
+        set({ mindmap: newMindMap });
+      }
+    }
+  } catch (error) {
+    console.error('Failed to paste JSON:', error);
+  }
+}
+```
+
+## Testing Strategy
+
+### Test Coverage Goals
+- **Unit Tests**: 95%+ coverage for new store methods
+- **Component Tests**: All new UI functionality tested
+- **Integration Tests**: End-to-end workflows tested
+- **Edge Cases**: Boundary conditions, error scenarios
+
+### Key Test Scenarios
+1. **Auxiliary Root Column**: Always visible, contains root node
+2. **Move Operations**: Correct swapping, `selected_child_idx` updates
+3. **Copy/Paste**: Format-specific functionality, error handling
+4. **Button States**: Disabled when no selection, enabled with selection
+5. **Selection Management**: Consistent state across components
+
+## Risk Assessment and Mitigation
+
+### High Risk Areas
+1. **Move Operations**: Complex index management and state updates
+   - **Mitigation**: Comprehensive testing, clear algorithm documentation
+2. **Format-Specific Paste**: JSON parsing validation and error handling
+   - **Mitigation**: Robust error handling, user feedback for invalid content
+3. **Selection State**: Consistency across auxiliary root and regular columns
+   - **Mitigation**: Centralized selection management, clear state flow
+
+### Medium Risk Areas
+1. **UI Responsiveness**: Toolbar button state management
+   - **Mitigation**: Reactive state updates, clear visual feedback
+2. **Browser Compatibility**: Clipboard API variations
+   - **Mitigation**: Fallback implementations, feature detection
+
+## Success Criteria
+
+### Functional Requirements
+- ✅ Auxiliary root column always visible on the left
+- ✅ Node operations moved to toolbar buttons
+- ✅ + and × buttons removed from nodes
+- ✅ Move up/down functionality with proper `selected_child_idx` updates
+- ✅ Format-specific copy/paste operations working
+- ✅ Keyboard shortcuts for copy/paste removed
+- ✅ All existing functionality preserved
+
+### Quality Requirements
+- ✅ All tests passing (100+ new test cases)
+- ✅ TypeScript compilation successful
+- ✅ No ESLint errors
+- ✅ Documentation updated and accurate
+- ✅ User experience improved and consistent
+
+## Timeline Estimate
+- **Phase 1 (Auxiliary Root)**: 3-4 hours
+- **Phase 2 (Toolbar Operations)**: 4-5 hours
+- **Phase 3 (UI Cleanup)**: 2-3 hours
+- **Phase 4 (Testing)**: 4-5 hours
+- **Phase 5 (Documentation)**: 2-3 hours
+
+**Total Estimated Time**: 15-20 hours
+
+## Implementation Order
+1. Start with auxiliary root column (foundational change)
+2. Implement new store methods (backend logic)
+3. Update toolbar with new operations (UI changes)
+4. Remove old UI elements (cleanup)
+5. Comprehensive testing (quality assurance)
+6. Documentation updates (knowledge transfer)
+
+This plan provides a comprehensive approach to refactoring node operations while maintaining functionality and improving user experience.

@@ -4,11 +4,11 @@ Mind Map Text is a web-based mind mapping application that uses a column-based i
 
 ## Features
 
-*   **Column-Based UI:** Navigate your mind map in a familiar, intuitive column view.
-*   **Node Operations:** Easily add, delete, and edit nodes.
+*   **Column-Based UI:** Navigate your mind map in a familiar, intuitive column view with auxiliary root column.
+*   **Node Operations:** Easily add, delete, and edit nodes using toolbar controls.
 *   **File Operations:** Save your mind maps as JSON or a simple, human-readable text format.
-*   **Copy and Paste:** Copy and paste nodes and their subtrees within the mind map.
-*   **Keyboard Shortcuts:** Optimized for keyboard-driven usage.
+*   **Copy and Paste:** Copy and paste nodes in JSON or text format using toolbar buttons.
+*   **Node Movement:** Move nodes up and down within their parent's children list.
 *   **State Management:** Uses Zustand for efficient and predictable state management.
 *   **File Path Memory:** Remembers your last used file paths for quick saving and loading.
 
@@ -56,12 +56,12 @@ This will launch the test runner in interactive watch mode.
 
 ## Usage
 
-*   **Add a node:** Click the "Add Node" button in the toolbar to add a new node to the root column.
-*   **Add a child node:** Click the "+" button on a node to add a child to it.
-*   **Delete a node:** Click the "x" button on a node to delete it and all its children.
-*   **Edit a node:** Double-click on a node's text to edit it.
 *   **Select a node:** Click on a node to select it. The children of the selected node will be displayed in the next column.
-*   **Copy and Paste:** Use `Ctrl+C` (or `Cmd+C` on Mac) to copy a selected node and its subtree, and `Ctrl+V` (or `Cmd+V` on Mac) to paste it as a child of another node.
+*   **Add a child node:** Select a node and click the "Add Child" button in the toolbar to add a child to it.
+*   **Delete a node:** Select a node and click the "Delete" button in the toolbar to delete it and all its children.
+*   **Edit a node:** Double-click on a node's text to edit it.
+*   **Move nodes:** Select a node and use "Move Up" or "Move Down" buttons to reorder it within its parent.
+*   **Copy and Paste:** Select a node and use "Copy JSON"/"Copy Text" to copy to clipboard, then "Paste JSON"/"Paste Text" to paste as a child of another selected node.
 
 ## File Formats
 

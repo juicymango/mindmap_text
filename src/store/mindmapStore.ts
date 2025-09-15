@@ -11,6 +11,13 @@ export interface MindMapState {
   copyNode: (path: number[]) => Promise<void>;
   pasteNode: (path: number[]) => Promise<void>;
   setSelectedChild: (parentPath: number[], childIndex: number | undefined) => void;
+  // New node operations
+  moveNodeUp: (path: number[]) => void;
+  moveNodeDown: (path: number[]) => void;
+  copyNodeAsJson: (path: number[]) => Promise<void>;
+  copyNodeAsText: (path: number[]) => Promise<void>;
+  pasteNodeAsJson: (path: number[]) => Promise<void>;
+  pasteNodeAsText: (path: number[]) => Promise<void>;
   // File path memory state
   jsonFilePath: string | null;
   textFilePath: string | null;
@@ -207,7 +214,188 @@ export const useMindMapStore: UseBoundStore<StoreApi<MindMapState>> = create<Min
       localStorage.removeItem('textFilePath');
     }
   },
-  reset: () => {
+  moveNodeUp: (path: number[]) => {
+  const { mindmap } = get();
+  if (path.length === 0) return; // Can't move root
+  
+  const newMindMap = { ...mindmap };
+  const parent = findParent(newMindMap.root, path);
+  const nodeIndex = path[path.length - 1];
+  
+  if (parent && nodeIndex > 0) {
+    // Swap with previous sibling
+    [parent.children[nodeIndex], parent.children[nodeIndex - 1]] = 
+    [parent.children[nodeIndex - 1], parent.children[nodeIndex]];
+    
+    // Update selected_child_idx
+    parent.selected_child_idx = nodeIndex - 1;
+    set({ mindmap: newMindMap });
+  }
+},
+moveNodeDown: (path: number[]) => {
+  const { mindmap } = get();
+  if (path.length === 0) return; // Can't move root
+  
+  const newMindMap = { ...mindmap };
+  const parent = findParent(newMindMap.root, path);
+  const nodeIndex = path[path.length - 1];
+  
+  if (parent && nodeIndex < parent.children.length - 1) {
+    // Swap with next sibling
+    [parent.children[nodeIndex], parent.children[nodeIndex + 1]] = 
+    [parent.children[nodeIndex + 1], parent.children[nodeIndex]];
+    
+    // Update selected_child_idx
+    parent.selected_child_idx = nodeIndex + 1;
+    set({ mindmap: newMindMap });
+  }
+},
+copyNodeAsJson: async (path: number[]) => {
+  const { mindmap } = get();
+  const node = findNode(mindmap.root, path);
+  if (!node) return;
+  
+  const jsonString = JSON.stringify(node, null, 2);
+  try {
+    await navigator.clipboard.writeText(jsonString);
+  } catch (error) {
+    console.error('Failed to copy to clipboard:', error);
+    // Fallback: use document.execCommand for older browsers
+    const textArea = document.createElement('textarea');
+    textArea.value = jsonString;
+    document.body.appendChild(textArea);
+    textArea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textArea);
+  }
+},
+copyNodeAsText: async (path: number[]) => {
+  const { mindmap } = get();
+  const node = findNode(mindmap.root, path);
+  if (!node) return;
+  
+  // Create a temporary mind map with the node as root for text conversion
+  const tempMindMap: MindMap = { 
+    root: { 
+      text: 'Root', 
+      children: [node] 
+    } 
+  };
+  const textFormat = mindMapToText(tempMindMap);
+  
+  try {
+    await navigator.clipboard.writeText(textFormat);
+  } catch (error) {
+    console.error('Failed to copy to clipboard:', error);
+    // Fallback: use document.execCommand for older browsers
+    const textArea = document.createElement('textarea');
+    textArea.value = textFormat;
+    document.body.appendChild(textArea);
+    textArea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textArea);
+  }
+},
+pasteNodeAsJson: async (path: number[]) => {
+  const { mindmap } = get();
+  
+  try {
+    let clipboardContent: string;
+    
+    // Try modern clipboard API first
+    if (navigator.clipboard && navigator.clipboard.readText) {
+      clipboardContent = await navigator.clipboard.readText();
+    } else {
+      // Fallback to older method
+      clipboardContent = await new Promise<string>((resolve, reject) => {
+        const textarea = document.createElement('textarea');
+        textarea.value = '';
+        document.body.appendChild(textarea);
+        textarea.select();
+        
+        const success = document.execCommand('paste');
+        document.body.removeChild(textarea);
+        
+        if (success) {
+          resolve(textarea.value);
+        } else {
+          reject(new Error('Failed to paste from clipboard'));
+        }
+      });
+    }
+    
+    if (!clipboardContent.trim()) {
+      return; // Empty clipboard
+    }
+    
+    const parsedNode = JSON.parse(clipboardContent);
+    
+    // Validate parsed node structure
+    if (parsedNode && typeof parsedNode.text === 'string' && Array.isArray(parsedNode.children)) {
+      const newMindMap = { ...mindmap };
+      const targetNode = findNode(newMindMap.root, path);
+      
+      if (targetNode) {
+        targetNode.children.push(parsedNode);
+        get().setSelectedChild(path, targetNode.children.length - 1);
+        set({ mindmap: newMindMap });
+      }
+    }
+  } catch (error) {
+    console.error('Failed to paste JSON:', error);
+  }
+},
+pasteNodeAsText: async (path: number[]) => {
+  const { mindmap } = get();
+  
+  try {
+    let clipboardContent: string;
+    
+    // Try modern clipboard API first
+    if (navigator.clipboard && navigator.clipboard.readText) {
+      clipboardContent = await navigator.clipboard.readText();
+    } else {
+      // Fallback to older method
+      clipboardContent = await new Promise<string>((resolve, reject) => {
+        const textarea = document.createElement('textarea');
+        textarea.value = '';
+        document.body.appendChild(textarea);
+        textarea.select();
+        
+        const success = document.execCommand('paste');
+        document.body.removeChild(textarea);
+        
+        if (success) {
+          resolve(textarea.value);
+        } else {
+          reject(new Error('Failed to paste from clipboard'));
+        }
+      });
+    }
+    
+    if (!clipboardContent.trim()) {
+      return; // Empty clipboard
+    }
+    
+    // Parse clipboard content as mind map structure
+    const parsedMindMap = textToMindMap(clipboardContent);
+    
+    if (parsedMindMap?.root) {
+      const newMindMap = { ...mindmap };
+      const targetNode = findNode(newMindMap.root, path);
+      
+      if (targetNode) {
+        // Add the auxiliary root's children directly (similar to existing pasteNode logic)
+        targetNode.children.push(...parsedMindMap.root.children);
+        get().setSelectedChild(path, targetNode.children.length - 1);
+        set({ mindmap: newMindMap });
+      }
+    }
+  } catch (error) {
+    console.error('Failed to paste text:', error);
+  }
+},
+reset: () => {
     set({ 
       mindmap: { root: { text: 'Root', children: [] } },
       jsonFilePath: null,

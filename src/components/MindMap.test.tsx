@@ -35,9 +35,10 @@ describe('MindMap', () => {
       </SelectedPathProvider>
     );
     const columns = screen.getAllByTestId('column');
-    expect(columns).toHaveLength(3);
-    expect(columns[0]).toHaveTextContent('[]');
-    expect(columns[1]).toHaveTextContent('[0]');
-    expect(columns[2]).toHaveTextContent('[0,0]');
+    expect(columns).toHaveLength(4);
+    expect(columns[0]).toHaveTextContent('[]'); // Auxiliary root column
+    expect(columns[1]).toHaveTextContent('[]'); // Root's children column
+    expect(columns[2]).toHaveTextContent('[0]');
+    expect(columns[3]).toHaveTextContent('[0,0]');
   });
 });

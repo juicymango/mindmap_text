@@ -1,5 +1,6 @@
 import React from 'react';
 import { useMindMapStore } from '../store/mindmapStore';
+import { useSelectedPath } from '../contexts/SelectedPathContext';
 import { saveAsFile, loadFromFile } from '../utils/file';
 import { FileFormat } from '../types';
 import styled from 'styled-components';
@@ -29,14 +30,22 @@ export const Toolbar: React.FC = () => {
     mindmap, 
     setMindmap, 
     addNode, 
+    deleteNode,
+    moveNodeUp,
+    moveNodeDown,
+    copyNodeAsJson,
+    copyNodeAsText,
+    pasteNodeAsJson,
+    pasteNodeAsText,
     jsonFilePath, 
     textFilePath, 
     setJsonFilePath, 
     setTextFilePath
   } = useMindMapStore();
+  
+  const { selectedPath } = useSelectedPath();
+  const hasSelection = selectedPath.length > 0;
 
-  
-  
   const handleSaveAs = async (format: FileFormat) => {
     const path = await saveAsFile(mindmap, format);
     if (path) {
@@ -62,10 +71,53 @@ export const Toolbar: React.FC = () => {
     }
   };
 
-  const handleAddNode = () => {
-    addNode([], 'New Node');
+  const handleAddChild = () => {
+    if (hasSelection) {
+      addNode(selectedPath, 'New Node');
+    }
   };
 
+  const handleDelete = () => {
+    if (hasSelection) {
+      deleteNode(selectedPath);
+    }
+  };
+
+  const handleMoveUp = () => {
+    if (hasSelection) {
+      moveNodeUp(selectedPath);
+    }
+  };
+
+  const handleMoveDown = () => {
+    if (hasSelection) {
+      moveNodeDown(selectedPath);
+    }
+  };
+
+  const handleCopyJson = () => {
+    if (hasSelection) {
+      copyNodeAsJson(selectedPath);
+    }
+  };
+
+  const handleCopyText = () => {
+    if (hasSelection) {
+      copyNodeAsText(selectedPath);
+    }
+  };
+
+  const handlePasteJson = () => {
+    if (hasSelection) {
+      pasteNodeAsJson(selectedPath);
+    }
+  };
+
+  const handlePasteText = () => {
+    if (hasSelection) {
+      pasteNodeAsText(selectedPath);
+    }
+  };
   
   const getCurrentFilePath = () => {
     return jsonFilePath || textFilePath || 'No file selected';
@@ -73,18 +125,26 @@ export const Toolbar: React.FC = () => {
 
   return (
     <ToolbarContainer>
-      <button onClick={handleAddNode}>Add Node</button>
+      <ButtonGroup>
+        <button onClick={handleAddChild} disabled={!hasSelection}>Add Child</button>
+        <button onClick={handleDelete} disabled={!hasSelection}>Delete</button>
+        <button onClick={handleMoveUp} disabled={!hasSelection}>Move Up</button>
+        <button onClick={handleMoveDown} disabled={!hasSelection}>Move Down</button>
+      </ButtonGroup>
+      
+      <ButtonGroup>
+        <button onClick={handleCopyJson} disabled={!hasSelection}>Copy JSON</button>
+        <button onClick={handleCopyText} disabled={!hasSelection}>Copy Text</button>
+        <button onClick={handlePasteJson} disabled={!hasSelection}>Paste JSON</button>
+        <button onClick={handlePasteText} disabled={!hasSelection}>Paste Text</button>
+      </ButtonGroup>
       
       <ButtonGroup>
         <button onClick={() => handleSaveAs('json')}>Save As JSON</button>
         <button onClick={() => handleSaveAs('text')}>Save As Text</button>
-      </ButtonGroup>
-      
-      <ButtonGroup>
         <button onClick={handleLoad}>Load File</button>
       </ButtonGroup>
       
-            
       <FilePathDisplay>
         Current file: {getCurrentFilePath()}
       </FilePathDisplay>

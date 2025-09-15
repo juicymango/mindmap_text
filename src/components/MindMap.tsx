@@ -11,11 +11,16 @@ const MindMapContainer = styled.div`
 `;
 
 export const MindMap: React.FC = () => {
-  const { mindmap, copyNode, pasteNode, setSelectedChild } = useMindMapStore();
-  const { selectedPath, setSelectedPath } = useSelectedPath();
+  const { mindmap, setSelectedChild } = useMindMapStore();
+  const { setSelectedPath } = useSelectedPath();
 
   const getColumns = () => {
     const columns: { path: number[]; nodes: MindNode[] }[] = [];
+    
+    // Add auxiliary root column first (always present)
+    columns.push({ path: [], nodes: [mindmap.root] });
+    
+    // Continue with existing column logic
     let currentNode = mindmap.root;
     let currentPath: number[] = [];
     columns.push({ path: currentPath, nodes: currentNode.children });
@@ -36,20 +41,6 @@ export const MindMap: React.FC = () => {
 
   const columns = getColumns();
 
-  const handleKeyDown = (event: React.KeyboardEvent) => {
-    // Check for Ctrl+C or Cmd+C
-    if ((event.ctrlKey || event.metaKey) && event.key === 'c') {
-      event.preventDefault();
-      copyNode(selectedPath);
-    }
-    
-    // Check for Ctrl+V or Cmd+V
-    if ((event.ctrlKey || event.metaKey) && event.key === 'v') {
-      event.preventDefault();
-      pasteNode(selectedPath);
-    }
-  };
-
   const handleNodeSelect = (path: number[]) => {
     setSelectedPath(path);
     if (path.length > 0) {
@@ -60,10 +51,10 @@ export const MindMap: React.FC = () => {
   };
 
   return (
-    <MindMapContainer onKeyDown={handleKeyDown} tabIndex={0}>
+    <MindMapContainer>
       {columns.map((column, index) => (
         <Column
-          key={JSON.stringify(column.path)}
+          key={`${JSON.stringify(column.path)}-${index}`}
           columnPath={column.path}
           nodes={column.nodes}
           index={index}
