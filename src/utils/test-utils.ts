@@ -16,6 +16,12 @@ export const createMockMindMapStore = (overrides: Partial<MindMapState> = {}) =>
     setSelectedChild: jest.fn(),
     copyNode: jest.fn(),
     pasteNode: jest.fn(),
+    moveNodeUp: jest.fn(),
+    moveNodeDown: jest.fn(),
+    copyNodeAsJson: jest.fn(),
+    copyNodeAsText: jest.fn(),
+    pasteNodeAsJson: jest.fn(),
+    pasteNodeAsText: jest.fn(),
     jsonFilePath: null,
     textFilePath: null,
     setJsonFilePath: jest.fn(),
@@ -95,3 +101,4 @@ export const mockDraggable = ({ children }: { children: (provided: any) => React
     innerRef: jest.fn(),
   });
 };
+

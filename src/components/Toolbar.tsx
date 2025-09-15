@@ -1,5 +1,6 @@
 import React from 'react';
 import { useMindMapStore } from '../store/mindmapStore';
+import { useSelectedPath } from '../contexts/SelectedPathContext';
 import { saveAsFile, loadFromFile } from '../utils/file';
 import { FileFormat } from '../types';
 import styled from 'styled-components';
@@ -29,14 +30,23 @@ export const Toolbar: React.FC = () => {
     mindmap, 
     setMindmap, 
     addNode, 
+    deleteNode,
+    moveNodeUp,
+    moveNodeDown,
+    copyNodeAsJson,
+    copyNodeAsText,
+    pasteNodeAsJson,
+    pasteNodeAsText,
     jsonFilePath, 
     textFilePath, 
     setJsonFilePath, 
     setTextFilePath
   } = useMindMapStore();
+  
+  const { selectedPath, setSelectedPath } = useSelectedPath();
+  const hasSelection = selectedPath.length > 0;
+  const hasRootSelection = selectedPath.length === 0; // Root node has empty path []
 
-  
-  
   const handleSaveAs = async (format: FileFormat) => {
     const path = await saveAsFile(mindmap, format);
     if (path) {
@@ -62,10 +72,59 @@ export const Toolbar: React.FC = () => {
     }
   };
 
-  const handleAddNode = () => {
-    addNode([], 'New Node');
+  const handleAddChild = () => {
+    if (hasSelection || hasRootSelection) {
+      addNode(selectedPath, 'New Node');
+    }
   };
 
+  const handleDelete = () => {
+    if (hasSelection) {
+      deleteNode(selectedPath);
+    }
+  };
+
+  const handleMoveUp = () => {
+    if (hasSelection) {
+      const newPath = moveNodeUp(selectedPath);
+      if (newPath !== selectedPath) {
+        setSelectedPath(newPath);
+      }
+    }
+  };
+
+  const handleMoveDown = () => {
+    if (hasSelection) {
+      const newPath = moveNodeDown(selectedPath);
+      if (newPath !== selectedPath) {
+        setSelectedPath(newPath);
+      }
+    }
+  };
+
+  const handleCopyJson = () => {
+    if (hasSelection || hasRootSelection) {
+      copyNodeAsJson(selectedPath);
+    }
+  };
+
+  const handleCopyText = () => {
+    if (hasSelection || hasRootSelection) {
+      copyNodeAsText(selectedPath);
+    }
+  };
+
+  const handlePasteJson = () => {
+    if (hasSelection || hasRootSelection) {
+      pasteNodeAsJson(selectedPath);
+    }
+  };
+
+  const handlePasteText = () => {
+    if (hasSelection || hasRootSelection) {
+      pasteNodeAsText(selectedPath);
+    }
+  };
   
   const getCurrentFilePath = () => {
     return jsonFilePath || textFilePath || 'No file selected';
@@ -73,18 +132,26 @@ export const Toolbar: React.FC = () => {
 
   return (
     <ToolbarContainer>
-      <button onClick={handleAddNode}>Add Node</button>
+      <ButtonGroup>
+        <button onClick={handleAddChild} disabled={!(hasSelection || hasRootSelection)}>Add Child</button>
+        <button onClick={handleDelete} disabled={!hasSelection}>Delete</button>
+        <button onClick={handleMoveUp} disabled={!hasSelection}>Move Up</button>
+        <button onClick={handleMoveDown} disabled={!hasSelection}>Move Down</button>
+      </ButtonGroup>
+      
+      <ButtonGroup>
+        <button onClick={handleCopyJson} disabled={!(hasSelection || hasRootSelection)}>Copy JSON</button>
+        <button onClick={handleCopyText} disabled={!(hasSelection || hasRootSelection)}>Copy Text</button>
+        <button onClick={handlePasteJson} disabled={!(hasSelection || hasRootSelection)}>Paste JSON</button>
+        <button onClick={handlePasteText} disabled={!(hasSelection || hasRootSelection)}>Paste Text</button>
+      </ButtonGroup>
       
       <ButtonGroup>
         <button onClick={() => handleSaveAs('json')}>Save As JSON</button>
         <button onClick={() => handleSaveAs('text')}>Save As Text</button>
-      </ButtonGroup>
-      
-      <ButtonGroup>
         <button onClick={handleLoad}>Load File</button>
       </ButtonGroup>
       
-            
       <FilePathDisplay>
         Current file: {getCurrentFilePath()}
       </FilePathDisplay>

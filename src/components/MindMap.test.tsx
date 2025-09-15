@@ -35,9 +35,32 @@ describe('MindMap', () => {
       </SelectedPathProvider>
     );
     const columns = screen.getAllByTestId('column');
-    expect(columns).toHaveLength(3);
-    expect(columns[0]).toHaveTextContent('[]');
-    expect(columns[1]).toHaveTextContent('[0]');
-    expect(columns[2]).toHaveTextContent('[0,0]');
+    expect(columns).toHaveLength(4);
+    expect(columns[0]).toHaveTextContent('[]'); // Auxiliary root column
+    expect(columns[1]).toHaveTextContent('[]'); // Root's children column
+    expect(columns[2]).toHaveTextContent('[0]');
+    expect(columns[3]).toHaveTextContent('[0,0]');
+  });
+
+  // Task 47: Auxiliary root column should always be present
+  it('should always display auxiliary root column', () => {
+    const mindmap = {
+      root: {
+        text: 'Root',
+        children: [],
+      },
+    };
+
+    createMockMindMapStore({ mindmap, copyNode: jest.fn(), pasteNode: jest.fn() });
+
+    render(
+      <SelectedPathProvider>
+        <MindMap />
+      </SelectedPathProvider>
+    );
+    const columns = screen.getAllByTestId('column');
+    expect(columns).toHaveLength(2); // Auxiliary root + empty children column
+    expect(columns[0]).toHaveTextContent('[]'); // Auxiliary root column
+    expect(columns[1]).toHaveTextContent('[]'); // Empty children column
   });
 });

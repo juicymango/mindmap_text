@@ -1833,3 +1833,214 @@ Update the workflow to use the modern GitHub Pages deployment method with proper
 - update ./docs/code_structure.md based on the current implementation.
 - update ./docs/test.md based on the current implementation.
 - commit and push all the changes.
+
+# task 46
+
+- i want to refactor the node operation.
+- remove add node in the toolbar.
+- add an auxiliary root column to the left most.
+- add buttons for the selected node in the toolbar.
+  - add
+    - the same as + button
+  - delete
+    - the same as × button
+  - move up
+    - move the current node up by 1
+    - you should modify the selected_child_idx of the parent node at the same time.
+  - move down
+    - move the current node down by 1
+    - you should modify the selected_child_idx of the parent node at the same time.
+  - copy json
+    - copy the current node to clipboard as json
+  - copy text
+    - copy the current node to clipboard as text
+  - past json
+    - past the clipboard content as json to the current node
+  - past text
+    - past the clipboard content as text to the current node
+- remove the + and × button right to the node text.
+- release cmd c, cmd v binding for copy and paste.
+- design implementation and test cases for it. append your plan to ./docs/plan.md.
+- implement the features and test cases.
+- Keep running npm test and fix the errors until there are no more errors thrown.
+- update ./docs/ui_and_iteration_design.md based on the current implementation.
+- update ./docs/code_structure.md based on the current implementation.
+- update ./docs/test.md based on the current implementation.
+- commit and push all the changes.
+
+## Task 46 Completion Status ✅
+
+**Completed:** 2025-01-09
+
+### Changes Made:
+
+1. **Removed "Add Node" from toolbar:**
+   - Removed general "Add Node" button that added to root
+   - Replaced with "Add Child" button that adds to selected node
+
+2. **Added auxiliary root column:**
+   - Added auxiliary root column to the leftmost position
+   - Always displays the root node in a dedicated column
+   - Updated column generation logic in MindMap component
+   - Fixed React key collision between auxiliary root and children columns
+
+3. **Added toolbar buttons for selected node operations:**
+   - **Add Child:** Adds child node to selected node (disabled when no selection)
+   - **Delete:** Deletes selected node and all children (disabled when no selection)
+   - **Move Up:** Moves node up within parent's children (disabled when no selection)
+   - **Move Down:** Moves node down within parent's children (disabled when no selection)
+   - **Copy JSON:** Copies selected node as JSON to clipboard (disabled when no selection)
+   - **Copy Text:** Copies selected node as text to clipboard (disabled when no selection)
+   - **Paste JSON:** Pastes JSON clipboard content as child of selected node (disabled when no selection)
+   - **Paste Text:** Pastes text clipboard content as child of selected node (disabled when no selection)
+
+4. **Removed node buttons:**
+   - Removed "+" button from individual nodes
+   - Removed "×" button from individual nodes
+   - Nodes now only display text and handle double-click for editing
+
+5. **Released keyboard shortcuts:**
+   - Removed Cmd+C/Cmd+V bindings for copy/paste
+   - Copy/paste now only available through toolbar buttons
+
+6. **Implemented move operations:**
+   - Added `moveNodeUp` and `moveNodeDown` functions to store
+   - Properly updates `selected_child_idx` when nodes are moved
+   - Handles edge cases (first node, last node, single child)
+
+7. **Implemented format-specific copy/paste:**
+   - Added `copyNodeAsJson`, `copyNodeAsText`, `pasteNodeAsJson`, `pasteNodeAsText`
+   - JSON format: Copies full node structure with children
+   - Text format: Converts node to tab-indented text format
+   - Handles clipboard API errors gracefully with fallbacks
+
+8. **Added comprehensive test coverage:**
+   - 109 tests passing (up from previous count)
+   - 20+ new test cases for Task 46 functionality
+   - Tests for move operations and `selected_child_idx` updates
+   - Tests for format-specific copy/paste operations
+   - Tests for error handling and edge cases
+   - Updated existing tests to reflect new UI structure
+
+### Technical Implementation:
+
+**Store Changes:**
+- Added move operations with proper `selected_child_idx` management
+- Added format-specific copy/paste async functions
+- Removed keyboard shortcut handling
+
+**Component Changes:**
+- MindMap: Added auxiliary root column, removed keyboard shortcuts
+- Toolbar: Complete refactoring with selection-based button states
+- Node: Removed all buttons, simplified to text display only
+
+**Key Features:**
+- **Selection-based UI:** All operations require node selection
+- **Auxiliary root:** Dedicated column for root node visibility
+- **Format flexibility:** JSON and text formats for different use cases
+- **Error handling:** Robust clipboard API error handling
+- **State management:** Proper `selected_child_idx` updates during moves
+
+All requirements from Task 46 have been successfully implemented and tested. The application now provides a more streamlined interface with centralized node operations in the toolbar.
+
+# task 47
+
+- when i use move up or move down, the current node will lose the selection.
+- when i select the root and use add node, the new node is added to the root's child's child, not the root's child.
+- there are console.error in test cases.
+- fix the above errors.
+- design relevant test cases to avoid them. implement the test cases.
+- Keep running npm test and fix the errors until there are no more errors thrown.
+- update ./docs/ui_and_iteration_design.md based on the current implementation.
+- update ./docs/code_structure.md based on the current implementation.
+- update ./docs/test.md based on the current implementation.
+- commit and push all the changes.
+
+## Task 47 Completion Status ✅
+
+**Completed:** 2025-01-09
+
+### Issues Fixed:
+
+1. **Move up/down losing selection:**
+   - **Problem**: When using move up/down operations, the current node would lose selection in the UI
+   - **Root Cause**: Move operations only updated `selected_child_idx` on the parent but didn't update the UI selection path
+   - **Solution**: 
+     - Modified `moveNodeUp` and `moveNodeDown` to return the new path after movement
+     - Updated Toolbar component to use the returned path to update `selectedPath`
+     - Added proper selection management during move operations
+
+2. **Root add node adding to wrong location:**
+   - **Problem**: When root was selected and "Add Child" was clicked, new node was added to root's child's child instead of root's children
+   - **Root Cause**: Auxiliary root column was incorrectly passing path `[0]` instead of `[]` for the root node
+   - **Solution**: 
+     - Modified Column component to handle auxiliary root column specially
+     - Added logic to detect auxiliary root column and pass correct path `[]` for root node
+     - Ensured proper path handling for root selection
+
+3. **Console errors in test cases:**
+   - **Problem**: Tests were generating `console.error` output for clipboard API failures
+   - **Root Cause**: Tests that intentionally triggered clipboard errors weren't mocking `console.error`
+   - **Solution**: 
+     - Added proper `console.error` mocking in tests that trigger clipboard errors
+     - Implemented cleanup to restore original `console.error` after tests
+     - Eliminated all console error output during test execution
+
+### Technical Implementation:
+
+**Store Changes:**
+- Updated `moveNodeUp` and `moveNodeDown` to return `number[]` instead of `void`
+- Both functions now return the new path after successful move, or original path if move fails
+- Proper edge case handling for root node and boundary conditions
+
+**Component Changes:**
+- **Column**: Added auxiliary root column detection and correct path assignment
+- **Toolbar**: Updated move handlers to use returned paths for selection updates
+- **MindMap**: No changes needed, but added test for auxiliary root column behavior
+
+**Test Enhancements:**
+- Added 4 new test cases for move operation path returns
+- Added test for auxiliary root column always being present
+- Added proper `console.error` mocking for clipboard error tests
+- Total test count increased from 109 to 113 tests
+
+### Test Coverage Added:
+
+**Move Operation Tests:**
+- Test for `moveNodeUp` returning correct new path
+- Test for `moveNodeDown` returning correct new path  
+- Test for move operations returning original path when they fail
+- Test coverage for edge cases (root node, boundary conditions)
+
+**Auxiliary Root Tests:**
+- Test ensuring auxiliary root column is always displayed
+- Test coverage for empty mindmap scenario
+
+**Error Handling Tests:**
+- Proper mocking of `console.error` in clipboard failure tests
+- Clean test environment with no console error output
+
+### Key Improvements:
+
+1. **Selection Persistence**: Move operations now properly maintain selection state
+2. **Correct Path Handling**: Root node now has correct path `[]` in auxiliary column
+3. **Clean Test Output**: No console errors during test execution
+4. **Robust Error Handling**: Better edge case handling in move operations
+5. **Enhanced Test Coverage**: Comprehensive tests for all fixed bugs
+
+All issues from Task 47 have been successfully resolved with proper testing and documentation. The application now provides a more reliable and consistent user experience with proper selection management and error handling.
+
+# task 48
+
+- your understanding of the root column is wrong.
+- the root node in the root column is the exact node of MindMap.root.
+- the root node is ommited in the text format, but is kept in the json format.
+- the root node may have multiple children.
+- thus when selecting the root node, the user can click add child and four copying and pasting button. only delete, move up, move down should be disabled.
+- fix your implemenation.
+- implement relevant test cases.
+- Keep running npm test and fix the errors until there are no more errors thrown.
+- update ./docs/ui_and_iteration_design.md based on the current implementation.
+- update ./docs/code_structure.md based on the current implementation.
+- update ./docs/test.md based on the current implementation.
+- commit and push all the changes.

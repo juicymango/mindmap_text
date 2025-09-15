@@ -82,27 +82,32 @@ mindmap-app/
 
 ### `src/components/MindMap.tsx`
 
--   **Function:** Renders the mind map columns based on selected path with automatic expansion.
+-   **Function:** Renders the mind map columns based on selected path with automatic expansion and auxiliary root column support.
 -   **Structure:**
     ```typescript
     import React from 'react';
     import { useMindMapStore } from '../store/mindmapStore';
     import { Column } from './Column';
-    import { DragDropContext, DropResult } from 'react-beautiful-dnd';
+    import { useSelectedPath } from '../contexts/SelectedPathContext';
     import styled from 'styled-components';
+    import { MindNode } from '../types';
 
     const MindMapContainer = styled.div`
       display: flex;
       overflow-x: auto;
-      padding: 16px;
-      gap: 8px;
     `;
 
     export const MindMap: React.FC = () => {
-      const { mindmap, onDragEnd } = useMindMapStore();
+      const { mindmap, setSelectedChild } = useMindMapStore();
+      const { setSelectedPath } = useSelectedPath();
 
       const getColumns = () => {
         const columns: { path: number[]; nodes: MindNode[] }[] = [];
+        
+        // Add auxiliary root column first (always present)
+        columns.push({ path: [], nodes: [mindmap.root] });
+        
+        // Continue with existing column logic
         let currentNode = mindmap.root;
         let currentPath: number[] = [];
         columns.push({ path: currentPath, nodes: currentNode.children });
@@ -123,30 +128,37 @@ mindmap-app/
 
       const columns = getColumns();
 
+      const handleNodeSelect = (path: number[]) => {
+        setSelectedPath(path);
+        if (path.length > 0) {
+          const parentPath = path.slice(0, -1);
+          const childIndex = path[path.length - 1];
+          setSelectedChild(parentPath, childIndex);
+        }
+      };
+
       return (
-        <DragDropContext onDragEnd={onDragEnd}>
-          <MindMapContainer>
-            {columns.map((column, index) => (
-              <Column
-                key={index}
-                nodes={column.nodes}
-                columnPath={column.path}
-                index={index}
-              />
-            ))}
-          </MindMapContainer>
-        </DragDropContext>
+        <MindMapContainer>
+          {columns.map((column, index) => (
+            <Column
+              key={\`\${JSON.stringify(column.path)}-\${index}\`}
+              columnPath={column.path}
+              nodes={column.nodes}
+              index={index}
+              onNodeSelect={handleNodeSelect}
+            />
+          ))}
+        </MindMapContainer>
       );
     };
     ```
 
 ### `src/components/Column.tsx`
 
--   **Function:** Renders a single column of nodes with drag-and-drop support.
+-   **Function:** Renders a single column of nodes with drag-and-drop support and proper root node path assignment.
 -   **Structure:**
     ```typescript
     import React from 'react';
-    import { Droppable } from 'react-beautiful-dnd';
     import { Node } from './Node';
     import { MindNode } from '../types';
     import styled from 'styled-components';
@@ -155,6 +167,7 @@ mindmap-app/
       nodes: MindNode[];
       columnPath: number[];
       index: number;
+      onNodeSelect: (path: number[]) => void;
     }
 
     const ColumnContainer = styled.div`
@@ -168,19 +181,22 @@ mindmap-app/
       flex-shrink: 0;
     `;
 
-    export const Column: React.FC<ColumnProps> = ({ nodes, columnPath, index }) => {
+    export const Column: React.FC<ColumnProps> = ({ nodes, columnPath, index, onNodeSelect }) => {
+      // Special handling for root column: if this is the first column (index 0) 
+      // and contains only one node with empty columnPath, it's the root node
+      const isRootColumn = index === 0 && columnPath.length === 0 && nodes.length === 1;
+      
       return (
         <ColumnContainer>
-          <Droppable droppableId={JSON.stringify(columnPath)} type="node">
-            {(provided) => (
-              <div {...provided.droppableProps} ref={provided.innerRef}>
-                {nodes.map((node, index) => (
-                  <Node key={index} node={node} path={[...columnPath, index]} index={index} />
-                ))}
-                {provided.placeholder}
-              </div>
-            )}
-          </Droppable>
+          {nodes.map((node, nodeIndex) => (
+            <Node 
+              key={nodeIndex} 
+              node={node} 
+              path={isRootColumn && nodeIndex === 0 ? [] : [...columnPath, nodeIndex]} 
+              index={nodeIndex}
+              onSelect={onNodeSelect}
+            />
+          ))}
         </ColumnContainer>
       );
     };
@@ -328,11 +344,12 @@ mindmap-app/
 
 ### `src/components/Toolbar.tsx`
 
--   **Function:** Renders the toolbar with file operation buttons (Save As JSON, Save As Text, Load File, Add Node) and file path display. The Save button has been removed to streamline the UI.
+-   **Function:** Renders the toolbar with comprehensive node operation buttons (Add Child, Delete, Move Up, Move Down), copy/paste operations (Copy JSON, Copy Text, Paste JSON, Paste Text), and file operations (Save As JSON, Save As Text, Load File). Implements root node button state management to disable inappropriate operations for the root node.
 -   **Structure:**
     ```typescript
     import React from 'react';
     import { useMindMapStore } from '../store/mindmapStore';
+    import { useSelectedPath } from '../contexts/SelectedPathContext';
     import { saveAsFile, loadFromFile } from '../utils/file';
     import { FileFormat } from '../types';
     import styled from 'styled-components';
@@ -362,13 +379,23 @@ mindmap-app/
         mindmap, 
         setMindmap, 
         addNode, 
+        deleteNode,
+        moveNodeUp,
+        moveNodeDown,
+        copyNodeAsJson,
+        copyNodeAsText,
+        pasteNodeAsJson,
+        pasteNodeAsText,
         jsonFilePath, 
         textFilePath, 
         setJsonFilePath, 
-        setTextFilePath 
+        setTextFilePath
       } = useMindMapStore();
-
       
+      const { selectedPath, setSelectedPath } = useSelectedPath();
+      const hasSelection = selectedPath.length > 0;
+      const hasRootSelection = selectedPath.length === 0; // Root node has empty path []
+
       const handleSaveAs = async (format: FileFormat) => {
         const path = await saveAsFile(mindmap, format);
         if (path) {
@@ -394,10 +421,59 @@ mindmap-app/
         }
       };
 
-      const handleAddNode = () => {
-        addNode([], 'New Node');
+      const handleAddChild = () => {
+        if (hasSelection || hasRootSelection) {
+          addNode(selectedPath, 'New Node');
+        }
       };
 
+      const handleDelete = () => {
+        if (hasSelection) {
+          deleteNode(selectedPath);
+        }
+      };
+
+      const handleMoveUp = () => {
+        if (hasSelection) {
+          const newPath = moveNodeUp(selectedPath);
+          if (newPath !== selectedPath) {
+            setSelectedPath(newPath);
+          }
+        }
+      };
+
+      const handleMoveDown = () => {
+        if (hasSelection) {
+          const newPath = moveNodeDown(selectedPath);
+          if (newPath !== selectedPath) {
+            setSelectedPath(newPath);
+          }
+        }
+      };
+
+      const handleCopyJson = () => {
+        if (hasSelection || hasRootSelection) {
+          copyNodeAsJson(selectedPath);
+        }
+      };
+
+      const handleCopyText = () => {
+        if (hasSelection || hasRootSelection) {
+          copyNodeAsText(selectedPath);
+        }
+      };
+
+      const handlePasteJson = () => {
+        if (hasSelection || hasRootSelection) {
+          pasteNodeAsJson(selectedPath);
+        }
+      };
+
+      const handlePasteText = () => {
+        if (hasSelection || hasRootSelection) {
+          pasteNodeAsText(selectedPath);
+        }
+      };
       
       const getCurrentFilePath = () => {
         return jsonFilePath || textFilePath || 'No file selected';
@@ -405,17 +481,25 @@ mindmap-app/
 
       return (
         <ToolbarContainer>
-          <button onClick={handleAddNode}>Add Node</button>
+          <ButtonGroup>
+            <button onClick={handleAddChild} disabled={!(hasSelection || hasRootSelection)}>Add Child</button>
+            <button onClick={handleDelete} disabled={!hasSelection}>Delete</button>
+            <button onClick={handleMoveUp} disabled={!hasSelection}>Move Up</button>
+            <button onClick={handleMoveDown} disabled={!hasSelection}>Move Down</button>
+          </ButtonGroup>
+          
+          <ButtonGroup>
+            <button onClick={handleCopyJson} disabled={!(hasSelection || hasRootSelection)}>Copy JSON</button>
+            <button onClick={handleCopyText} disabled={!(hasSelection || hasRootSelection)}>Copy Text</button>
+            <button onClick={handlePasteJson} disabled={!(hasSelection || hasRootSelection)}>Paste JSON</button>
+            <button onClick={handlePasteText} disabled={!(hasSelection || hasRootSelection)}>Paste Text</button>
+          </ButtonGroup>
           
           <ButtonGroup>
             <button onClick={() => handleSaveAs('json')}>Save As JSON</button>
             <button onClick={() => handleSaveAs('text')}>Save As Text</button>
-          </ButtonGroup>
-          
-          <ButtonGroup>
             <button onClick={handleLoad}>Load File</button>
           </ButtonGroup>
-          
           
           <FilePathDisplay>
             Current file: {getCurrentFilePath()}
