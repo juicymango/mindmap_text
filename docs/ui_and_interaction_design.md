@@ -16,27 +16,27 @@ The UI is composed of a series of columns. Each column represents a level in the
 The UI is a horizontally scrolling view of columns with a toolbar at the top:
 
 ```
-+-------------------------------------------------------------+
++-----------------------------------------------------------+
 | Toolbar: [Add Node] [Save As JSON] [Save As Text] [Load File] |
-| Current file: /path/to/file.json                            |
-+-------------------------------------------------------------+
+| Current file: /path/to/file.json                          |
++-----------------------------------------------------------+
 | Column 1 (Root) | Column 2         | Column 3         |
 |-----------------|------------------|------------------|
-| - Node 1.1      | - Node 2.1 (S)   | - Node 3.1       |
-| - Node 1.2 (S)  | - Node 2.2       | - Node 3.2 (S)   |
+| - Node 1.1 (S)  | - Node 2.1 (S)   | - Node 3.1       |
+| - Node 1.2      | - Node 2.2       | - Node 3.2 (S)   |
 | - Node 1.3      | - Node 2.3       | - Node 3.3       |
-+-----------------+------------------+------------------+
++-----------------|------------------|------------------+
 ```
 
 - `(S)` indicates the selected node in the column.
-- Selected nodes are highlighted with a light blue background.
+- Nodes are color-coded based on their type and state (see Node Color Coding section below).
 - Each column has a fixed width of 220px to prevent shrinking.
 
 ## Interaction Design
 
 1.  **Selection:**
     - Clicking on a node in a column selects it.
-    - When a node is selected, it is highlighted with a light blue background.
+    - When a node is selected, it is highlighted with a blue background and white text.
     - If the selected node has children, a new column appears to its right, displaying its children.
     - If the selected node has no children, no new column is displayed.
 
@@ -75,6 +75,65 @@ The UI is a horizontally scrolling view of columns with a toolbar at the top:
     - The auxiliary root node is automatically managed during copy/paste operations to ensure proper hierarchy preservation.
     - **Copy Logic Enhancement:** Fixed compatibility with auxiliary root node logic - when copying, the node becomes a child of the auxiliary root in the temporary structure, ensuring the copied content is preserved correctly in text format.
     - **Paste Logic Enhancement:** Fixed auxiliary root handling for both root and non-root targets - when pasting to root, the root text is updated and children are added; when pasting to non-root nodes, the auxiliary root's children are added directly to maintain proper hierarchy.
+
+## Node Color Coding System
+
+The application uses a sophisticated color coding system to provide visual hierarchy and improve user experience. Each node is assigned one of four types based on its state and position in the selected path:
+
+### Path Detection Logic (Updated)
+
+The node color coding system uses sophisticated path detection algorithms to ensure accurate visual representation:
+
+- **Ancestor Detection:** A node is considered "on the selected path" if it is an ancestor of the selected node (i.e., its path is a prefix of the selected path).
+- **Root Node Handling:** The root node (empty path) is considered an ancestor of any selected node and receives the "onPath" color when any node is selected.
+- **Selected Child Index Chain:** Nodes that are part of the `selected_child_idx` chain extending from the selected node also receive the "onPath" color. This means when a node is selected, its `selected_child_idx` child (and that child's `selected_child_idx`, etc.) are highlighted as part of the navigation path.
+- **Descendant Exclusion:** Descendants of the selected node that are NOT part of the `selected_child_idx` chain receive their appropriate colors based on their children status.
+- **Sibling Handling:** Siblings of the selected node receive "withChildren" or "withoutChildren" colors based on their children status, not the "onPath" color.
+
+### Node Types and Colors
+
+1.  **Selected Node (Blue)**
+    - **Background:** `#4A90E2` (Blue)
+    - **Border:** `#357ABD` (Dark Blue)
+    - **Text:** `#FFFFFF` (White)
+    - **Hover:** `#357ABD` (Dark Blue)
+    - **Description:** The currently selected node in its column. This is the most prominent visual state.
+
+2.  **Nodes on Selected Path (Light Blue)**
+    - **Background:** `#E8F4FD` (Very Light Blue)
+    - **Border:** `#B8D4F1` (Light Blue)
+    - **Text:** `#333333` (Dark Gray)
+    - **Hover:** `#D1E7FC` (Light Blue)
+    - **Description:** Nodes that are ancestors of the selected node in the current path hierarchy.
+
+3.  **Nodes with Children (Light Gray)**
+    - **Background:** `#F8F9FA` (Very Light Gray)
+    - **Border:** `#DEE2E6` (Light Gray)
+    - **Text:** `#333333` (Dark Gray)
+    - **Hover:** `#E9ECEF` (Light Gray)
+    - **Description:** Nodes that have child nodes but are not on the selected path.
+
+4.  **Nodes without Children (White)**
+    - **Background:** `#FFFFFF` (White)
+    - **Border:** `#DEE2E6` (Light Gray)
+    - **Text:** `#333333` (Dark Gray)
+    - **Hover:** `#F8F9FA` (Very Light Gray)
+    - **Description:** Leaf nodes with no children that are not on the selected path.
+
+### Visual Hierarchy and Accessibility
+
+- **Priority System:** The color coding follows a priority system where "selected" takes precedence over "on path," which takes precedence over children status.
+- **Hover Effects:** All nodes have smooth hover transitions that provide visual feedback and include a subtle elevation effect (box-shadow) and vertical translation.
+- **Focus States:** Nodes include proper focus outlines for keyboard navigation accessibility.
+- **Contrast Ratios:** All color combinations maintain sufficient contrast for accessibility compliance.
+- **Smooth Transitions:** All color changes and hover effects use CSS transitions for a polished user experience.
+
+### Color Psychology
+
+- **Blue for Selection:** Blue is universally associated with selection and focus, making it ideal for the currently selected node.
+- **Light Blue for Path:** The lighter blue tones create a visual breadcrumb trail showing the navigation path.
+- **Gray Hierarchy:** The grayscale colors distinguish between nodes with and without children, providing subtle visual cues about the mind map structure. The withChildren color has been updated to #aab7c0ff for better visibility.
+- **White for Leaves:** White background for leaf nodes creates a clean, minimalist aesthetic for the end points in the hierarchy.
 ## Technical Implementation
 
 ### State Management
@@ -83,10 +142,10 @@ The UI is a horizontally scrolling view of columns with a toolbar at the top:
 
 ### Components
 - **App:** Main application component that renders Toolbar and MindMap.
-- **Toolbar:** Contains file operation buttons and displays current file path.
+- **Toolbar:** Contains file operation buttons (Save As JSON, Save As Text, Load File, Add Node) and displays current file path.
 - **MindMap:** Renders columns based on the selected path and handles keyboard shortcuts.
 - **Column:** Renders a column of nodes.
-- **Node:** Renders an individual node with edit and delete controls.
+- **Node:** Renders an individual node with color-coded styling based on node type, edit and delete controls.
 
 ### Data Structure
 ```typescript

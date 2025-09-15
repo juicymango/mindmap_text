@@ -3589,3 +3589,165 @@ describe('AIConfigDialog with custom model input', () => {
 - ✅ Seamless integration with existing workflow
 
 This implementation plan addresses both critical issues in Task 28 while maintaining backward compatibility and providing enhanced functionality for users.
+
+# Node Color Coding Implementation Plan - Task 42
+
+## Overview
+This plan outlines the implementation of color-coded nodes to enhance visual hierarchy and user experience in the mind map application. The feature will use different colors to distinguish between:
+
+1. **Selected Node** - The currently focused/active node
+2. **Nodes on Selected Path** - Ancestor nodes in the selection hierarchy  
+3. **Nodes with Children** - Parent nodes that can be expanded
+4. **Nodes without Children** - Leaf nodes
+
+## Color Scheme Design
+
+### Visual Design Strategy
+- **Accessibility**: Ensure color contrast ratios meet WCAG 2.1 AA standards
+- **Consistency**: Use a cohesive color palette that maintains visual hierarchy
+- **Intuitiveness**: Colors should communicate node state at a glance
+
+### Proposed Color Palette
+
+| Node Type | Background Color | Border Color | Text Color | Usage |
+|-----------|------------------|--------------|------------|--------|
+| **Selected Node** | `#4A90E2` (Blue) | `#357ABD` (Dark Blue) | White | Active/focused node |
+| **On Selected Path** | `#E8F4FD` (Light Blue) | `#B8D4F1` (Medium Blue) | `#333333` | Ancestor nodes |
+| **With Children** | `#F8F9FA` (Light Gray) | `#DEE2E6` (Gray) | `#333333` | Parent nodes |
+| **Without Children** | `FFFFFF` (White) | `#DEE2E6` (Gray) | `#333333` | Leaf nodes |
+
+### Visual Hierarchy
+1. **Selected Node** - Strongest visual emphasis (high contrast)
+2. **On Selected Path** - Subtle blue tint to show relationship
+3. **With Children** - Slightly different background to indicate expandability
+4. **Without Children** - Clean white background for leaf nodes
+
+## Implementation Strategy
+
+### Phase 1: Node State Detection
+1. **Enhance Node Props Interface**
+   - Add prop to indicate if node is on selected path
+   - Add prop to indicate if node has children
+   - Maintain backward compatibility
+
+2. **Create Node State Utilities**
+   - `isNodeOnSelectedPath(path: number[], selectedPath: number[]): boolean`
+   - `hasChildren(node: MindNode): boolean`
+   - `isNodeSelected(path: number[], selectedPath: number[]): boolean`
+
+### Phase 2: Styling System
+1. **Enhanced Styled Components**
+   - Update `NodeContainer` to accept multiple state props
+   - Create dynamic styling based on node states
+   - Ensure responsive design
+
+2. **Color Theme System**
+   - Define color constants for easy maintenance
+   - Add hover states for better interactivity
+   - Ensure dark mode compatibility (future-proofing)
+
+### Phase 3: Integration
+1. **Update Node Component**
+   - Import and use new utilities
+   - Pass state props to styled component
+   - Maintain existing functionality
+
+2. **Update Column Component**
+   - Calculate node states for each node
+   - Pass state information to Node components
+   - Optimize performance with memoization
+
+### Phase 4: Testing
+1. **Unit Tests**
+   - Test node state detection utilities
+   - Test color rendering based on different states
+   - Test edge cases (empty paths, root nodes, etc.)
+
+2. **Integration Tests**
+   - Test visual appearance in different scenarios
+   - Test interaction with existing features
+   - Test performance with large mind maps
+
+## Technical Implementation Details
+
+### File Structure Changes
+```
+src/
+├── components/
+│   ├── Node.tsx                    # Enhanced with color coding
+│   └── Column.tsx                  # Updated to calculate node states
+├── utils/
+│   └── nodeUtils.ts                # New utilities for node state detection
+├── styles/
+│   └── nodeColors.ts               # Color constants and theme
+└── types/
+    └── index.ts                   # Updated type definitions
+```
+
+### Key Technical Components
+
+#### New Utility Functions (`src/utils/nodeUtils.ts`)
+- `isNodeOnSelectedPath()` - Checks if node is part of selection hierarchy
+- `isNodeSelected()` - Checks if node is currently selected
+- `hasChildren()` - Determines if node has children
+- `getNodeType()` - Returns node type for styling
+
+#### Color Constants (`src/styles/nodeColors.ts`)
+- Centralized color palette definition
+- Consistent theming across components
+- Easy maintenance and updates
+
+#### Enhanced Node Component
+- Accepts additional props for node state
+- Dynamic styling based on computed node type
+- Maintains all existing functionality
+
+#### Enhanced Column Component
+- Calculates node states for each rendered node
+- Passes state information to Node components
+- Performance optimized with memoization
+
+## Testing Strategy
+
+### Test Categories
+1. **Unit Tests**: Node state utilities, color rendering
+2. **Integration Tests**: Visual consistency, performance
+3. **Accessibility Tests**: Color contrast, keyboard navigation
+4. **Edge Case Tests**: Deep nesting, empty paths, root nodes
+
+### Performance Considerations
+- Memoization to prevent unnecessary re-renders
+- Efficient path comparison algorithms
+- Minimal runtime style calculations
+
+## Success Criteria
+
+### Functional Requirements
+- ✅ All four node types have distinct visual appearance
+- ✅ Colors update dynamically based on selection changes
+- ✅ Existing functionality remains intact
+- ✅ Performance impact is minimal (<5% slowdown)
+
+### Quality Requirements
+- ✅ All tests pass (unit and integration)
+- ✅ No accessibility regressions
+- ✅ Code follows existing patterns and conventions
+- ✅ Documentation is updated
+
+## Timeline Estimate
+- **Phase 1 (State Detection)**: 2-3 hours
+- **Phase 2 (Styling System)**: 3-4 hours  
+- **Phase 3 (Integration)**: 2-3 hours
+- **Phase 4 (Testing)**: 2-3 hours
+- **Documentation & Polish**: 1-2 hours
+
+**Total Estimated Time**: 10-15 hours
+
+## Next Steps
+1. ✅ Create implementation plan
+2. ⏳ Implement node state utilities (Phase 1)
+3. ⏳ Create styling system (Phase 2)
+4. ⏳ Integrate with existing components (Phase 3)
+5. ⏳ Comprehensive testing (Phase 4)
+6. ⏳ Update documentation
+7. ⏳ Final review and deployment

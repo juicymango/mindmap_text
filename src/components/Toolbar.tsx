@@ -1,6 +1,6 @@
 import React from 'react';
 import { useMindMapStore } from '../store/mindmapStore';
-import { saveAsFile, loadFromFile, saveToFile } from '../utils/file';
+import { saveAsFile, loadFromFile } from '../utils/file';
 import { FileFormat } from '../types';
 import styled from 'styled-components';
 
@@ -36,14 +36,7 @@ export const Toolbar: React.FC = () => {
   } = useMindMapStore();
 
   
-  const handleSave = async () => {
-    if (jsonFilePath) {
-      await saveToFile(mindmap, jsonFilePath);
-    } else if (textFilePath) {
-      await saveToFile(mindmap, textFilePath);
-    }
-  };
-
+  
   const handleSaveAs = async (format: FileFormat) => {
     const path = await saveAsFile(mindmap, format);
     if (path) {
@@ -83,7 +76,6 @@ export const Toolbar: React.FC = () => {
       <button onClick={handleAddNode}>Add Node</button>
       
       <ButtonGroup>
-        <button onClick={handleSave} disabled={!jsonFilePath && !textFilePath}>Save</button>
         <button onClick={() => handleSaveAs('json')}>Save As JSON</button>
         <button onClick={() => handleSaveAs('text')}>Save As Text</button>
       </ButtonGroup>

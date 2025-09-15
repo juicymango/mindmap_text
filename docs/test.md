@@ -4,7 +4,7 @@ This document provides comprehensive testing documentation for the mind map appl
 
 ## Test Overview
 
-The application has comprehensive test coverage with 57 tests across 9 test files, covering unit tests, integration tests, and component tests using React Testing Library and Jest.
+The application has comprehensive test coverage with 89 tests across 11 test files, covering unit tests, integration tests, and component tests using React Testing Library and Jest.
 
 ## Testing Philosophy
 
@@ -35,12 +35,14 @@ src/
 │   ├── MindMap.test.tsx
 │   ├── Column.test.tsx
 │   ├── Node.test.tsx
+│   ├── NodeColor.test.tsx
 │   └── Toolbar.test.tsx
 ├── store/
 │   └── mindmapStore.test.ts
 └── utils/
     ├── file.test.ts
     ├── textFormat.test.ts
+    ├── nodeUtils.test.ts
     └── test-utils.ts
 ```
 
@@ -66,24 +68,36 @@ src/
 - Test column path handling
 
 #### Node Component Tests (`src/components/Node.test.tsx`)
-- Test node rendering with selection state
-- Test inline editing functionality
+- Test node rendering with color-coded states
+- Test inline editing functionality with color preservation
 - Test double-click to edit behavior
 - Test click to select functionality
 - Test add child functionality
 - Test delete functionality
 - Test node selection path tracking
-- Test findNode helper function
+- Test node type determination and color application
+- Test hover effects and focus states
+- Test accessibility features (tabIndex, keyboard navigation)
+
+#### Node Color Visual Tests (`src/components/NodeColor.test.tsx`)
+- Test actual DOM computed styles for all 4 node types (selected, onPath, withChildren, withoutChildren)
+- Test color accuracy and conversion from hex to rgb/rgba formats
+- Test border color rendering for selected and withChildren nodes
+- Test hover color values and CSS style definitions
+- Test accessibility color contrast between background and text colors
+- Test dynamic color updates when selection state changes
+- Test consistent styling across multiple nodes with different states
+- Test empty selected path handling and default color application
 
 #### Toolbar Component Tests (`src/components/Toolbar.test.tsx`)
 - Test file path display rendering
 - Test button states based on file path availability
-- Test save functionality with remembered paths
-- Test Save As functionality
+- Test Save As functionality with default file names ("mindmap.json" and "mindmap.txt")
 - Test load file functionality
-- Test saveAsFile calls with default file names ("mindmap.json" and "mindmap.txt")
 - Test format detection and file path memory
 - Test button grouping and layout
+- Test that Save button is not present (removed in Task 42)
+- Test simplified toolbar UI with only essential buttons
 
 ### Store Tests (`src/store/mindmapStore.test.ts`)
 - Test initial state of mind map and file paths
@@ -134,6 +148,38 @@ src/
 - Test that auxiliary root node "Root" is not included in text output
 - Test that text input creates proper auxiliary root structure in mind map
 
+#### Node Utils Tests (`src/utils/nodeUtils.test.ts`)
+- Test `isNodeOnSelectedPath` function with various path scenarios
+- Test `isNodeOnSelectedPath` returns true when node is on selected path (prefix)
+- Test `isNodeOnSelectedPath` returns true when node is on selected path (suffix)
+- Test `isNodeOnSelectedPath` returns true when paths are identical
+- Test `isNodeOnSelectedPath` returns false when paths diverge
+- Test `isNodeOnSelectedPath` handles empty paths correctly
+- Test `isNodeSelected` function with exact path matching
+- Test `isNodeSelected` returns true only when paths are identical
+- Test `isNodeSelected` handles different path lengths correctly
+- Test `isNodeSelected` handles empty paths correctly
+- Test `hasChildren` function with various node structures
+- Test `hasChildren` returns true when node has children
+- Test `hasChildren` returns false when node has empty children array
+- Test `hasChildren` returns false when node has no children property
+- Test `hasChildren` returns false when children is undefined
+- Test `getNodeType` function with comprehensive scenarios
+- Test `getNodeType` returns "selected" when node is selected
+- Test `getNodeType` returns "onPath" when node is on selected path but not selected
+- Test `getNodeType` returns "withChildren" when node has children but not on path
+- Test `getNodeType` returns "withoutChildren" when node has no children and not on path
+- Test `getNodeType` prioritizes "selected" over other types
+- Test `getNodeType` prioritizes "onPath" over children status
+- Test `getNodeType` handles empty paths correctly
+- Test `getNodeType` handles complex nested scenarios
+- Test `getNodeType` gives siblings withChildren or withoutChildren color, not onPath
+- Test `getNodeType` handles specific case from Task 44: when [0,1] is selected
+- Test `getNodeType` handles deep nested structures with siblings
+- Test `getNodeType` selected_child_idx path coloring - colors selected_child_idx chain as onPath when node is selected
+- Test `getNodeType` handles deep selected_child_idx chains with multiple levels
+- Test edge cases and error handling in all node utility functions
+
 ## Test Cases
 
 ### Node Operations
@@ -143,10 +189,14 @@ src/
 - **Edit a node's text:** Double-click node text, edit content, verify changes are saved
 
 ### Selection and Expansion
-- **Select a node:** Click on node, verify highlighting with light blue background
+- **Select a node:** Click on node, verify blue background highlighting with white text
 - **Automatic expansion:** When node has children, verify new column appears to the right
 - **Selected path:** Verify selection is remembered using `selected_child_idx`
 - **Deselect:** Click another node in same column, verify selection changes appropriately
+- **Color-coded states:** Verify nodes display correct colors based on their type (selected, on path, with children, without children)
+- **Visual hierarchy:** Test that color priority system works correctly (selected > on path > children status)
+- **selected_child_idx path coloring:** Verify that grandchildren get `onPath` color when they're the `selected_child_idx` of the selected node
+- **selected_child_idx chain behavior:** Test that the chain of selected_child_idx nodes from the selected node gets `onPath` coloring
 
 ### File Operations
 - **Save As JSON:** Click button, verify file dialog appears and saves JSON format
@@ -206,9 +256,12 @@ src/
 
 ### UI Interaction Test
 - Test complete user workflow from creation to saving
-- Test selection and expansion behavior
-- Test file operations with path memory
+- Test selection and expansion behavior with new color coding
+- Test file operations with path memory (Save As only, no Save button)
 - Test copy/paste workflow across different node structures
+- Test visual feedback and hover effects for different node types
+- Test keyboard navigation and accessibility features
+- Test color coding system across different mind map hierarchies and states
 
 ## Test Commands
 
@@ -231,7 +284,25 @@ npm test -- --testNamePattern="copyNode"
 ```
 
 ### Test Coverage Report
-The test suite maintains high coverage across all components, utilities, and store functions. Coverage reports can be generated using the `--coverage` flag.
+The test suite maintains high coverage across all components, utilities, and store functions with 89 tests covering comprehensive scenarios including the new color coding system, visual DOM testing, and selected_child_idx path coloring. Coverage reports can be generated using the `--coverage` flag.
+
+## Task 45: selected_child_idx Path Coloring Tests
+
+### New Function Testing
+- **isNodeOnSelectedPathWithChildIndex function:** Test the new function that detects if a node is part of the selected_child_idx chain extending from the selected node
+- **Tree traversal algorithm:** Test the logic that follows selected_child_idx values from the selected node to determine onPath status
+- **Root node parameter:** Test the updated getNodeType function with the optional root node parameter
+
+### Test Scenarios
+- **Basic selected_child_idx coloring:** When a node is selected, its selected_child_idx child should get onPath color
+- **Deep chain coloring:** When a node is selected, the entire chain of selected_child_idx nodes should get onPath color
+- **Mixed hierarchy:** Test scenarios where some descendants are on the selected_child_idx path and others are not
+- **Edge cases:** Test with undefined selected_child_idx values and empty children arrays
+
+### Integration Testing
+- **Node component integration:** Test that the Node component correctly passes the root node to getNodeType
+- **Visual consistency:** Test that the color coding matches the expected behavior across different mind map structures
+- **Sibling behavior:** Verify that siblings not on the selected_child_idx path get appropriate colors (withChildren/withoutChildren)
 
 ## Mocking Strategy
 
@@ -282,12 +353,24 @@ The project uses consistent test data builders:
 - Testing across different browsers and devices
 - Performance testing with real user scenarios
 
+### Color Coding System Testing
+- Test node type determination across all possible scenarios
+- Test color application for each node type (selected, on path, with children, without children)
+- Test hover effects and transitions for different node states
+- Test focus states and keyboard navigation accessibility
+- Test edge cases and boundary conditions in node utility functions
+- Test visual hierarchy and priority system for node colors
+- Test color contrast and accessibility compliance
+
 ### Accessibility Testing
 - Enhanced accessibility testing with axe-core
-- Keyboard navigation testing
-- Screen reader compatibility testing
+- Keyboard navigation testing with proper focus management
+- Screen reader compatibility testing for color-coded nodes
+- Test proper ARIA labels and roles for interactive elements
+- Test high contrast mode compatibility
 
 ### Visual Regression Testing
 - Visual regression testing with Percy or similar tools
 - Testing UI consistency across different themes and screen sizes
 - Testing responsive design behavior
+- Testing color consistency across different browser environments

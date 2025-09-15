@@ -1788,3 +1788,48 @@ Use the newer GitHub Pages action approach:
 
 ### Recommended Fix
 Update the workflow to use the modern GitHub Pages deployment method with proper permissions and verification steps.
+
+# task 42
+
+- remove the "Save" button. only keep the "save as json" and "save as text".
+- use different colors to denote the selected node, nodes on the selected path, nodes with children, and nodes without children.
+- design a plan for implementation and tests. append your plan to ./docs/plan.md.
+- implement your plan.
+- Keep running npm test and fix the errors until there are no more errors thrown.
+- update ./docs/ui_and_iteration_design.md based on the current implementation.
+- update ./docs/code_structure.md based on the current implementation.
+- update ./docs/test.md based on the current implementation.
+- commit and push all the changes.
+
+# task 43
+
+- How do you test node colors? I don't see any relevant test code. Please implement the tests and write the test file path to ./docs/test.md.
+- The color of withChildren is too light to see. Please use a deeper color.
+- implement them.
+- Keep running npm test and fix the errors until there are no more errors thrown.
+- update ./docs/ui_and_iteration_design.md based on the current implementation.
+- update ./docs/code_structure.md based on the current implementation.
+- update ./docs/test.md based on the current implementation.
+- commit and push all the changes.
+
+# task 44
+
+- I found a bug: when I select a node, all its children and grandchildren are being colored with the onPath color, whereas we expect only one path to be highlighted with the onPath color.
+- It’s also not covered in the test cases that other children of the selected node should be colored with withChildren or withoutChildren, not with onPath. Add this to the test cases.
+- implement them.
+- Keep running npm test and fix the errors until there are no more errors thrown.
+- update ./docs/ui_and_iteration_design.md based on the current implementation.
+- update ./docs/code_structure.md based on the current implementation.
+- update ./docs/test.md based on the current implementation.
+- commit and push all the changes.
+
+# task 45
+
+- now the bug becomes when i select a node, none of its children and grandchildren are being colored with the onPath color. the child node is colored onPath iff it is the selected_child_idx child of the parent.
+- fix it.
+- generate relevant test cases for it.
+- Keep running npm test and fix the errors until there are no more errors thrown.
+- update ./docs/ui_and_iteration_design.md based on the current implementation.
+- update ./docs/code_structure.md based on the current implementation.
+- update ./docs/test.md based on the current implementation.
+- commit and push all the changes.

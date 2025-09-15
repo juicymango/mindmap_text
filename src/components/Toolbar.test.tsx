@@ -2,7 +2,7 @@
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import { Toolbar } from './Toolbar';
 import { createMockMindMapStore } from '../utils/test-utils';
-import { saveToFile, saveAsFile, loadFromFile } from '../utils/file';
+import { saveAsFile, loadFromFile } from '../utils/file';
 import { SelectedPathProvider } from '../contexts/SelectedPathContext';
 
 jest.mock('../store/mindmapStore');
@@ -81,107 +81,6 @@ describe('Toolbar', () => {
       </SelectedPathProvider>
     );
     expect(screen.getByText('Current file: /path/to/file.txt')).toBeInTheDocument();
-  });
-
-  it('should disable Save button when no file path is set', () => {
-    render(
-      <SelectedPathProvider>
-        <Toolbar />
-      </SelectedPathProvider>
-    );
-    
-    expect(screen.getByText('Save')).toBeDisabled();
-  });
-
-  it('should enable Save button when file path is set', () => {
-    createMockMindMapStore({
-      mindmap: { root: { text: 'Root', children: [] } },
-      setMindmap,
-      addNode,
-      jsonFilePath: '/path/to/file.json',
-      textFilePath: null,
-      setJsonFilePath,
-      setTextFilePath,
-    });
-
-    render(
-      <SelectedPathProvider>
-        <Toolbar />
-      </SelectedPathProvider>
-    );
-    
-    expect(screen.getByText('Save')).not.toBeDisabled();
-  });
-
-  it('should call saveToFile with JSON file path when Save is clicked', () => {
-    createMockMindMapStore({
-      mindmap: { root: { text: 'Root', children: [] } },
-      setMindmap,
-      addNode,
-      jsonFilePath: '/path/to/file.json',
-      textFilePath: null,
-      setJsonFilePath,
-      setTextFilePath,
-    });
-
-    render(
-      <SelectedPathProvider>
-        <Toolbar />
-      </SelectedPathProvider>
-    );
-    fireEvent.click(screen.getByText('Save'));
-    
-    expect(saveToFile).toHaveBeenCalledWith(
-      { root: { text: 'Root', children: [] } },
-      '/path/to/file.json'
-    );
-  });
-
-  it('should call saveToFile with text file path when Save is clicked', () => {
-    createMockMindMapStore({
-      mindmap: { root: { text: 'Root', children: [] } },
-      setMindmap,
-      addNode,
-      jsonFilePath: null,
-      textFilePath: '/path/to/file.txt',
-      setJsonFilePath,
-      setTextFilePath,
-    });
-
-    render(
-      <SelectedPathProvider>
-        <Toolbar />
-      </SelectedPathProvider>
-    );
-    fireEvent.click(screen.getByText('Save'));
-    
-    expect(saveToFile).toHaveBeenCalledWith(
-      { root: { text: 'Root', children: [] } },
-      '/path/to/file.txt'
-    );
-  });
-
-  it('should have Save button disabled when no file path is set', () => {
-    // Clear any existing mocks and create fresh mock store
-    jest.clearAllMocks();
-    
-    createMockMindMapStore({
-      mindmap: { root: { text: 'Root', children: [] } },
-      setMindmap,
-      addNode,
-      jsonFilePath: null,
-      textFilePath: null,
-      setJsonFilePath,
-      setTextFilePath,
-    });
-
-    render(
-      <SelectedPathProvider>
-        <Toolbar />
-      </SelectedPathProvider>
-    );
-    
-    expect(screen.getByText('Save')).toBeDisabled();
   });
 
   it('should call saveAsFile when Save As JSON is clicked', async () => {
