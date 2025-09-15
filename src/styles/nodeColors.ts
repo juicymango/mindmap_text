@@ -12,7 +12,7 @@ export const NODE_COLORS = {
     hover: '#D1E7FC'
   },
   withChildren: {
-    background: '#aab7c0ff',
+    background: '#cfdae2ff',
     border: '#90CAF9',
     text: '#333333',
     hover: '#BBDEFB'
