@@ -4,7 +4,7 @@ This document provides comprehensive testing documentation for the mind map appl
 
 ## Test Overview
 
-The application has comprehensive test coverage with 116 tests across 11 test files, covering unit tests, integration tests, and component tests using React Testing Library and Jest.
+The application has comprehensive test coverage with 122 tests across 11 test files, covering unit tests, integration tests, and component tests using React Testing Library and Jest.
 
 ## Testing Philosophy
 
@@ -105,6 +105,13 @@ src/
   - Test Move Up/Down button behavior when root node is selected (should be disabled)
   - Test button states for non-root nodes (all operations should be enabled)
   - Test proper root node selection handling with path `[]`
+- **Task 49: Generate Prompt Functionality Tests:**
+  - Test Generate Prompt button visibility and rendering
+  - Test Generate Prompt button behavior when root node is selected (should be enabled)
+  - Test Generate Prompt button behavior when non-root node is selected (should be enabled)
+  - Test Generate Prompt button click handler calls generatePrompt function
+  - Test generatePrompt function called with correct path parameters
+  - Test generatePrompt function called with empty path when root is selected
 
 ### Store Tests (`src/store/mindmapStore.test.ts`)
 - Test initial state of mind map and file paths

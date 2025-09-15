@@ -22,6 +22,7 @@ export const createMockMindMapStore = (overrides: Partial<MindMapState> = {}) =>
     copyNodeAsText: jest.fn(),
     pasteNodeAsJson: jest.fn(),
     pasteNodeAsText: jest.fn(),
+    generatePrompt: jest.fn(),
     jsonFilePath: null,
     textFilePath: null,
     setJsonFilePath: jest.fn(),

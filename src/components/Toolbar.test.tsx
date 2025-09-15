@@ -8,6 +8,10 @@ import React from 'react';
 jest.mock('../store/mindmapStore');
 jest.mock('../utils/file');
 
+// Mock the window.prompt and window.alert
+global.prompt = jest.fn();
+global.alert = jest.fn();
+
 // Mock the useSelectedPath hook to provide test values
 jest.mock('../contexts/SelectedPathContext', () => ({
   useSelectedPath: jest.fn(),
@@ -19,6 +23,7 @@ describe('Toolbar', () => {
   const setMindmap = jest.fn();
   const setJsonFilePath = jest.fn();
   const setTextFilePath = jest.fn();
+  const generatePrompt = jest.fn();
   const mockUseSelectedPath = require('../contexts/SelectedPathContext').useSelectedPath;
 
   beforeEach(() => {
@@ -30,6 +35,7 @@ describe('Toolbar', () => {
       textFilePath: null,
       setJsonFilePath,
       setTextFilePath,
+      generatePrompt,
     });
     
     // Reset mock for selected path
@@ -256,6 +262,7 @@ describe('Toolbar', () => {
       textFilePath: '/path/to/file.txt',
       setJsonFilePath,
       setTextFilePath,
+      generatePrompt,
     });
 
     mockUseSelectedPath.mockReturnValue({
@@ -265,5 +272,70 @@ describe('Toolbar', () => {
 
     render(<Toolbar />);
     expect(screen.getByText('Current file: /path/to/file.json')).toBeInTheDocument();
+  });
+
+  // Task 49: Generate Prompt functionality tests
+  it('should display Generate Prompt button', () => {
+    mockUseSelectedPath.mockReturnValue({
+      selectedPath: [],
+      setSelectedPath: jest.fn()
+    });
+
+    render(<Toolbar />);
+    expect(screen.getByText('Generate Prompt')).toBeInTheDocument();
+  });
+
+  it('should enable Generate Prompt button when root is selected', () => {
+    mockUseSelectedPath.mockReturnValue({
+      selectedPath: [],
+      setSelectedPath: jest.fn()
+    });
+
+    render(<Toolbar />);
+    expect(screen.getByText('Generate Prompt')).not.toBeDisabled();
+  });
+
+  it('should enable Generate Prompt button when non-root node is selected', () => {
+    mockUseSelectedPath.mockReturnValue({
+      selectedPath: [0],
+      setSelectedPath: jest.fn()
+    });
+
+    render(<Toolbar />);
+    expect(screen.getByText('Generate Prompt')).not.toBeDisabled();
+  });
+
+  it('should disable Generate Prompt button when no node is selected', () => {
+    // Note: In current implementation, empty path means root is selected
+    // There's no true "no selection" state
+    mockUseSelectedPath.mockReturnValue({
+      selectedPath: [],
+      setSelectedPath: jest.fn()
+    });
+
+    render(<Toolbar />);
+    expect(screen.getByText('Generate Prompt')).not.toBeDisabled();
+  });
+
+  it('should call generatePrompt when Generate Prompt button is clicked', () => {
+    mockUseSelectedPath.mockReturnValue({
+      selectedPath: [0],
+      setSelectedPath: jest.fn()
+    });
+
+    render(<Toolbar />);
+    fireEvent.click(screen.getByText('Generate Prompt'));
+    expect(generatePrompt).toHaveBeenCalledWith([0]);
+  });
+
+  it('should call generatePrompt with empty path when root is selected', () => {
+    mockUseSelectedPath.mockReturnValue({
+      selectedPath: [],
+      setSelectedPath: jest.fn()
+    });
+
+    render(<Toolbar />);
+    fireEvent.click(screen.getByText('Generate Prompt'));
+    expect(generatePrompt).toHaveBeenCalledWith([]);
   });
 });

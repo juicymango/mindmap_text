@@ -530,12 +530,22 @@ mindmap-app/
       pasteNode: (path: number[]) => Promise<void>;
       onDragEnd: (result: DropResult) => void;
       setSelectedChild: (parentPath: number[], childIndex: number | undefined) => void;
+      // New node operations
+      moveNodeUp: (path: number[]) => number[];
+      moveNodeDown: (path: number[]) => number[];
+      copyNodeAsJson: (path: number[]) => Promise<void>;
+      copyNodeAsText: (path: number[]) => Promise<void>;
+      pasteNodeAsJson: (path: number[]) => Promise<void>;
+      pasteNodeAsText: (path: number[]) => Promise<void>;
+      // Generate prompt functionality
+      generatePrompt: (path: number[]) => Promise<void>;
       // File path memory state
       jsonFilePath: string | null;
       textFilePath: string | null;
       setJsonFilePath: (path: string | null) => void;
       setTextFilePath: (path: string | null) => void;
       clearFilePaths: () => void;
+      reset: () => void;
     }
 
     const findNode = (root: MindNode, path: number[]): MindNode | null => {
@@ -1159,11 +1169,19 @@ mindmap-app/
         copyNode: jest.fn(),
         pasteNode: jest.fn(),
         setSelectedChild: jest.fn(),
+        moveNodeUp: jest.fn(),
+        moveNodeDown: jest.fn(),
+        copyNodeAsJson: jest.fn(),
+        copyNodeAsText: jest.fn(),
+        pasteNodeAsJson: jest.fn(),
+        pasteNodeAsText: jest.fn(),
+        generatePrompt: jest.fn(),
         jsonFilePath: null,
         textFilePath: null,
         setJsonFilePath: jest.fn(),
         setTextFilePath: jest.fn(),
         clearFilePaths: jest.fn(),
+        reset: jest.fn(),
       };
       
       const mockStore = { ...baseState, ...overrides };
