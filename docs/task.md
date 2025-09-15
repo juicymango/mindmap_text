@@ -1800,3 +1800,14 @@ Update the workflow to use the modern GitHub Pages deployment method with proper
 - update ./docs/code_structure.md based on the current implementation.
 - update ./docs/test.md based on the current implementation.
 - commit and push all the changes.
+
+# task 43
+
+- How do you test node colors? I don't see any relevant test code. Please implement the tests and write the test file path to ./docs/test.md.
+- The color of withChildren is too light to see. Please use a deeper color.
+- implement them.
+- Keep running npm test and fix the errors until there are no more errors thrown.
+- update ./docs/ui_and_iteration_design.md based on the current implementation.
+- update ./docs/code_structure.md based on the current implementation.
+- update ./docs/test.md based on the current implementation.
+- commit and push all the changes.

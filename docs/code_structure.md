@@ -14,11 +14,18 @@ mindmap-app/
 │   │   ├── MindMap.tsx
 │   │   ├── Column.tsx
 │   │   ├── Node.tsx
-│   │   └── Toolbar.tsx
+│   │   ├── Toolbar.tsx
+│   │   ├── App.test.tsx
+│   │   ├── MindMap.test.tsx
+│   │   ├── Column.test.tsx
+│   │   ├── Node.test.tsx
+│   │   ├── NodeColor.test.tsx
+│   │   └── Toolbar.test.tsx
 │   ├── contexts/
 │   │   └── SelectedPathContext.tsx
 │   ├── store/
-│   │   └── mindmapStore.ts
+│   │   ├── mindmapStore.ts
+│   │   └── mindmapStore.test.ts
 │   ├── styles/
 │   │   ├── GlobalStyles.ts
 │   │   └── nodeColors.ts
@@ -28,9 +35,13 @@ mindmap-app/
 │   │   ├── file.ts
 │   │   ├── textFormat.ts
 │   │   ├── nodeUtils.ts
-│   │   └── test-utils.ts
+│   │   ├── test-utils.ts
+│   │   ├── file.test.ts
+│   │   ├── textFormat.test.ts
+│   │   └── nodeUtils.test.ts
 │   ├── index.tsx
-│   └── react-app-env.d.ts
+│   ├── react-app-env.d.ts
+│   └── App.test.tsx
 ├── docs/
 ├── package.json
 └── tsconfig.json

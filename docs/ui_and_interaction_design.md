@@ -122,7 +122,7 @@ The application uses a sophisticated color coding system to provide visual hiera
 
 - **Blue for Selection:** Blue is universally associated with selection and focus, making it ideal for the currently selected node.
 - **Light Blue for Path:** The lighter blue tones create a visual breadcrumb trail showing the navigation path.
-- **Gray Hierarchy:** The grayscale colors distinguish between nodes with and without children, providing subtle visual cues about the mind map structure.
+- **Gray Hierarchy:** The grayscale colors distinguish between nodes with and without children, providing subtle visual cues about the mind map structure. The withChildren color has been updated to #aab7c0ff for better visibility.
 - **White for Leaves:** White background for leaf nodes creates a clean, minimalist aesthetic for the end points in the hierarchy.
 ## Technical Implementation
 

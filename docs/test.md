@@ -4,7 +4,7 @@ This document provides comprehensive testing documentation for the mind map appl
 
 ## Test Overview
 
-The application has comprehensive test coverage with 74 tests across 10 test files, covering unit tests, integration tests, and component tests using React Testing Library and Jest.
+The application has comprehensive test coverage with 84 tests across 11 test files, covering unit tests, integration tests, and component tests using React Testing Library and Jest.
 
 ## Testing Philosophy
 
@@ -35,6 +35,7 @@ src/
 │   ├── MindMap.test.tsx
 │   ├── Column.test.tsx
 │   ├── Node.test.tsx
+│   ├── NodeColor.test.tsx
 │   └── Toolbar.test.tsx
 ├── store/
 │   └── mindmapStore.test.ts
@@ -77,6 +78,16 @@ src/
 - Test node type determination and color application
 - Test hover effects and focus states
 - Test accessibility features (tabIndex, keyboard navigation)
+
+#### Node Color Visual Tests (`src/components/NodeColor.test.tsx`)
+- Test actual DOM computed styles for all 4 node types (selected, onPath, withChildren, withoutChildren)
+- Test color accuracy and conversion from hex to rgb/rgba formats
+- Test border color rendering for selected and withChildren nodes
+- Test hover color values and CSS style definitions
+- Test accessibility color contrast between background and text colors
+- Test dynamic color updates when selection state changes
+- Test consistent styling across multiple nodes with different states
+- Test empty selected path handling and default color application
 
 #### Toolbar Component Tests (`src/components/Toolbar.test.tsx`)
 - Test file path display rendering
@@ -266,7 +277,7 @@ npm test -- --testNamePattern="copyNode"
 ```
 
 ### Test Coverage Report
-The test suite maintains high coverage across all components, utilities, and store functions with 74 tests covering comprehensive scenarios including the new color coding system. Coverage reports can be generated using the `--coverage` flag.
+The test suite maintains high coverage across all components, utilities, and store functions with 84 tests covering comprehensive scenarios including the new color coding system and visual DOM testing. Coverage reports can be generated using the `--coverage` flag.
 
 ## Mocking Strategy
 
