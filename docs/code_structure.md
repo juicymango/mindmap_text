@@ -20,12 +20,14 @@ mindmap-app/
 │   ├── store/
 │   │   └── mindmapStore.ts
 │   ├── styles/
-│   │   └── GlobalStyles.ts
+│   │   ├── GlobalStyles.ts
+│   │   └── nodeColors.ts
 │   ├── types/
 │   │   └── index.ts
 │   ├── utils/
 │   │   ├── file.ts
 │   │   ├── textFormat.ts
+│   │   ├── nodeUtils.ts
 │   │   └── test-utils.ts
 │   ├── index.tsx
 │   └── react-app-env.d.ts
@@ -40,9 +42,9 @@ mindmap-app/
 -   `src/`: Contains the source code of the application.
 -   `src/components/`: Contains the React components.
 -   `src/store/`: Contains the Zustand store with file path memory.
--   `src/styles/`: Contains the global styles.
+-   `src/styles/`: Contains the global styles and node color constants.
 -   `src/types/`: Contains the TypeScript types.
--   `src/utils/`: Contains utility functions for file operations, text format conversion, and testing utilities.
+-   `src/utils/`: Contains utility functions for file operations, text format conversion, node utilities, and testing utilities.
 
 ## File Functions and Structures
 
@@ -175,49 +177,52 @@ mindmap-app/
 
 ### `src/components/Node.tsx`
 
--   **Function:** Renders a single node with inline editing, selection, and delete functionality.
+-   **Function:** Renders a single node with color-coded styling based on node type, inline editing, selection, and delete functionality.
 -   **Structure:**
     ```typescript
     import React, { useState } from 'react';
-    import { Draggable } from 'react-beautiful-dnd';
     import { MindNode } from '../types';
     import { useMindMapStore } from '../store/mindmapStore';
+    import { useSelectedPath } from '../contexts/SelectedPathContext';
+    import { getNodeType } from '../utils/nodeUtils';
+    import { NODE_COLORS } from '../styles/nodeColors';
     import styled from 'styled-components';
 
     interface NodeProps {
       node: MindNode;
       path: number[];
       index: number;
+      onSelect: (path: number[]) => void;
     }
 
-    const NodeContainer = styled.div<{ $isSelected: boolean }>`
+    const NodeContainer = styled.div<{ $nodeType: 'selected' | 'onPath' | 'withChildren' | 'withoutChildren' }>`
       padding: 8px;
-      border: 1px solid lightgrey;
+      border: 1px solid ${(props) => NODE_COLORS[props.$nodeType].border};
       border-radius: 4px;
       margin-bottom: 8px;
-      background-color: ${(props) => (props.$isSelected ? 'lightblue' : 'white')};
+      background-color: ${(props) => NODE_COLORS[props.$nodeType].background};
+      color: ${(props) => NODE_COLORS[props.$nodeType].text};
       display: flex;
       justify-content: space-between;
       align-items: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      
+      &:hover {
+        background-color: ${(props) => NODE_COLORS[props.$nodeType].hover};
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+      
+      &:focus {
+        outline: 2px solid ${(props) => NODE_COLORS.selected.border};
+        outline-offset: 2px;
+      }
     `;
 
-    const findNode = (root: MindNode, path: number[]): MindNode | null => {
-      if (path.length === 0) {
-        return root;
-      }
-      let currentNode: MindNode | null = root;
-      for (const index of path) {
-        if (currentNode && currentNode.children && currentNode.children[index]) {
-          currentNode = currentNode.children[index];
-        } else {
-          return null;
-        }
-      }
-      return currentNode;
-    };
-
-    export const Node: React.FC<NodeProps> = ({ node, path, index }) => {
-      const { updateNodeText, setSelectedChild, mindmap, addNode, deleteNode } = useMindMapStore();
+    export const Node: React.FC<NodeProps> = ({ node, path, index, onSelect }) => {
+      const { updateNodeText, setSelectedChild, addNode, deleteNode } = useMindMapStore();
+      const { selectedPath } = useSelectedPath();
       const [isEditing, setIsEditing] = useState(false);
       const [text, setText] = useState(node.text);
 
@@ -237,6 +242,7 @@ mindmap-app/
       const handleClick = () => {
         const parentPath = path.slice(0, -1);
         setSelectedChild(parentPath, index);
+        onSelect(path);
       };
 
       const handleAddChild = (e: React.MouseEvent) => {
@@ -249,51 +255,74 @@ mindmap-app/
         deleteNode(path);
       };
 
-      const parentPath = path.slice(0, -1);
-      const parent = findNode(mindmap.root, parentPath);
-      const isSelected = (parent?.selected_child_idx ?? 0) === index;
+      const nodeType = getNodeType(node, path, selectedPath);
 
       return (
-        <Draggable draggableId={JSON.stringify(path)} index={index}>
-          {(provided) => (
-            <NodeContainer
-              {...provided.draggableProps}
-              {...provided.dragHandleProps}
-              ref={provided.innerRef}
-              onDoubleClick={handleDoubleClick}
-              onClick={handleClick}
-              $isSelected={isSelected}
-            >
-              {isEditing ? (
-                <input
-                  type="text"
-                  value={text}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  autoFocus
-                />
-              ) : (
-                node.text
-              )}
-              <div>
-                <button onClick={handleAddChild}>+</button>
-                <button onClick={handleDelete}>x</button>
-              </div>
-            </NodeContainer>
+        <NodeContainer
+          onDoubleClick={handleDoubleClick}
+          onClick={handleClick}
+          $nodeType={nodeType}
+          tabIndex={0} // Make focusable for accessibility
+        >
+          {isEditing ? (
+            <input
+              type="text"
+              value={text}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              autoFocus
+              style={{
+                backgroundColor: 'transparent',
+                border: '1px solid currentColor',
+                color: 'inherit',
+                padding: '2px',
+                borderRadius: '2px'
+              }}
+            />
+          ) : (
+            node.text
           )}
-        </Draggable>
+          <div>
+            <button 
+              onClick={handleAddChild}
+              style={{
+                backgroundColor: 'transparent',
+                border: '1px solid currentColor',
+                color: 'inherit',
+                padding: '2px 6px',
+                borderRadius: '2px',
+                cursor: 'pointer'
+              }}
+            >
+              +
+            </button>
+            <button 
+              onClick={handleDelete}
+              style={{
+                backgroundColor: 'transparent',
+                border: '1px solid currentColor',
+                color: 'inherit',
+                padding: '2px 6px',
+                borderRadius: '2px',
+                cursor: 'pointer'
+              }}
+            >
+              x
+            </button>
+          </div>
+        </NodeContainer>
       );
     };
     ```
 
 ### `src/components/Toolbar.tsx`
 
--   **Function:** Renders the toolbar with file operation buttons and file path display.
+-   **Function:** Renders the toolbar with file operation buttons (Save As JSON, Save As Text, Load File, Add Node) and file path display. The Save button has been removed to streamline the UI.
 -   **Structure:**
     ```typescript
     import React from 'react';
     import { useMindMapStore } from '../store/mindmapStore';
-    import { saveToFile, saveAsFile, loadFromFile } from '../utils/file';
+    import { saveAsFile, loadFromFile } from '../utils/file';
     import { FileFormat } from '../types';
     import styled from 'styled-components';
 
@@ -328,14 +357,7 @@ mindmap-app/
         setTextFilePath 
       } = useMindMapStore();
 
-      const handleSave = async () => {
-        if (jsonFilePath) {
-          await saveToFile(mindmap, jsonFilePath);
-        } else if (textFilePath) {
-          await saveToFile(mindmap, textFilePath);
-        }
-      };
-
+      
       const handleSaveAs = async (format: FileFormat) => {
         const path = await saveAsFile(mindmap, format);
         if (path) {
@@ -365,6 +387,7 @@ mindmap-app/
         addNode([], 'New Node');
       };
 
+      
       const getCurrentFilePath = () => {
         return jsonFilePath || textFilePath || 'No file selected';
       };
@@ -374,7 +397,6 @@ mindmap-app/
           <button onClick={handleAddNode}>Add Node</button>
           
           <ButtonGroup>
-            <button onClick={handleSave} disabled={!jsonFilePath && !textFilePath}>Save</button>
             <button onClick={() => handleSaveAs('json')}>Save As JSON</button>
             <button onClick={() => handleSaveAs('text')}>Save As Text</button>
           </ButtonGroup>
@@ -382,6 +404,7 @@ mindmap-app/
           <ButtonGroup>
             <button onClick={handleLoad}>Load File</button>
           </ButtonGroup>
+          
           
           <FilePathDisplay>
             Current file: {getCurrentFilePath()}
@@ -839,6 +862,115 @@ mindmap-app/
 - **Validation:** Returns null for invalid input (empty text or text starting with tabs)
 - **Consistency:** Ensures round-trip conversion between mind map and text formats
 
+### `src/styles/nodeColors.ts`
+
+-   **Function:** Contains color constants for the node color coding system.
+-   **Structure:**
+    ```typescript
+    export const NODE_COLORS = {
+      selected: {
+        background: '#4A90E2',
+        border: '#357ABD',
+        text: '#FFFFFF',
+        hover: '#357ABD'
+      },
+      onPath: {
+        background: '#E8F4FD',
+        border: '#B8D4F1',
+        text: '#333333',
+        hover: '#D1E7FC'
+      },
+      withChildren: {
+        background: '#F8F9FA',
+        border: '#DEE2E6',
+        text: '#333333',
+        hover: '#E9ECEF'
+      },
+      withoutChildren: {
+        background: '#FFFFFF',
+        border: '#DEE2E6',
+        text: '#333333',
+        hover: '#F8F9FA'
+      }
+    } as const;
+
+    export type NodeType = keyof typeof NODE_COLORS;
+    ```
+
+### `src/utils/nodeUtils.ts`
+
+-   **Function:** Contains utility functions for node operations and color coding logic.
+-   **Structure:**
+    ```typescript
+    import { MindNode } from '../types';
+
+    /**
+     * Checks if a node is part of the selected path hierarchy
+     * Returns true if nodePath is a prefix of selectedPath or vice versa
+     */
+    export const isNodeOnSelectedPath = (
+      nodePath: number[], 
+      selectedPath: number[]
+    ): boolean => {
+      if (nodePath.length === 0 || selectedPath.length === 0) {
+        return false;
+      }
+      
+      const minLength = Math.min(nodePath.length, selectedPath.length);
+      for (let i = 0; i < minLength; i++) {
+        if (nodePath[i] !== selectedPath[i]) {
+          return false;
+        }
+      }
+      return true;
+    };
+
+    /**
+     * Checks if a node is the currently selected node
+     * Returns true only if paths match exactly
+     */
+    export const isNodeSelected = (
+      nodePath: number[], 
+      selectedPath: number[]
+    ): boolean => {
+      if (nodePath.length !== selectedPath.length) {
+        return false;
+      }
+      
+      return nodePath.every((val, idx) => val === selectedPath[idx]);
+    };
+
+    /**
+     * Determines if a node has children
+     */
+    export const hasChildren = (node: MindNode): boolean => {
+      return Array.isArray(node.children) && node.children.length > 0;
+    };
+
+    /**
+     * Determines the node type for styling purposes
+     * Returns the most specific type that applies to the node
+     */
+    export const getNodeType = (
+      node: MindNode,
+      nodePath: number[],
+      selectedPath: number[]
+    ): 'selected' | 'onPath' | 'withChildren' | 'withoutChildren' => {
+      if (isNodeSelected(nodePath, selectedPath)) {
+        return 'selected';
+      }
+      
+      if (isNodeOnSelectedPath(nodePath, selectedPath)) {
+        return 'onPath';
+      }
+      
+      if (hasChildren(node)) {
+        return 'withChildren';
+      }
+      
+      return 'withoutChildren';
+    };
+    ```
 
 ### `src/utils/test-utils.ts`
 

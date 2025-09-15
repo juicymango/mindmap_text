@@ -1788,3 +1788,15 @@ Use the newer GitHub Pages action approach:
 
 ### Recommended Fix
 Update the workflow to use the modern GitHub Pages deployment method with proper permissions and verification steps.
+
+# task 42
+
+- remove the "Save" button. only keep the "save as json" and "save as text".
+- use different colors to denote the selected node, nodes on the selected path, nodes with children, and nodes without children.
+- design a plan for implementation and tests. append your plan to ./docs/plan.md.
+- implement your plan.
+- Keep running npm test and fix the errors until there are no more errors thrown.
+- update ./docs/ui_and_iteration_design.md based on the current implementation.
+- update ./docs/code_structure.md based on the current implementation.
+- update ./docs/test.md based on the current implementation.
+- commit and push all the changes.
