@@ -337,5 +337,100 @@ describe('Node Utils', () => {
       expect(getNodeType(b1, [1, 0], selectedPath)).toBe('withoutChildren');
       expect(getNodeType(b2, [1, 1], selectedPath)).toBe('withoutChildren');
     });
+
+    // Task 45: Test cases for selected_child_idx path coloring
+    describe('selected_child_idx path coloring', () => {
+      it('should color selected_child_idx chain as onPath when node is selected', () => {
+        const rootNode: MindNode = {
+          text: 'Root',
+          selected_child_idx: 0,
+          children: [
+            {
+              text: 'Child A',
+              selected_child_idx: 1,
+              children: [
+                { text: 'Grandchild A-0', children: [] },
+                { text: 'Grandchild A-1', children: [] }
+              ]
+            },
+            {
+              text: 'Child B', 
+              selected_child_idx: 0,
+              children: [
+                { text: 'Grandchild B-0', children: [] },
+                { text: 'Grandchild B-1', children: [] }
+              ]
+            }
+          ]
+        };
+
+        // Select Child B (path [1])
+        const selectedPath = [1];
+        
+        // Root should be onPath (ancestor of selected)
+        expect(getNodeType(rootNode, [], selectedPath)).toBe('onPath');
+        
+        // Child B should be selected
+        expect(getNodeType(rootNode.children[1], [1], selectedPath)).toBe('selected');
+        
+        // Grandchild B-0 should be onPath (it's the selected_child_idx of Child B)
+        expect(getNodeType(rootNode.children[1].children[0], [1, 0], selectedPath, rootNode)).toBe('onPath');
+        
+        // Child A should NOT be onPath (it's a sibling, not on the path)
+        expect(getNodeType(rootNode.children[0], [0], selectedPath)).toBe('withChildren');
+        
+        // Grandchild A-0 and A-1 should NOT be onPath
+        expect(getNodeType(rootNode.children[0].children[0], [0, 0], selectedPath)).toBe('withoutChildren');
+        expect(getNodeType(rootNode.children[0].children[1], [0, 1], selectedPath)).toBe('withoutChildren');
+        
+        // Grandchild B-1 should NOT be onPath (not the selected_child_idx)
+        expect(getNodeType(rootNode.children[1].children[1], [1, 1], selectedPath)).toBe('withoutChildren');
+      });
+
+      it('should handle deep selected_child_idx chains', () => {
+        const rootNode: MindNode = {
+          text: 'Root',
+          selected_child_idx: 0,
+          children: [
+            {
+              text: 'Level 1',
+              selected_child_idx: 1,
+              children: [
+                { text: 'Level 2-0', children: [] },
+                {
+                  text: 'Level 2-1',
+                  selected_child_idx: 0,
+                  children: [
+                    { text: 'Level 3-0', children: [] },
+                    { text: 'Level 3-1', children: [] }
+                  ]
+                }
+              ]
+            }
+          ]
+        };
+
+        // Select Level 2-1 (path [0, 1])
+        const selectedPath = [0, 1];
+        
+        // Root should be onPath
+        expect(getNodeType(rootNode, [], selectedPath)).toBe('onPath');
+        
+        // Level 1 should be onPath (ancestor)
+        expect(getNodeType(rootNode.children[0], [0], selectedPath)).toBe('onPath');
+        
+        // Level 2-1 should be selected
+        expect(getNodeType(rootNode.children[0].children[1], [0, 1], selectedPath)).toBe('selected');
+        
+        // Level 3-0 should be onPath (selected_child_idx of selected node)
+        expect(getNodeType(rootNode.children[0].children[1].children[0], [0, 1, 0], selectedPath, rootNode)).toBe('onPath');
+        
+        // Level 2-0 should NOT be onPath (sibling of selected)
+        expect(getNodeType(rootNode.children[0].children[0], [0, 0], selectedPath)).toBe('withoutChildren');
+        
+        // Level 3-1 should NOT be onPath (not selected_child_idx)
+        expect(getNodeType(rootNode.children[0].children[1].children[1], [0, 1, 1], selectedPath)).toBe('withoutChildren');
+      });
+    });
   });
 });

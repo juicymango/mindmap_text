@@ -82,11 +82,12 @@ The application uses a sophisticated color coding system to provide visual hiera
 
 ### Path Detection Logic (Updated)
 
-The node color coding system uses precise path detection algorithms to ensure accurate visual representation:
+The node color coding system uses sophisticated path detection algorithms to ensure accurate visual representation:
 
-- **Ancestor Detection:** A node is considered "on the selected path" only if it is an ancestor of the selected node (i.e., its path is a prefix of the selected path).
+- **Ancestor Detection:** A node is considered "on the selected path" if it is an ancestor of the selected node (i.e., its path is a prefix of the selected path).
 - **Root Node Handling:** The root node (empty path) is considered an ancestor of any selected node and receives the "onPath" color when any node is selected.
-- **Descendant Exclusion:** Descendants of the selected node are NOT considered "on the selected path" and receive their appropriate colors based on their children status.
+- **Selected Child Index Chain:** Nodes that are part of the `selected_child_idx` chain extending from the selected node also receive the "onPath" color. This means when a node is selected, its `selected_child_idx` child (and that child's `selected_child_idx`, etc.) are highlighted as part of the navigation path.
+- **Descendant Exclusion:** Descendants of the selected node that are NOT part of the `selected_child_idx` chain receive their appropriate colors based on their children status.
 - **Sibling Handling:** Siblings of the selected node receive "withChildren" or "withoutChildren" colors based on their children status, not the "onPath" color.
 
 ### Node Types and Colors

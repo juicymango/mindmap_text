@@ -4,7 +4,7 @@ This document provides comprehensive testing documentation for the mind map appl
 
 ## Test Overview
 
-The application has comprehensive test coverage with 84 tests across 11 test files, covering unit tests, integration tests, and component tests using React Testing Library and Jest.
+The application has comprehensive test coverage with 89 tests across 11 test files, covering unit tests, integration tests, and component tests using React Testing Library and Jest.
 
 ## Testing Philosophy
 
@@ -176,6 +176,8 @@ src/
 - Test `getNodeType` gives siblings withChildren or withoutChildren color, not onPath
 - Test `getNodeType` handles specific case from Task 44: when [0,1] is selected
 - Test `getNodeType` handles deep nested structures with siblings
+- Test `getNodeType` selected_child_idx path coloring - colors selected_child_idx chain as onPath when node is selected
+- Test `getNodeType` handles deep selected_child_idx chains with multiple levels
 - Test edge cases and error handling in all node utility functions
 
 ## Test Cases
@@ -193,6 +195,8 @@ src/
 - **Deselect:** Click another node in same column, verify selection changes appropriately
 - **Color-coded states:** Verify nodes display correct colors based on their type (selected, on path, with children, without children)
 - **Visual hierarchy:** Test that color priority system works correctly (selected > on path > children status)
+- **selected_child_idx path coloring:** Verify that grandchildren get `onPath` color when they're the `selected_child_idx` of the selected node
+- **selected_child_idx chain behavior:** Test that the chain of selected_child_idx nodes from the selected node gets `onPath` coloring
 
 ### File Operations
 - **Save As JSON:** Click button, verify file dialog appears and saves JSON format
@@ -280,7 +284,25 @@ npm test -- --testNamePattern="copyNode"
 ```
 
 ### Test Coverage Report
-The test suite maintains high coverage across all components, utilities, and store functions with 84 tests covering comprehensive scenarios including the new color coding system and visual DOM testing. Coverage reports can be generated using the `--coverage` flag.
+The test suite maintains high coverage across all components, utilities, and store functions with 89 tests covering comprehensive scenarios including the new color coding system, visual DOM testing, and selected_child_idx path coloring. Coverage reports can be generated using the `--coverage` flag.
+
+## Task 45: selected_child_idx Path Coloring Tests
+
+### New Function Testing
+- **isNodeOnSelectedPathWithChildIndex function:** Test the new function that detects if a node is part of the selected_child_idx chain extending from the selected node
+- **Tree traversal algorithm:** Test the logic that follows selected_child_idx values from the selected node to determine onPath status
+- **Root node parameter:** Test the updated getNodeType function with the optional root node parameter
+
+### Test Scenarios
+- **Basic selected_child_idx coloring:** When a node is selected, its selected_child_idx child should get onPath color
+- **Deep chain coloring:** When a node is selected, the entire chain of selected_child_idx nodes should get onPath color
+- **Mixed hierarchy:** Test scenarios where some descendants are on the selected_child_idx path and others are not
+- **Edge cases:** Test with undefined selected_child_idx values and empty children arrays
+
+### Integration Testing
+- **Node component integration:** Test that the Node component correctly passes the root node to getNodeType
+- **Visual consistency:** Test that the color coding matches the expected behavior across different mind map structures
+- **Sibling behavior:** Verify that siblings not on the selected_child_idx path get appropriate colors (withChildren/withoutChildren)
 
 ## Mocking Strategy
 

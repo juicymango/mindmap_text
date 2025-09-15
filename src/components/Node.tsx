@@ -40,7 +40,7 @@ const NodeContainer = styled.div<{ $nodeType: 'selected' | 'onPath' | 'withChild
 
 
 export const Node: React.FC<NodeProps> = ({ node, path, index, onSelect }) => {
-  const { updateNodeText, setSelectedChild, addNode, deleteNode } = useMindMapStore();
+  const { mindmap, updateNodeText, setSelectedChild, addNode, deleteNode } = useMindMapStore();
   const { selectedPath } = useSelectedPath();
   const [isEditing, setIsEditing] = useState(false);
   const [text, setText] = useState(node.text);
@@ -74,7 +74,7 @@ export const Node: React.FC<NodeProps> = ({ node, path, index, onSelect }) => {
     deleteNode(path);
   };
 
-  const nodeType = getNodeType(node, path, selectedPath);
+  const nodeType = getNodeType(node, path, selectedPath, mindmap.root);
 
   return (
     <NodeContainer

@@ -232,7 +232,7 @@ mindmap-app/
     `;
 
     export const Node: React.FC<NodeProps> = ({ node, path, index, onSelect }) => {
-      const { updateNodeText, setSelectedChild, addNode, deleteNode } = useMindMapStore();
+      const { mindmap, updateNodeText, setSelectedChild, addNode, deleteNode } = useMindMapStore();
       const { selectedPath } = useSelectedPath();
       const [isEditing, setIsEditing] = useState(false);
       const [text, setText] = useState(node.text);
@@ -266,7 +266,7 @@ mindmap-app/
         deleteNode(path);
       };
 
-      const nodeType = getNodeType(node, path, selectedPath);
+      const nodeType = getNodeType(node, path, selectedPath, mindmap.root);
 
       return (
         <NodeContainer
@@ -924,17 +924,80 @@ mindmap-app/
       nodePath: number[], 
       selectedPath: number[]
     ): boolean => {
-      if (nodePath.length === 0 || selectedPath.length === 0) {
+      // Empty path (root) is ancestor of any non-empty selected path
+      if (nodePath.length === 0) {
+        return selectedPath.length > 0;
+      }
+      
+      if (selectedPath.length === 0) {
         return false;
       }
       
-      const minLength = Math.min(nodePath.length, selectedPath.length);
-      for (let i = 0; i < minLength; i++) {
+      // Node must be shorter than or equal to selected path to be an ancestor
+      if (nodePath.length > selectedPath.length) {
+        return false;
+      }
+      
+      // Check if nodePath is a prefix of selectedPath
+      for (let i = 0; i < nodePath.length; i++) {
         if (nodePath[i] !== selectedPath[i]) {
           return false;
         }
       }
       return true;
+    };
+
+    /**
+     * Checks if a node is part of the selected path hierarchy including selected_child_idx chain
+     * Returns true if node is on the path determined by following selected_child_idx from selected node
+     */
+    export const isNodeOnSelectedPathWithChildIndex = (
+      nodePath: number[],
+      selectedPath: number[],
+      rootNode: MindNode
+    ): boolean => {
+      // First check if it's a regular ancestor
+      if (isNodeOnSelectedPath(nodePath, selectedPath)) {
+        return true;
+      }
+      
+      // If not, check if it's part of the selected_child_idx chain extending from the selected node
+      if (nodePath.length > selectedPath.length) {
+        // Check if nodePath extends selectedPath
+        for (let i = 0; i < selectedPath.length; i++) {
+          if (nodePath[i] !== selectedPath[i]) {
+            return false;
+          }
+        }
+        
+        // Now check if each subsequent index matches the selected_child_idx
+        let currentNode = rootNode;
+        for (let i = 0; i < selectedPath.length; i++) {
+          if (currentNode.children && selectedPath[i] < currentNode.children.length) {
+            currentNode = currentNode.children[selectedPath[i]];
+          } else {
+            return false;
+          }
+        }
+        
+        // Check the extension part
+        for (let i = selectedPath.length; i < nodePath.length; i++) {
+          const expectedChildIndex = currentNode.selected_child_idx ?? 0;
+          if (nodePath[i] !== expectedChildIndex) {
+            return false;
+          }
+          
+          if (currentNode.children && expectedChildIndex < currentNode.children.length) {
+            currentNode = currentNode.children[expectedChildIndex];
+          } else {
+            return false;
+          }
+        }
+        
+        return true;
+      }
+      
+      return false;
     };
 
     /**
@@ -962,17 +1025,24 @@ mindmap-app/
     /**
      * Determines the node type for styling purposes
      * Returns the most specific type that applies to the node
+     * Updated to support selected_child_idx chain coloring
      */
     export const getNodeType = (
       node: MindNode,
       nodePath: number[],
-      selectedPath: number[]
+      selectedPath: number[],
+      rootNode?: MindNode
     ): 'selected' | 'onPath' | 'withChildren' | 'withoutChildren' => {
       if (isNodeSelected(nodePath, selectedPath)) {
         return 'selected';
       }
       
       if (isNodeOnSelectedPath(nodePath, selectedPath)) {
+        return 'onPath';
+      }
+      
+      // Check if it's part of the selected_child_idx chain (if root node is provided)
+      if (rootNode && isNodeOnSelectedPathWithChildIndex(nodePath, selectedPath, rootNode)) {
         return 'onPath';
       }
       

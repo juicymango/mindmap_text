@@ -54,19 +54,78 @@ export const hasChildren = (node: MindNode): boolean => {
 };
 
 /**
+ * Checks if a node is part of the selected path hierarchy including selected_child_idx chain
+ * Returns true if node is on the path determined by following selected_child_idx from selected node
+ */
+export const isNodeOnSelectedPathWithChildIndex = (
+  nodePath: number[],
+  selectedPath: number[],
+  rootNode: MindNode
+): boolean => {
+  // First check if it's a regular ancestor
+  if (isNodeOnSelectedPath(nodePath, selectedPath)) {
+    return true;
+  }
+  
+  // If not, check if it's part of the selected_child_idx chain extending from the selected node
+  if (nodePath.length > selectedPath.length) {
+    // Check if nodePath extends selectedPath
+    for (let i = 0; i < selectedPath.length; i++) {
+      if (nodePath[i] !== selectedPath[i]) {
+        return false;
+      }
+    }
+    
+    // Now check if each subsequent index matches the selected_child_idx
+    let currentNode = rootNode;
+    for (let i = 0; i < selectedPath.length; i++) {
+      if (currentNode.children && selectedPath[i] < currentNode.children.length) {
+        currentNode = currentNode.children[selectedPath[i]];
+      } else {
+        return false;
+      }
+    }
+    
+    // Check the extension part
+    for (let i = selectedPath.length; i < nodePath.length; i++) {
+      const expectedChildIndex = currentNode.selected_child_idx ?? 0;
+      if (nodePath[i] !== expectedChildIndex) {
+        return false;
+      }
+      
+      if (currentNode.children && expectedChildIndex < currentNode.children.length) {
+        currentNode = currentNode.children[expectedChildIndex];
+      } else {
+        return false;
+      }
+    }
+    
+    return true;
+  }
+  
+  return false;
+};
+
+/**
  * Determines the node type for styling purposes
  * Returns the most specific type that applies to the node
  */
 export const getNodeType = (
   node: MindNode,
   nodePath: number[],
-  selectedPath: number[]
+  selectedPath: number[],
+  rootNode?: MindNode
 ): 'selected' | 'onPath' | 'withChildren' | 'withoutChildren' => {
   if (isNodeSelected(nodePath, selectedPath)) {
     return 'selected';
   }
   
   if (isNodeOnSelectedPath(nodePath, selectedPath)) {
+    return 'onPath';
+  }
+  
+  // Check if it's part of the selected_child_idx chain (if root node is provided)
+  if (rootNode && isNodeOnSelectedPathWithChildIndex(nodePath, selectedPath, rootNode)) {
     return 'onPath';
   }
   
