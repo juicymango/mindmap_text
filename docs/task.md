@@ -2029,3 +2029,18 @@ All requirements from Task 46 have been successfully implemented and tested. The
 5. **Enhanced Test Coverage**: Comprehensive tests for all fixed bugs
 
 All issues from Task 47 have been successfully resolved with proper testing and documentation. The application now provides a more reliable and consistent user experience with proper selection management and error handling.
+
+# task 48
+
+- your understanding of the root column is wrong.
+- the root node in the root column is the exact node of MindMap.root.
+- the root node is ommited in the text format, but is kept in the json format.
+- the root node may have multiple children.
+- thus when selecting the root node, the user can click add child and four copying and pasting button. only delete, move up, move down should be disabled.
+- fix your implemenation.
+- implement relevant test cases.
+- Keep running npm test and fix the errors until there are no more errors thrown.
+- update ./docs/ui_and_iteration_design.md based on the current implementation.
+- update ./docs/code_structure.md based on the current implementation.
+- update ./docs/test.md based on the current implementation.
+- commit and push all the changes.

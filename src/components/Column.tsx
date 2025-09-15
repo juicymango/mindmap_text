@@ -22,8 +22,9 @@ const ColumnContainer = styled.div`
 `;
 
 export const Column: React.FC<ColumnProps> = ({ nodes, columnPath, index, onNodeSelect }) => {
-  // Special handling for auxiliary root column (index 0) which contains only the root node
-  const isAuxiliaryRootColumn = index === 0 && columnPath.length === 0 && nodes.length === 1;
+  // Special handling for root column: if this is the first column (index 0) 
+  // and contains only one node with empty columnPath, it's the root node
+  const isRootColumn = index === 0 && columnPath.length === 0 && nodes.length === 1;
   
   return (
     <ColumnContainer>
@@ -31,7 +32,7 @@ export const Column: React.FC<ColumnProps> = ({ nodes, columnPath, index, onNode
         <Node 
           key={nodeIndex} 
           node={node} 
-          path={isAuxiliaryRootColumn && nodeIndex === 0 ? [] : [...columnPath, nodeIndex]} 
+          path={isRootColumn && nodeIndex === 0 ? [] : [...columnPath, nodeIndex]} 
           index={nodeIndex}
           onSelect={onNodeSelect}
         />

@@ -4,7 +4,7 @@ This document provides comprehensive testing documentation for the mind map appl
 
 ## Test Overview
 
-The application has comprehensive test coverage with 89 tests across 11 test files, covering unit tests, integration tests, and component tests using React Testing Library and Jest.
+The application has comprehensive test coverage with 116 tests across 11 test files, covering unit tests, integration tests, and component tests using React Testing Library and Jest.
 
 ## Testing Philosophy
 
@@ -98,6 +98,13 @@ src/
 - Test button grouping and layout
 - Test that Save button is not present (removed in Task 42)
 - Test simplified toolbar UI with only essential buttons
+- **Task 48: Root Node Button States:**
+  - Test Add Child button behavior when root node is selected (should be enabled)
+  - Test Copy/Paste button behavior when root node is selected (should be enabled)
+  - Test Delete button behavior when root node is selected (should be disabled)
+  - Test Move Up/Down button behavior when root node is selected (should be disabled)
+  - Test button states for non-root nodes (all operations should be enabled)
+  - Test proper root node selection handling with path `[]`
 
 ### Store Tests (`src/store/mindmapStore.test.ts`)
 - Test initial state of mind map and file paths
@@ -284,7 +291,7 @@ npm test -- --testNamePattern="copyNode"
 ```
 
 ### Test Coverage Report
-The test suite maintains high coverage across all components, utilities, and store functions with 89 tests covering comprehensive scenarios including the new color coding system, visual DOM testing, and selected_child_idx path coloring. Coverage reports can be generated using the `--coverage` flag.
+The test suite maintains high coverage across all components, utilities, and store functions with 116 tests covering comprehensive scenarios including the new color coding system, visual DOM testing, selected_child_idx path coloring, and root node button state management. Coverage reports can be generated using the `--coverage` flag.
 
 ## Task 45: selected_child_idx Path Coloring Tests
 
@@ -361,6 +368,38 @@ The project uses consistent test data builders:
 - Test edge cases and boundary conditions in node utility functions
 - Test visual hierarchy and priority system for node colors
 - Test color contrast and accessibility compliance
+
+## Task 48: Root Node Selection and Button State Management
+
+### Root Column Understanding
+- **Root Node Path:** The root node in the root column is assigned path `[]` (empty array)
+- **Selection State:** Root node selection is indicated by `selectedPath: []`
+- **Auxiliary Root:** The root column contains the actual `MindMap.root` node, not a display-only auxiliary node
+
+### Button State Logic Testing
+- **Root Node Operations:**
+  - Add Child: Enabled (root can have children added)
+  - Copy JSON: Enabled (root content can be copied)
+  - Copy Text: Enabled (root content can be copied)
+  - Paste JSON: Enabled (content can be pasted to root)
+  - Paste Text: Enabled (content can be pasted to root)
+  - Delete: Disabled (root cannot be deleted)
+  - Move Up: Disabled (root cannot be moved)
+  - Move Down: Disabled (root cannot be moved)
+
+- **Non-Root Node Operations:**
+  - All operations enabled for non-root nodes
+
+### Test Implementation
+- **Mock Selection Context:** Tests use mocked `useSelectedPath` hook to control selection state
+- **Path-based Testing:** Tests verify behavior with `selectedPath: []` (root) vs `selectedPath: [0]` (non-root)
+- **Button State Verification:** Comprehensive testing of disabled/enabled states for all operations
+- **Legacy Test Compatibility:** Updated existing tests to reflect new root node behavior
+
+### Integration with Column Component
+- **Root Path Assignment:** Column component correctly assigns path `[]` to root node in first column
+- **Selection Propagation:** Root node selection properly propagates to Toolbar component
+- **Visual Feedback:** Root node selection provides appropriate visual feedback in UI
 
 ### Accessibility Testing
 - Enhanced accessibility testing with axe-core

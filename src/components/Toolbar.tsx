@@ -45,6 +45,7 @@ export const Toolbar: React.FC = () => {
   
   const { selectedPath, setSelectedPath } = useSelectedPath();
   const hasSelection = selectedPath.length > 0;
+  const hasRootSelection = selectedPath.length === 0; // Root node has empty path []
 
   const handleSaveAs = async (format: FileFormat) => {
     const path = await saveAsFile(mindmap, format);
@@ -72,7 +73,7 @@ export const Toolbar: React.FC = () => {
   };
 
   const handleAddChild = () => {
-    if (hasSelection) {
+    if (hasSelection || hasRootSelection) {
       addNode(selectedPath, 'New Node');
     }
   };
@@ -102,25 +103,25 @@ export const Toolbar: React.FC = () => {
   };
 
   const handleCopyJson = () => {
-    if (hasSelection) {
+    if (hasSelection || hasRootSelection) {
       copyNodeAsJson(selectedPath);
     }
   };
 
   const handleCopyText = () => {
-    if (hasSelection) {
+    if (hasSelection || hasRootSelection) {
       copyNodeAsText(selectedPath);
     }
   };
 
   const handlePasteJson = () => {
-    if (hasSelection) {
+    if (hasSelection || hasRootSelection) {
       pasteNodeAsJson(selectedPath);
     }
   };
 
   const handlePasteText = () => {
-    if (hasSelection) {
+    if (hasSelection || hasRootSelection) {
       pasteNodeAsText(selectedPath);
     }
   };
@@ -132,17 +133,17 @@ export const Toolbar: React.FC = () => {
   return (
     <ToolbarContainer>
       <ButtonGroup>
-        <button onClick={handleAddChild} disabled={!hasSelection}>Add Child</button>
+        <button onClick={handleAddChild} disabled={!(hasSelection || hasRootSelection)}>Add Child</button>
         <button onClick={handleDelete} disabled={!hasSelection}>Delete</button>
         <button onClick={handleMoveUp} disabled={!hasSelection}>Move Up</button>
         <button onClick={handleMoveDown} disabled={!hasSelection}>Move Down</button>
       </ButtonGroup>
       
       <ButtonGroup>
-        <button onClick={handleCopyJson} disabled={!hasSelection}>Copy JSON</button>
-        <button onClick={handleCopyText} disabled={!hasSelection}>Copy Text</button>
-        <button onClick={handlePasteJson} disabled={!hasSelection}>Paste JSON</button>
-        <button onClick={handlePasteText} disabled={!hasSelection}>Paste Text</button>
+        <button onClick={handleCopyJson} disabled={!(hasSelection || hasRootSelection)}>Copy JSON</button>
+        <button onClick={handleCopyText} disabled={!(hasSelection || hasRootSelection)}>Copy Text</button>
+        <button onClick={handlePasteJson} disabled={!(hasSelection || hasRootSelection)}>Paste JSON</button>
+        <button onClick={handlePasteText} disabled={!(hasSelection || hasRootSelection)}>Paste Text</button>
       </ButtonGroup>
       
       <ButtonGroup>
