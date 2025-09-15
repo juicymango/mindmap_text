@@ -1670,3 +1670,121 @@ This approach catches both TypeScript errors AND code quality issues before depl
 - update ./docs/code_structure.md based on the current implementation.
 - update ./docs/test.md based on the current implementation.
 - commit and push all the changes.
+
+# task 41
+
+Run peaceiris/actions-gh-pages@v3
+[INFO] Usage https://github.com/peaceiris/actions-gh-pages#readme
+Dump inputs
+Setup auth token
+Prepare publishing assets
+  [INFO] ForceOrphan: false
+  /usr/bin/git clone --depth=1 --single-branch --branch gh-pages ***github.com/juicymango/mindmap_text.git /home/runner/actions_github_pages_1757908741248
+  Cloning into '/home/runner/actions_github_pages_1757908741248'...
+  fatal: Remote branch gh-pages not found in upstream origin
+  [INFO] first deployment, create new branch gh-pages
+  [INFO] The process '/usr/bin/git' failed with exit code 128
+  [INFO] chdir /home/runner/actions_github_pages_1757908741248
+  /usr/bin/git init
+  hint: Using 'master' as the name for the initial branch. This default branch name
+  hint: is subject to change. To configure the initial branch name to use in all
+  hint: of your new repositories, which will suppress this warning, call:
+  hint:
+  hint: 	git config --global init.defaultBranch <name>
+  hint:
+  hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+  hint: 'development'. The just-created branch can be renamed via this command:
+  hint:
+  hint: 	git branch -m <name>
+  hint:
+  hint: Disable this message with "git config set advice.defaultBranchName false"
+  Initialized empty Git repository in /home/runner/actions_github_pages_1757908741248/.git/
+  /usr/bin/git checkout --orphan gh-pages
+  Switched to a new branch 'gh-pages'
+  [INFO] prepare publishing assets
+  [INFO] copy /home/runner/work/mindmap_text/mindmap_text/build to /home/runner/actions_github_pages_1757908741248
+  cp: no such file or directory: /home/runner/work/mindmap_text/mindmap_text/build/.*
+  [INFO] delete excluded assets
+  rm: no paths given
+  [INFO] Created /home/runner/actions_github_pages_1757908741248/.nojekyll
+Setup Git config
+Create a commit
+Push the commit or tag
+  /usr/bin/git push origin gh-pages
+  remote: Permission to juicymango/mindmap_text.git denied to github-actions[bot].
+  fatal: unable to access 'https://github.com/juicymango/mindmap_text.git/': The requested URL returned error: 403
+  Error: Action failed with "The process '/usr/bin/git' failed with exit code 128"
+
+- i found deployment error when i merge this branch to main.
+- check ./.github/workflows/deploy.yml.
+- explain why and how to fix it. append your answer to ./docs/task.md.
+- fix it.
+- commit and push all the changes.
+
+## Task 41 Analysis - GitHub Pages Deployment Issues
+
+### Why the Deployment Fails
+
+**Issue 1: Permissions Error**
+```
+remote: Permission to juicymango/mindmap_text.git denied to github-actions[bot].
+fatal: unable to access 'https://github.com/juicymango/mindmap_text.git/': The requested URL returned error: 403
+```
+
+**Root Cause:** The GitHub Actions workflow is missing the necessary permissions to write to the repository. The `GITHUB_TOKEN` doesn't have write permissions by default for Pages deployment.
+
+**Issue 2: Build Directory Error**
+```
+cp: no such file or directory: /home/runner/work/mindmap_text/mindmap_text/build/.*
+```
+
+**Root Cause:** The build directory doesn't exist or is empty when the deployment step runs, likely because the build step failed or the `build` script didn't create the expected directory structure.
+
+### How to Fix It
+
+**Solution 1: Add Explicit Permissions**
+Add `permissions` section to the workflow to grant write access to contents and pages:
+
+```yaml
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+```
+
+**Solution 2: Use Latest Actions Versions**
+Update to use newer versions of GitHub Actions:
+- `actions/checkout@v4` (instead of v3)
+- `actions/setup-node@v4` (instead of v3)
+- `peaceiris/actions-gh-pages@v3` is still current but ensure proper configuration
+
+**Solution 3: Add Build Directory Verification**
+Add a step to verify the build directory exists before deployment:
+
+```yaml
+- name: Verify Build
+  run: |
+    ls -la build/
+    echo "Build directory contents:"
+    find build/ -type f | head -10
+```
+
+**Solution 4: Alternative Deployment Method**
+Use the newer GitHub Pages action approach:
+
+```yaml
+- name: Setup Pages
+  uses: actions/configure-pages@v4
+
+- name: Upload artifact
+  uses: actions/upload-pages-artifact@v3
+  with:
+    path: ./build
+
+- name: Deploy to GitHub Pages
+  id: deployment
+  uses: actions/deploy-pages@v4
+```
+
+### Recommended Fix
+Update the workflow to use the modern GitHub Pages deployment method with proper permissions and verification steps.
