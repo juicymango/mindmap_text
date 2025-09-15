@@ -1,3 +1,4 @@
+/* eslint-disable testing-library/no-node-access */
 import { renderHook, act } from '@testing-library/react';
 import { useMindMapStore } from './mindmapStore';
 
@@ -29,16 +30,15 @@ describe('mindmapStore', () => {
   beforeEach(() => {
     localStorageMock.clear();
     jest.clearAllMocks();
-    
-    // Reset the store state to initial values
-    const { result } = renderHook(() => useMindMapStore());
-    act(() => {
-      result.current.reset();
-    });
   });
 
   it('should add a node', () => {
     const { result } = renderHook(() => useMindMapStore());
+    
+    // Reset store to initial state
+    act(() => {
+      result.current.reset();
+    });
 
     act(() => {
       result.current.setMindmap({ root: { text: 'Root', children: [] } });
@@ -46,11 +46,16 @@ describe('mindmapStore', () => {
     });
 
     expect(result.current.mindmap.root.children).toHaveLength(1);
-    expect(result.current.mindmap.root.children[0].text).toBe('New Node');
+    expect(result.current.mindmap.root.children[0]?.text).toBe('New Node');
   });
 
   it('should delete a node', () => {
     const { result } = renderHook(() => useMindMapStore());
+    
+    // Reset store to initial state
+    act(() => {
+      result.current.reset();
+    });
 
     act(() => {
       result.current.setMindmap({ root: { text: 'Root', children: [] } });
@@ -68,6 +73,11 @@ describe('mindmapStore', () => {
 
   it('should update node text', () => {
     const { result } = renderHook(() => useMindMapStore());
+    
+    // Reset store to initial state
+    act(() => {
+      result.current.reset();
+    });
 
     act(() => {
       result.current.addNode([], 'New Node');
@@ -77,11 +87,16 @@ describe('mindmapStore', () => {
       result.current.updateNodeText([0], 'Updated Text');
     });
 
-    expect(result.current.mindmap.root.children[0].text).toBe('Updated Text');
+    expect(result.current.mindmap.root.children[0]?.text).toBe('Updated Text');
   });
 
   it('should set selected child', () => {
     const { result } = renderHook(() => useMindMapStore());
+    
+    // Reset store to initial state
+    act(() => {
+      result.current.reset();
+    });
 
     act(() => {
       result.current.addNode([], 'Parent Node');
@@ -101,6 +116,11 @@ describe('mindmapStore', () => {
   // File path memory tests
   it('should initialize with null file paths', () => {
     const { result } = renderHook(() => useMindMapStore());
+    
+    // Reset store to initial state
+    act(() => {
+      result.current.reset();
+    });
 
     expect(result.current.jsonFilePath).toBeNull();
     expect(result.current.textFilePath).toBeNull();
@@ -108,6 +128,11 @@ describe('mindmapStore', () => {
 
   it('should set JSON file path', () => {
     const { result } = renderHook(() => useMindMapStore());
+    
+    // Reset store to initial state
+    act(() => {
+      result.current.reset();
+    });
 
     act(() => {
       result.current.setJsonFilePath('/path/to/file.json');
@@ -119,6 +144,11 @@ describe('mindmapStore', () => {
 
   it('should set text file path', () => {
     const { result } = renderHook(() => useMindMapStore());
+    
+    // Reset store to initial state
+    act(() => {
+      result.current.reset();
+    });
 
     act(() => {
       result.current.setTextFilePath('/path/to/file.txt');
@@ -130,6 +160,11 @@ describe('mindmapStore', () => {
 
   it('should clear file paths', () => {
     const { result } = renderHook(() => useMindMapStore());
+    
+    // Reset store to initial state
+    act(() => {
+      result.current.reset();
+    });
 
     act(() => {
       result.current.setJsonFilePath('/path/to/file.json');
@@ -151,6 +186,11 @@ describe('mindmapStore', () => {
 
   it('should handle null file path setting', () => {
     const { result } = renderHook(() => useMindMapStore());
+    
+    // Reset store to initial state
+    act(() => {
+      result.current.reset();
+    });
 
     act(() => {
       result.current.setJsonFilePath('/path/to/file.json');
@@ -164,6 +204,11 @@ describe('mindmapStore', () => {
   // Copy functionality tests
   it('should copy node to clipboard', async () => {
     const { result } = renderHook(() => useMindMapStore());
+    
+    // Reset store to initial state
+    act(() => {
+      result.current.reset();
+    });
 
     // Setup a node to copy
     act(() => {
@@ -183,6 +228,11 @@ describe('mindmapStore', () => {
 
   it('should handle copy failure with fallback', async () => {
     const { result } = renderHook(() => useMindMapStore());
+    
+    // Reset store to initial state
+    act(() => {
+      result.current.reset();
+    });
 
     // Setup a node to copy
     act(() => {
@@ -209,6 +259,11 @@ describe('mindmapStore', () => {
 
   it('should not copy non-existent node', async () => {
     const { result } = renderHook(() => useMindMapStore());
+    
+    // Reset store to initial state
+    act(() => {
+      result.current.reset();
+    });
 
     await act(async () => {
       await result.current.copyNode([999]);
@@ -220,6 +275,11 @@ describe('mindmapStore', () => {
   // Paste functionality tests
   it('should paste nodes from clipboard', async () => {
     const { result } = renderHook(() => useMindMapStore());
+    
+    // Reset store to initial state
+    act(() => {
+      result.current.reset();
+    });
 
     // Setup target node
     act(() => {
@@ -236,14 +296,19 @@ describe('mindmapStore', () => {
     });
 
     expect(navigator.clipboard.readText).toHaveBeenCalled();
-    expect(result.current.mindmap.root.children[0].children).toHaveLength(1);
-    expect(result.current.mindmap.root.children[0].children[0].text).toBe('Pasted Node');
-    expect(result.current.mindmap.root.children[0].children[0].children).toHaveLength(1);
-    expect(result.current.mindmap.root.children[0].children[0].children[0].text).toBe('Child Node');
+    expect(result.current.mindmap.root.children[0]?.children).toHaveLength(1);
+    expect(result.current.mindmap.root.children[0]?.children?.[0]?.text).toBe('Pasted Node');
+    expect(result.current.mindmap.root.children[0]?.children?.[0]?.children).toHaveLength(1);
+    expect(result.current.mindmap.root.children[0]?.children?.[0]?.children?.[0]?.text).toBe('Child Node');
   });
 
   it('should handle paste error gracefully', async () => {
     const { result } = renderHook(() => useMindMapStore());
+    
+    // Reset store to initial state
+    act(() => {
+      result.current.reset();
+    });
 
     // Setup target node
     act(() => {
@@ -262,7 +327,7 @@ describe('mindmapStore', () => {
     });
 
     // Should not throw error, just log it
-    expect(result.current.mindmap.root.children[0].children).toHaveLength(0);
+    expect(result.current.mindmap.root.children[0]?.children).toHaveLength(0);
     
     // Restore console.error
     console.error = originalError;
@@ -270,6 +335,11 @@ describe('mindmapStore', () => {
 
   it('should not paste invalid clipboard content', async () => {
     const { result } = renderHook(() => useMindMapStore());
+    
+    // Reset store to initial state
+    act(() => {
+      result.current.reset();
+    });
 
     // Setup target node
     act(() => {
@@ -284,11 +354,16 @@ describe('mindmapStore', () => {
     });
 
     // Should not add any nodes
-    expect(result.current.mindmap.root.children[0].children).toHaveLength(0);
+    expect(result.current.mindmap.root.children[0]?.children).toHaveLength(0);
   });
 
   it('should not paste to non-existent node', async () => {
     const { result } = renderHook(() => useMindMapStore());
+    
+    // Reset store to initial state
+    act(() => {
+      result.current.reset();
+    });
 
     // Mock clipboard content
     (navigator.clipboard.readText as jest.Mock).mockResolvedValue('Pasted Node');
@@ -304,6 +379,11 @@ describe('mindmapStore', () => {
   // Enhanced paste functionality tests for Task 28
   it('should preserve root content when pasting to root node', async () => {
     const { result } = renderHook(() => useMindMapStore());
+    
+    // Reset store to initial state
+    act(() => {
+      result.current.reset();
+    });
 
     // Mock clipboard with root and children
     (navigator.clipboard.readText as jest.Mock).mockResolvedValue('Root Content\n\tChild 1\n\tChild 2');
@@ -314,12 +394,17 @@ describe('mindmapStore', () => {
 
     expect(result.current.mindmap.root.text).toBe('Root Content'); // Root text preserved
     expect(result.current.mindmap.root.children).toHaveLength(2); // Children added
-    expect(result.current.mindmap.root.children[0].text).toBe('Child 1');
-    expect(result.current.mindmap.root.children[1].text).toBe('Child 2');
+    expect(result.current.mindmap.root.children[0]?.text).toBe('Child 1');
+    expect(result.current.mindmap.root.children[1]?.text).toBe('Child 2');
   });
 
   it('should add standalone root as child when pasting to root', async () => {
     const { result } = renderHook(() => useMindMapStore());
+    
+    // Reset store to initial state
+    act(() => {
+      result.current.reset();
+    });
 
     // Mock clipboard with standalone root (no children)
     (navigator.clipboard.readText as jest.Mock).mockResolvedValue('Standalone Root');
@@ -334,6 +419,11 @@ describe('mindmapStore', () => {
 
   it('should add root content as children when pasting to non-root node', async () => {
     const { result } = renderHook(() => useMindMapStore());
+    
+    // Reset store to initial state
+    act(() => {
+      result.current.reset();
+    });
 
     // Setup target node
     act(() => {
@@ -347,16 +437,21 @@ describe('mindmapStore', () => {
       await result.current.pasteNode([0]);
     });
 
-    expect(result.current.mindmap.root.children[0].text).toBe('Target Node'); // Target preserved
-    expect(result.current.mindmap.root.children[0].children).toHaveLength(1); // Root content added as single child
-    expect(result.current.mindmap.root.children[0].children[0].text).toBe('Root Content');
-    expect(result.current.mindmap.root.children[0].children[0].children).toHaveLength(2); // Children of root content
-    expect(result.current.mindmap.root.children[0].children[0].children[0].text).toBe('Child 1');
-    expect(result.current.mindmap.root.children[0].children[0].children[1].text).toBe('Child 2');
+    expect(result.current.mindmap.root.children[0]?.text).toBe('Target Node'); // Target preserved
+    expect(result.current.mindmap.root.children[0]?.children).toHaveLength(1); // Root content added as single child
+    expect(result.current.mindmap.root.children[0]?.children?.[0]?.text).toBe('Root Content');
+    expect(result.current.mindmap.root.children[0]?.children?.[0]?.children).toHaveLength(2); // Children of root content
+    expect(result.current.mindmap.root.children[0]?.children?.[0]?.children?.[0]?.text).toBe('Child 1');
+    expect(result.current.mindmap.root.children[0]?.children?.[0]?.children?.[1]?.text).toBe('Child 2');
   });
 
   it('should handle fallback clipboard API when modern API is not available', async () => {
     const { result } = renderHook(() => useMindMapStore());
+    
+    // Reset store to initial state
+    act(() => {
+      result.current.reset();
+    });
 
     // Setup target node
     act(() => {
@@ -391,8 +486,8 @@ describe('mindmapStore', () => {
     });
 
     // Should have used fallback and added content
-    expect(result.current.mindmap.root.children[0].children).toHaveLength(1);
-    expect(result.current.mindmap.root.children[0].children[0].text).toBe('Fallback Content');
+    expect(result.current.mindmap.root.children[0]?.children).toHaveLength(1);
+    expect(result.current.mindmap.root.children[0]?.children?.[0]?.text).toBe('Fallback Content');
 
     // Restore clipboard
     Object.assign(navigator, { clipboard: originalClipboard });
