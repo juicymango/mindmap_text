@@ -173,6 +173,9 @@ src/
 - Test `getNodeType` prioritizes "onPath" over children status
 - Test `getNodeType` handles empty paths correctly
 - Test `getNodeType` handles complex nested scenarios
+- Test `getNodeType` gives siblings withChildren or withoutChildren color, not onPath
+- Test `getNodeType` handles specific case from Task 44: when [0,1] is selected
+- Test `getNodeType` handles deep nested structures with siblings
 - Test edge cases and error handling in all node utility functions
 
 ## Test Cases

@@ -2,18 +2,28 @@ import { MindNode } from '../types';
 
 /**
  * Checks if a node is part of the selected path hierarchy
- * Returns true if nodePath is a prefix of selectedPath or vice versa
+ * Returns true only if nodePath is a prefix of selectedPath (node is an ancestor)
  */
 export const isNodeOnSelectedPath = (
   nodePath: number[], 
   selectedPath: number[]
 ): boolean => {
-  if (nodePath.length === 0 || selectedPath.length === 0) {
+  // Empty path (root) is ancestor of any non-empty selected path
+  if (nodePath.length === 0) {
+    return selectedPath.length > 0;
+  }
+  
+  if (selectedPath.length === 0) {
     return false;
   }
   
-  const minLength = Math.min(nodePath.length, selectedPath.length);
-  for (let i = 0; i < minLength; i++) {
+  // Node must be shorter than or equal to selected path to be an ancestor
+  if (nodePath.length > selectedPath.length) {
+    return false;
+  }
+  
+  // Check if nodePath is a prefix of selectedPath
+  for (let i = 0; i < nodePath.length; i++) {
     if (nodePath[i] !== selectedPath[i]) {
       return false;
     }

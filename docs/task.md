@@ -1811,3 +1811,14 @@ Update the workflow to use the modern GitHub Pages deployment method with proper
 - update ./docs/code_structure.md based on the current implementation.
 - update ./docs/test.md based on the current implementation.
 - commit and push all the changes.
+
+# task 44
+
+- I found a bug: when I select a node, all its children and grandchildren are being colored with the onPath color, whereas we expect only one path to be highlighted with the onPath color.
+- It’s also not covered in the test cases that other children of the selected node should be colored with withChildren or withoutChildren, not with onPath. Add this to the test cases.
+- implement them.
+- Keep running npm test and fix the errors until there are no more errors thrown.
+- update ./docs/ui_and_iteration_design.md based on the current implementation.
+- update ./docs/code_structure.md based on the current implementation.
+- update ./docs/test.md based on the current implementation.
+- commit and push all the changes.

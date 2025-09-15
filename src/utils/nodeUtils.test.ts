@@ -28,11 +28,13 @@ describe('Node Utils', () => {
       expect(isNodeOnSelectedPath(nodePath, selectedPath)).toBe(true);
     });
 
-    it('should return true when node is on selected path (suffix)', () => {
+    it('should return false when node is a descendant (suffix) of selected path', () => {
       const nodePath = [0, 1, 2];
       const selectedPath = [0, 1];
       
-      expect(isNodeOnSelectedPath(nodePath, selectedPath)).toBe(true);
+      // Descendants should NOT be considered "on selected path"
+      // Only ancestors (prefixes) should be considered "on selected path"
+      expect(isNodeOnSelectedPath(nodePath, selectedPath)).toBe(false);
     });
 
     it('should return true when paths are identical', () => {
@@ -49,11 +51,13 @@ describe('Node Utils', () => {
       expect(isNodeOnSelectedPath(nodePath, selectedPath)).toBe(false);
     });
 
-    it('should return false when node path is empty', () => {
+    it('should return true when node path is empty (root) and selected path is not empty', () => {
       const nodePath: number[] = [];
       const selectedPath = [0, 1];
       
-      expect(isNodeOnSelectedPath(nodePath, selectedPath)).toBe(false);
+      // Root node (empty path) should be considered on the selected path
+      // because it's an ancestor of any selected node
+      expect(isNodeOnSelectedPath(nodePath, selectedPath)).toBe(true);
     });
 
     it('should return false when selected path is empty', () => {
@@ -199,6 +203,139 @@ describe('Node Utils', () => {
       expect(getNodeType(complexNode, [1], [0, 0])).toBe('withChildren');
       expect(getNodeType(complexNode, [0, 0], [1])).toBe('withChildren');
       expect(getNodeType(complexNode, [0, 0], [])).toBe('withChildren');
+    });
+
+    // Task 44: Test cases for siblings getting correct colors (not onPath)
+    it('should give siblings withChildren or withoutChildren color, not onPath', () => {
+      const parentNode: MindNode = {
+        text: 'Parent',
+        children: [
+          { text: 'Child 1', children: [] },
+          { text: 'Child 2', children: [{ text: 'Grandchild', children: [] }] },
+          { text: 'Child 3', children: [] }
+        ]
+      };
+
+      // When Child 2 is selected
+      const selectedPath = [1];
+      
+      // Test each node individually (simulating how Node component works)
+      const child1 = parentNode.children[0]; // { text: 'Child 1', children: [] }
+      const child2 = parentNode.children[1]; // { text: 'Child 2', children: [...] }
+      const child3 = parentNode.children[2]; // { text: 'Child 3', children: [] }
+      const grandchild = child2.children[0]; // { text: 'Grandchild', children: [] }
+      
+      // Sibling Child 1 (no children) should get withoutChildren, not onPath
+      expect(getNodeType(child1, [0], selectedPath)).toBe('withoutChildren');
+      
+      // Sibling Child 3 (no children) should get withoutChildren, not onPath  
+      expect(getNodeType(child3, [2], selectedPath)).toBe('withoutChildren');
+      
+      // Parent should be onPath (it's an ancestor)
+      expect(getNodeType(parentNode, [], selectedPath)).toBe('onPath');
+      
+      // Selected child should be selected
+      expect(getNodeType(child2, [1], selectedPath)).toBe('selected');
+      
+      // Descendant should NOT be onPath
+      expect(getNodeType(grandchild, [1, 0], selectedPath)).toBe('withoutChildren');
+    });
+
+    // Task 44: Test case specifically mentioned in task description
+    it('should handle the specific case from Task 44: when [0,1] is selected', () => {
+      const root: MindNode = {
+        text: 'Root',
+        children: [
+          {
+            text: 'Child 0',
+            children: [{ text: 'Grandchild 0', children: [] }]
+          },
+          {
+            text: 'Child 1', 
+            children: [
+              { text: 'Grandchild 1-0', children: [] },
+              { text: 'Grandchild 1-1', children: [] }
+            ]
+          },
+          {
+            text: 'Child 2',
+            children: []
+          }
+        ]
+      };
+
+      const selectedPath = [1]; // Child 1 is selected
+      
+      // Test each node individually (simulating how Node component works)
+      const child0 = root.children[0]; // has children
+      const child1 = root.children[1]; // selected
+      const child2 = root.children[2]; // no children
+      const grandchild1_0 = child1.children[0]; // no children
+      const grandchild1_1 = child1.children[1]; // no children
+      
+      // Sibling Child 0 should get withChildren (has children), not onPath
+      expect(getNodeType(child0, [0], selectedPath)).toBe('withChildren');
+      
+      // Sibling Child 2 should get withoutChildren (no children), not onPath
+      expect(getNodeType(child2, [2], selectedPath)).toBe('withoutChildren');
+      
+      // Root should be onPath (ancestor)
+      expect(getNodeType(root, [], selectedPath)).toBe('onPath');
+      
+      // Selected node should be selected
+      expect(getNodeType(child1, [1], selectedPath)).toBe('selected');
+      
+      // Descendants should NOT be onPath
+      expect(getNodeType(grandchild1_0, [1, 0], selectedPath)).toBe('withoutChildren');
+      expect(getNodeType(grandchild1_1, [1, 1], selectedPath)).toBe('withoutChildren');
+    });
+
+    // Task 44: Additional edge cases for sibling coloring
+    it('should handle deep nested structures with siblings', () => {
+      const deepNode: MindNode = {
+        text: 'Root',
+        children: [
+          {
+            text: 'Branch A',
+            children: [
+              { text: 'A-1', children: [] },
+              { text: 'A-2', children: [{ text: 'A-2-1', children: [] }] }
+            ]
+          },
+          {
+            text: 'Branch B',
+            children: [
+              { text: 'B-1', children: [] },
+              { text: 'B-2', children: [] }
+            ]
+          }
+        ]
+      };
+
+      // Select A-2-1 (deep selection)
+      const selectedPath = [0, 1, 0];
+      
+      // Test each node individually (simulating how Node component works)
+      const branchA = deepNode.children[0];
+      const branchB = deepNode.children[1];
+      const a1 = branchA.children[0]; // no children
+      const a2 = branchA.children[1]; // has children
+      const b1 = branchB.children[0]; // no children
+      const b2 = branchB.children[1]; // no children
+      
+      // Sibling A-1 should get withoutChildren, not onPath
+      expect(getNodeType(a1, [0, 0], selectedPath)).toBe('withoutChildren');
+      
+      // Branch A should be onPath (ancestor)
+      expect(getNodeType(branchA, [0], selectedPath)).toBe('onPath');
+      
+      // A-2 should be onPath (ancestor)
+      expect(getNodeType(a2, [0, 1], selectedPath)).toBe('onPath');
+      
+      // Branch B and its children should get their normal colors, not onPath
+      expect(getNodeType(branchB, [1], selectedPath)).toBe('withChildren');
+      expect(getNodeType(b1, [1, 0], selectedPath)).toBe('withoutChildren');
+      expect(getNodeType(b2, [1, 1], selectedPath)).toBe('withoutChildren');
     });
   });
 });

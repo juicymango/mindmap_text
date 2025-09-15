@@ -917,7 +917,8 @@ mindmap-app/
 
     /**
      * Checks if a node is part of the selected path hierarchy
-     * Returns true if nodePath is a prefix of selectedPath or vice versa
+     * Returns true only if nodePath is a prefix of selectedPath (node is an ancestor)
+     * Updated to fix bug where descendants were incorrectly considered "on path"
      */
     export const isNodeOnSelectedPath = (
       nodePath: number[], 
