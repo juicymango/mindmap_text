@@ -1,5 +1,5 @@
 
-import { render, fireEvent, act } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import { Toolbar } from './Toolbar';
 import { createMockMindMapStore } from '../utils/test-utils';
 import { saveToFile, saveAsFile, loadFromFile } from '../utils/file';
@@ -15,7 +15,7 @@ describe('Toolbar', () => {
   const setTextFilePath = jest.fn();
 
   beforeEach(() => {
-    const mockStore = createMockMindMapStore({
+    createMockMindMapStore({
       mindmap: { root: { text: 'Root', children: [] } },
       setMindmap,
       addNode,
@@ -27,26 +27,26 @@ describe('Toolbar', () => {
   });
 
   it('should call addNode when "Add Node" button is clicked', () => {
-    const { getByText } = render(
+    render(
       <SelectedPathProvider>
         <Toolbar />
       </SelectedPathProvider>
     );
-    fireEvent.click(getByText('Add Node'));
+    fireEvent.click(screen.getByText('Add Node'));
     expect(addNode).toHaveBeenCalledWith([], 'New Node');
   });
 
   it('should display "No file selected" when no file path is set', () => {
-    const { getByText } = render(
+    render(
       <SelectedPathProvider>
         <Toolbar />
       </SelectedPathProvider>
     );
-    expect(getByText('Current file: No file selected')).toBeInTheDocument();
+    expect(screen.getByText('Current file: No file selected')).toBeInTheDocument();
   });
 
   it('should display current file path when JSON file path is set', () => {
-    const mockStore = createMockMindMapStore({
+    createMockMindMapStore({
       mindmap: { root: { text: 'Root', children: [] } },
       setMindmap,
       addNode,
@@ -56,16 +56,16 @@ describe('Toolbar', () => {
       setTextFilePath,
     });
 
-    const { getByText } = render(
+    render(
       <SelectedPathProvider>
         <Toolbar />
       </SelectedPathProvider>
     );
-    expect(getByText('Current file: /path/to/file.json')).toBeInTheDocument();
+    expect(screen.getByText('Current file: /path/to/file.json')).toBeInTheDocument();
   });
 
   it('should display current file path when text file path is set', () => {
-    const mockStore = createMockMindMapStore({
+    createMockMindMapStore({
       mindmap: { root: { text: 'Root', children: [] } },
       setMindmap,
       addNode,
@@ -75,26 +75,26 @@ describe('Toolbar', () => {
       setTextFilePath,
     });
 
-    const { getByText } = render(
+    render(
       <SelectedPathProvider>
         <Toolbar />
       </SelectedPathProvider>
     );
-    expect(getByText('Current file: /path/to/file.txt')).toBeInTheDocument();
+    expect(screen.getByText('Current file: /path/to/file.txt')).toBeInTheDocument();
   });
 
   it('should disable Save button when no file path is set', () => {
-    const { getByText } = render(
+    render(
       <SelectedPathProvider>
         <Toolbar />
       </SelectedPathProvider>
     );
     
-    expect(getByText('Save')).toBeDisabled();
+    expect(screen.getByText('Save')).toBeDisabled();
   });
 
   it('should enable Save button when file path is set', () => {
-    const mockStore = createMockMindMapStore({
+    createMockMindMapStore({
       mindmap: { root: { text: 'Root', children: [] } },
       setMindmap,
       addNode,
@@ -104,17 +104,17 @@ describe('Toolbar', () => {
       setTextFilePath,
     });
 
-    const { getByText } = render(
+    render(
       <SelectedPathProvider>
         <Toolbar />
       </SelectedPathProvider>
     );
     
-    expect(getByText('Save')).not.toBeDisabled();
+    expect(screen.getByText('Save')).not.toBeDisabled();
   });
 
   it('should call saveToFile with JSON file path when Save is clicked', () => {
-    const mockStore = createMockMindMapStore({
+    createMockMindMapStore({
       mindmap: { root: { text: 'Root', children: [] } },
       setMindmap,
       addNode,
@@ -124,12 +124,12 @@ describe('Toolbar', () => {
       setTextFilePath,
     });
 
-    const { getByText } = render(
+    render(
       <SelectedPathProvider>
         <Toolbar />
       </SelectedPathProvider>
     );
-    fireEvent.click(getByText('Save'));
+    fireEvent.click(screen.getByText('Save'));
     
     expect(saveToFile).toHaveBeenCalledWith(
       { root: { text: 'Root', children: [] } },
@@ -138,7 +138,7 @@ describe('Toolbar', () => {
   });
 
   it('should call saveToFile with text file path when Save is clicked', () => {
-    const mockStore = createMockMindMapStore({
+    createMockMindMapStore({
       mindmap: { root: { text: 'Root', children: [] } },
       setMindmap,
       addNode,
@@ -148,12 +148,12 @@ describe('Toolbar', () => {
       setTextFilePath,
     });
 
-    const { getByText } = render(
+    render(
       <SelectedPathProvider>
         <Toolbar />
       </SelectedPathProvider>
     );
-    fireEvent.click(getByText('Save'));
+    fireEvent.click(screen.getByText('Save'));
     
     expect(saveToFile).toHaveBeenCalledWith(
       { root: { text: 'Root', children: [] } },
@@ -175,26 +175,25 @@ describe('Toolbar', () => {
       setTextFilePath,
     });
 
-    const { getByText } = render(
+    render(
       <SelectedPathProvider>
         <Toolbar />
       </SelectedPathProvider>
     );
     
-    const saveButton = getByText('Save');
-    expect(saveButton).toBeDisabled();
+    expect(screen.getByText('Save')).toBeDisabled();
   });
 
   it('should call saveAsFile when Save As JSON is clicked', async () => {
     const defaultPath = 'mindmap.json';
     (saveAsFile as jest.Mock).mockResolvedValue(defaultPath);
 
-    const { getByText } = render(
+    render(
       <SelectedPathProvider>
         <Toolbar />
       </SelectedPathProvider>
     );
-    fireEvent.click(getByText('Save As JSON'));
+    fireEvent.click(screen.getByText('Save As JSON'));
 
     await act(async () => {
       await new Promise(resolve => setTimeout(resolve, 0));
@@ -211,12 +210,12 @@ describe('Toolbar', () => {
     const defaultPath = 'mindmap.txt';
     (saveAsFile as jest.Mock).mockResolvedValue(defaultPath);
 
-    const { getByText } = render(
+    render(
       <SelectedPathProvider>
         <Toolbar />
       </SelectedPathProvider>
     );
-    fireEvent.click(getByText('Save As Text'));
+    fireEvent.click(screen.getByText('Save As Text'));
 
     await act(async () => {
       await new Promise(resolve => setTimeout(resolve, 0));
@@ -236,12 +235,12 @@ describe('Toolbar', () => {
     };
     (loadFromFile as jest.Mock).mockResolvedValue(mockResult);
 
-    const { getByText } = render(
+    render(
       <SelectedPathProvider>
         <Toolbar />
       </SelectedPathProvider>
     );
-    fireEvent.click(getByText('Load File'));
+    fireEvent.click(screen.getByText('Load File'));
 
     await act(async () => {
       await new Promise(resolve => setTimeout(resolve, 0));
@@ -263,11 +262,11 @@ describe('Toolbar', () => {
       setTextFilePath,
     });
 
-    const { getByText } = render(
+    render(
       <SelectedPathProvider>
         <Toolbar />
       </SelectedPathProvider>
     );
-    expect(getByText('Current file: /path/to/file.json')).toBeInTheDocument();
+    expect(screen.getByText('Current file: /path/to/file.json')).toBeInTheDocument();
   });
 });

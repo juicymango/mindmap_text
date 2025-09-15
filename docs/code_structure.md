@@ -330,12 +330,9 @@ mindmap-app/
 
       const handleSave = async () => {
         if (jsonFilePath) {
-          saveToFile(mindmap, jsonFilePath);
-        } else {
-          const path = await saveAsFile(mindmap, 'json');
-          if (path) {
-            setJsonFilePath(path);
-          }
+          await saveToFile(mindmap, jsonFilePath);
+        } else if (textFilePath) {
+          await saveToFile(mindmap, textFilePath);
         }
       };
 
@@ -351,26 +348,11 @@ mindmap-app/
       };
 
       const handleLoad = async () => {
-        const filePath = jsonFilePath || textFilePath;
-        const { mindmap: newMindMap, path } = await loadFromFile(filePath);
-        
-        if (newMindMap) {
-          setMindmap(newMindMap);
-          const format = path.toLowerCase().endsWith('.txt') ? 'text' : 'json';
-          if (format === 'json') {
-            setJsonFilePath(path);
-          } else {
-            setTextFilePath(path);
-          }
-        }
-      };
-
-      const handleLoadAs = async () => {
         const { mindmap: newMindMap, path } = await loadFromFile();
         
         if (newMindMap) {
           setMindmap(newMindMap);
-          const format = path.toLowerCase().endsWith('.txt') ? 'text' : 'json';
+          const format = path.endsWith('.txt') ? 'text' : 'json';
           if (format === 'json') {
             setJsonFilePath(path);
           } else {
@@ -392,18 +374,13 @@ mindmap-app/
           <button onClick={handleAddNode}>Add Node</button>
           
           <ButtonGroup>
-            <button onClick={handleSave} disabled={!jsonFilePath && !textFilePath}>
-              Save
-            </button>
+            <button onClick={handleSave} disabled={!jsonFilePath && !textFilePath}>Save</button>
             <button onClick={() => handleSaveAs('json')}>Save As JSON</button>
             <button onClick={() => handleSaveAs('text')}>Save As Text</button>
           </ButtonGroup>
           
           <ButtonGroup>
-            <button onClick={handleLoad} disabled={!jsonFilePath && !textFilePath}>
-              Load
-            </button>
-            <button onClick={handleLoadAs}>Load As</button>
+            <button onClick={handleLoad}>Load File</button>
           </ButtonGroup>
           
           <FilePathDisplay>

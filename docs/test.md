@@ -1,239 +1,89 @@
-# Test Cases
+# Test Documentation
 
-## Node Operations
+This document provides comprehensive testing documentation for the mind map application, including test structure, testing approach, and test coverage.
 
-- **Add a new node:**
-  - Click the "Add Node" button.
-  - A new node should appear in the root column.
-  - The new node should have default text "New Node".
-- **Add a child node:**
-  - Select a node by clicking on it.
-  - Click the "+" button on the selected node.
-  - A new column should appear to the right with the new child node.
-- **Delete a node:**
-  - Click the "x" button on a node.
-  - The node and all its children should be removed from the mind map.
-- **Edit a node's text:**
-  - Double-click on a node's text.
-  - The text should become an editable input field.
-  - After editing and clicking away or pressing Tab, the new text should be saved.
+## Test Overview
 
-## Drag and Drop
+The application has comprehensive test coverage with 57 tests across 9 test files, covering unit tests, integration tests, and component tests using React Testing Library and Jest.
 
-- **Reorder nodes within a column:**
-  - Drag a node and drop it in a different position within the same column.
-  - The node's position in the list of siblings should be updated.
-  - The visual order should reflect the new order immediately.
-- **Move a node to another column (as a child of a node in that column):**
-  - Drag a node from one column and drop it onto a node in another column.
-  - The dragged node should become a child of the drop target node.
-  - A new column should appear showing the children of the drop target.
-- **Move a node to another column (as a sibling):**
-  - Drag a node from one column and drop it in the space between nodes in another column.
-  - The dragged node should be added to the new column as a sibling.
+## Testing Philosophy
 
-## Selection and Expansion
+### React Testing Library Best Practices
 
-- **Select a node:**
-  - Click on a node.
-  - The node should be highlighted with a light blue background.
-  - If the node has children, a new column should appear to the right with its children.
-  - The selection should be remembered using `selected_child_idx`.
-- **Deselect a node:**
-  - Click on another node in the same column.
-  - The previously selected node should no longer be highlighted.
-  - The newly selected node should be highlighted.
-- **Expand and collapse children:**
-  - When a node is selected, its children are shown in the next column.
-  - When another node at the same level is selected, the children of the previous node are hidden.
-  - The expansion state should be maintained using `selected_child_idx`.
+The testing approach follows React Testing Library best practices:
 
-## File Operations
+- **Screen queries**: Use `screen.getBy*` and `screen.queryBy*` methods for querying elements
+- **No node access rules**: Avoid direct DOM node access, use semantic queries instead
+- **User-centric testing**: Test from the user's perspective rather than implementation details
+- **Accessibility**: Test with accessible selectors when possible
 
-- **Save As JSON:**
-  - Click the "Save As JSON" button.
-  - A file dialog should appear.
-  - Selecting a file path should save the mind map in JSON format.
-  - The file path should be remembered for future reference.
-- **Save As Text:**
-  - Click the "Save As Text" button.
-  - A file dialog should appear.
-  - Selecting a file path should save the mind map in text format with tab hierarchy.
-  - The file path should be remembered for future reference.
-- **Load File:**
-  - Click the "Load File" button.
-  - A file dialog should appear.
-  - Selecting a file should load the mind map and detect the format automatically.
-  - The file path should be remembered for future reference.
+### Test Utilities
 
-## File Path Memory Feature
+The project includes comprehensive testing utilities in `src/utils/test-utils.ts`:
 
-- **Save with file path memory:**
-  - Click "Save As JSON" and select a file path.
-  - The file path should be remembered and displayed in the toolbar.
-  - Click "Save" button - should save to the remembered path without prompting.
-  - The remembered file path should persist across browser sessions using localStorage.
+- **Type-safe mocking**: `createMockMindMapStore()` for type-safe Zustand store mocking
+- **Type guards**: `isNonNullString()`, `isValidMindMap()` for runtime type checking
+- **Test data builders**: `createTestMindMap()`, `createTestNode()` for consistent test data
+- **Clipboard API mocking**: Mock utilities for testing copy/paste functionality
 
-- **Save As Text with file path memory:**
-  - Click "Save As Text" and select a file path.
-  - The file path should be remembered and displayed in the toolbar.
-  - Click "Save" button - should save to the remembered path without prompting.
-  - The file format should be detected from the file extension (.txt).
+## Test Structure
 
-- **Load with file path memory:**
-  - Load a file using "Load File" button.
-  - The file path should be remembered and displayed in the toolbar.
-  - The file format should be automatically detected from the file extension.
+```
+src/
+├── components/
+│   ├── App.test.tsx
+│   ├── MindMap.test.tsx
+│   ├── Column.test.tsx
+│   ├── Node.test.tsx
+│   └── Toolbar.test.tsx
+├── store/
+│   └── mindmapStore.test.ts
+└── utils/
+    ├── file.test.ts
+    ├── textFormat.test.ts
+    └── test-utils.ts
+```
 
-- **File path display:**
-  - The toolbar should display the current remembered file path.
-  - When no file is selected, it should show "No file selected".
-  - The display should update immediately when a new file is saved or loaded.
+## Test Coverage
 
+### Component Tests
 
-## Enhanced Clipboard Operations
+#### App Component Tests (`src/components/App.test.tsx`)
+- Test main application rendering
+- Test Toolbar and MindMap component integration
+- Test global styles application
 
-- **Copy Node Structure:**
-  - Use Ctrl+C (Windows/Linux) or Cmd+C (Mac) to copy a selected node and its entire subtree.
-  - The clipboard contains the hierarchical text representation using tabs for hierarchy.
-  - Copy works with both modern clipboard API and fallback methods for browser compatibility.
-  - **Auxiliary Root Compatibility:** The copy function creates a temporary structure where the copied node becomes a child of the auxiliary root to ensure proper text format conversion.
+#### MindMap Component Tests (`src/components/MindMap.test.tsx`)
+- Test column generation based on selected path
+- Test automatic expansion following selected_child_idx
+- Test horizontal scrolling behavior
+- Test keyboard shortcut handling for copy/paste operations
 
-- **Paste with Root Node Preservation:**
-  - Use Ctrl+V (Windows/Linux) or Cmd+V (Mac) to paste clipboard content as children to the selected node.
-  - **Root Node Pasting:** When pasting to the root node, the root text is updated with the pasted content and children are added from the auxiliary root structure.
-  - **Non-Root Node Pasting:** When pasting to non-root nodes, the auxiliary root's children are added directly as children of the target node.
-  - **Standalone Root Handling:** Standalone root nodes (no children) update the root text when pasted to root, or are added as child nodes when pasted to non-root targets.
-  - **Hierarchy Preservation:** The auxiliary root logic ensures proper hierarchy preservation during copy/paste operations.
+#### Column Component Tests (`src/components/Column.test.tsx`)
+- Test column rendering with nodes
+- Test empty column handling
+- Test fixed width and flex-shrink properties
+- Test column path handling
 
-- **Cross-Browser Clipboard Support:**
-  - Modern browsers: Use Clipboard API for reliable copy/paste operations.
-  - Legacy browsers: Fallback to document.execCommand for broader compatibility.
-  - Error handling gracefully handles clipboard permission denials and API unavailability.
+#### Node Component Tests (`src/components/Node.test.tsx`)
+- Test node rendering with selection state
+- Test inline editing functionality
+- Test double-click to edit behavior
+- Test click to select functionality
+- Test add child functionality
+- Test delete functionality
+- Test node selection path tracking
+- Test findNode helper function
 
-- **Paste Validation:**
-  - Invalid clipboard content is rejected without breaking the application.
-  - Empty clipboard content is handled gracefully with no action taken.
-  - Malformed hierarchical text is parsed safely or ignored with appropriate error logging.
-  - Non-existent node targets are handled silently without application errors.
-
-- **File format detection:**
-  - Files with .json extension should be loaded as JSON format.
-  - Files with .txt extension should be loaded as text format.
-  - Files with other extensions should default to JSON format.
-
-- **Button state management:**
-  - "Save" button should be disabled when no file path is remembered.
-  - "Save As" and "Load File" buttons should always be enabled.
-
-- **Error handling:**
-  - If save operation fails, an appropriate error message should be shown in the console.
-  - If load operation fails (invalid file format), an appropriate error message should be shown in the console.
-  - If remembered file path becomes inaccessible, the app should fall back to file selection dialog.
-
-- **Local storage persistence:**
-  - Remembered file paths should be saved to localStorage.
-  - File paths should be restored from localStorage when the app loads.
-  - Clearing localStorage should reset the remembered file paths.
-
-## Text Format Support
-
-- **Text format conversion:**
-  - Mind maps should be convertible to text format with tabs representing hierarchy.
-  - Text files with tab hierarchy should be correctly parsed into mind maps.
-  - The root node should be at depth 0 with no leading tabs.
-  - Each level of indentation should correspond to one level in the hierarchy.
-
-- **Text format validation:**
-  - Empty text files should be rejected.
-  - Text files with invalid indentation should be rejected.
-  - The first line must be at depth 0 (no leading tabs).
-
-## Copy/Paste Functionality
-
-- **Copy functionality:**
-  - Copy current node and entire subtree to clipboard using text format
-  - Use Ctrl+C (Windows/Linux) or Cmd+C (Mac) to copy selected node
-  - Clipboard content uses text format with tab hierarchy
-  - **Auxiliary Root Compatibility:** Creates temporary structure where copied node becomes child of auxiliary root
-  - Handles clipboard API errors with fallback to document.execCommand
-  - Shows error messages in console for failed copy operations
-
-- **Paste functionality:**
-  - Paste clipboard content to current node, appending as children
-  - Use Ctrl+V (Windows/Linux) or Cmd+V (Mac) to paste to selected node
-  - Parses clipboard text using existing text format utilities
-  - **Root Node Handling:** Updates root text and adds children when pasting to root node
-  - **Non-Root Node Handling:** Adds auxiliary root's children directly when pasting to non-root nodes
-  - Automatically expands to show newly pasted children
-  - Handles invalid clipboard content gracefully with error messages
-
-- **Keyboard shortcuts:**
-  - Ctrl+C/Cmd+C: Copy selected node and subtree
-  - Ctrl+V/Cmd+V: Paste clipboard content as children of selected node
-  - Shortcuts work when the MindMap component has focus
-  - No UI buttons - keyboard shortcuts only
-
-- **Text format integration:**
-  - Copy uses existing `mindMapToText` utility for consistent format
-  - Paste uses existing `textToMindMap` utility for parsing
-  - **Auxiliary Root Logic:** Proper handling of auxiliary root node for compatibility
-  - Maintains compatibility with existing text format files
-  - Preserves hierarchy and node relationships
-
-- **Error handling:**
-  - Graceful handling of clipboard API permission errors
-  - Fallback mechanisms for older browsers without clipboard API
-  - Validation of clipboard content before pasting
-  - Console error logging for debugging failed operations
-  - Silent handling of non-existent node targets
-
-## Column-Based UI
-
-- **Column rendering:**
-  - Each selected node should generate a column to its right showing its children.
-  - Columns should have fixed width of 220px to prevent shrinking.
-  - Columns should be horizontally scrollable for deep hierarchies.
-  - Column headers should show the path to the parent node.
-
-- **Column behavior:**
-  - Selecting a node should automatically expand its children in the next column.
-  - The expansion should follow the `selected_child_idx` of each node.
-  - Empty columns should not be displayed.
-
-## Test Code Location
-
-- **Unit and integration tests:** `src/App.test.tsx`, `src/components/*.test.tsx`, `src/store/*.test.ts`, `src/utils/*.test.ts`
-- **End-to-end tests:** (Not implemented yet, but would be in a separate `e2e` directory)
-- **Test utilities:** `src/utils/test-utils.ts` - Type-safe mocking utilities and test helpers
-
-## TypeScript Error Prevention and Testing Utilities
-
-### Test Utilities (`src/utils/test-utils.ts`)
-
-The project includes comprehensive test utilities to prevent TypeScript compilation errors and ensure type safety:
-
-- **Type-safe mocking utilities:** `createMockMindMapStore()` provides proper TypeScript typing for mocking the Zustand store
-- **Type guard utilities:** `isNonNullString()`, `isValidMindMap()` for runtime type checking
-- **Test data builders:** `createTestMindMap()`, `createTestNode()` for creating consistent test data
-- **Clipboard API mocking:** Mock utilities for testing copy/paste functionality
-
-### Error Prevention Measures
-
-- **TypeScript mocking fixes:** Resolved TS2352 errors by creating type-safe mock utilities
-- **Null safety improvements:** Fixed TS2345 errors by adding proper null checks in Toolbar.tsx and file.ts
-- **Async test improvements:** Fixed timeout issues by properly handling async operations in tests
-- **Clipboard API error handling:** Graceful handling of clipboard permission errors and fallback mechanisms
-
-### ESLint Configuration
-
-The project uses ESLint with TypeScript support to prevent common errors:
-- Strict type checking enabled
-- No unused variables allowed
-- Proper null checking enforced
-- Consistent code formatting maintained
-
-## Unit Test Cases
+#### Toolbar Component Tests (`src/components/Toolbar.test.tsx`)
+- Test file path display rendering
+- Test button states based on file path availability
+- Test save functionality with remembered paths
+- Test Save As functionality
+- Test load file functionality
+- Test saveAsFile calls with default file names ("mindmap.json" and "mindmap.txt")
+- Test format detection and file path memory
+- Test button grouping and layout
 
 ### Store Tests (`src/store/mindmapStore.test.ts`)
 - Test initial state of mind map and file paths
@@ -258,7 +108,9 @@ The project uses ESLint with TypeScript support to prevent common errors:
 - Test fallback clipboard API compatibility for older browsers
 - Test findNode and findParent helper functions
 
-### File Utils Tests (`src/utils/file.test.ts`)
+### Utility Tests
+
+#### File Utils Tests (`src/utils/file.test.ts`)
 - Test format detection from file extension (case insensitive)
 - Test saveToFile with JSON format
 - Test saveToFile with text format
@@ -272,7 +124,7 @@ The project uses ESLint with TypeScript support to prevent common errors:
 - Test error handling for invalid files
 - Test downloadFile functionality
 
-### Text Format Tests (`src/utils/textFormat.test.ts`)
+#### Text Format Tests (`src/utils/textFormat.test.ts`)
 - Test mindMapToText conversion with auxiliary root node handling (skips root, starts from children)
 - Test textToMindMap parsing with automatic auxiliary root node creation
 - Test textToMindMap with empty input (returns null)
@@ -282,59 +134,160 @@ The project uses ESLint with TypeScript support to prevent common errors:
 - Test that auxiliary root node "Root" is not included in text output
 - Test that text input creates proper auxiliary root structure in mind map
 
-### Component Tests
+## Test Cases
 
-#### MindMap Component Tests (`src/components/MindMap.test.tsx`)
-- Test column generation based on selected path
-- Test automatic expansion following selected_child_idx
-- Test horizontal scrolling behavior
-- Test drag and drop context integration
+### Node Operations
+- **Add a new node:** Click the "Add Node" button, verify new node appears in root column with default text "New Node"
+- **Add a child node:** Select a node, click "+" button, verify new column appears with child node
+- **Delete a node:** Click "x" button on node, verify node and all children are removed
+- **Edit a node's text:** Double-click node text, edit content, verify changes are saved
 
-#### Column Component Tests (`src/components/Column.test.tsx`)
-- Test column rendering with nodes
-- Test droppable functionality with root droppableId (`root`)
-- Test droppable functionality with nested droppableId (`[0,1]`)
-- Test placeholder rendering
-- Test empty nodes array handling
-- Test fixed width and flex-shrink properties
-- Test column path handling
+### Selection and Expansion
+- **Select a node:** Click on node, verify highlighting with light blue background
+- **Automatic expansion:** When node has children, verify new column appears to the right
+- **Selected path:** Verify selection is remembered using `selected_child_idx`
+- **Deselect:** Click another node in same column, verify selection changes appropriately
 
-#### Node Component Tests (`src/components/Node.test.tsx`)
-- Test node rendering with selection state
-- Test inline editing functionality
-- Test double-click to edit
-- Test click to select
-- Test add child functionality
-- Test delete functionality
-- Test node selection path tracking
-- Test findNode helper function
+### File Operations
+- **Save As JSON:** Click button, verify file dialog appears and saves JSON format
+- **Save As Text:** Click button, verify file dialog appears and saves text format with tab hierarchy
+- **Load File:** Click button, verify file dialog appears and loads format automatically
+- **File path memory:** Verify paths are remembered and displayed in toolbar
+- **Default file names:** Verify "mindmap.json" and "mindmap.txt" are used appropriately
 
-#### Toolbar Component Tests (`src/components/Toolbar.test.tsx`)
-- Test file path display rendering
-- Test button states based on file path availability
-- Test save functionality with remembered paths
-- Test save As functionality
-- Test load file functionality
-- Test saveAsFile calls with default file names ("mindmap.json" and "mindmap.txt")
-- Test format detection and file path memory
-- Test button grouping and layout
+### Copy/Paste Operations
+- **Copy Node Structure:** Use Ctrl+C/Cmd+C to copy selected node and subtree to clipboard
+- **Paste with Root Node Preservation:** Use Ctrl+V/Cmd+V to paste clipboard content
+- **Root Node Pasting:** When pasting to root, verify root text is updated and children are added
+- **Non-Root Node Pasting:** When pasting to non-root nodes, verify auxiliary root's children are added directly
+- **Hierarchy Preservation:** Verify proper hierarchy preservation during copy/paste operations
+- **Cross-Browser Support:** Test modern clipboard API and fallback mechanisms
+- **Error Handling:** Test graceful handling of clipboard permission errors and invalid content
+
+### File Path Memory Feature
+- **JSON File Path Memory:** Save and remember JSON file paths across sessions
+- **Text File Path Memory:** Save and remember text file paths across sessions
+- **Local Storage Persistence:** Verify file paths persist using localStorage
+- **Path Display:** Verify toolbar shows current file path correctly
+- **Clear Paths:** Test clearing file paths and localStorage cleanup
+
+### Column-Based UI
+- **Column Rendering:** Each selected node generates a column showing its children
+- **Fixed Width:** Verify columns maintain 220px width to prevent shrinking
+- **Horizontal Scrolling:** Test scrolling behavior for deep hierarchies
+- **Column Behavior:** Selecting nodes automatically expands children in next column
+- **Empty Columns:** Verify empty columns are not displayed
+
+### Text Format Support
+- **Auxiliary Root Handling:** Verify root node is excluded from text output
+- **Tab Hierarchy:** Test proper tab indentation for hierarchical structure
+- **Round-trip Conversion:** Verify consistency between mindMapToText and textToMindMap
+- **Validation:** Test rejection of invalid input (empty text, text starting with tabs)
+
+### Error Handling
+- **Clipboard API Errors:** Graceful handling of permission denials and API unavailability
+- **File Operation Errors:** Handling of invalid file formats and read/write errors
+- **Invalid Node Operations:** Graceful handling of non-existent node targets
+- **Local Storage Errors:** Handling of localStorage unavailability
 
 ## Integration Tests
 
-- **Full workflow test:**
-  - Create a mind map with multiple levels
-  - Save it in both JSON and text formats
-  - Load it back and verify data integrity
-  - Test file path memory persistence
+### Full Workflow Test
+- Create a mind map with multiple levels
+- Save it in both JSON and text formats
+- Load it back and verify data integrity
+- Test file path memory persistence
+- Test copy/paste workflow with keyboard shortcuts
 
-- **File format compatibility test:**
-  - Create mind maps in both formats
-  - Verify they can be loaded correctly
-  - Test edge cases (empty files, invalid formats)
+### File Format Compatibility Test
+- Create mind maps in both formats
+- Verify they can be loaded correctly
+- Test edge cases (empty files, invalid formats)
 
-- **UI interaction test:**
-  - Test complete user workflow from creation to saving
-  - Test selection and expansion behavior
-  - Test file operations with path memory
-  - Test copy/paste workflow with keyboard shortcuts
-  - Test clipboard integration across different node structures
+### UI Interaction Test
+- Test complete user workflow from creation to saving
+- Test selection and expansion behavior
+- Test file operations with path memory
+- Test copy/paste workflow across different node structures
+
+## Test Commands
+
+### Running Tests
+```bash
+# Run all tests
+npm test
+
+# Run tests in watch mode
+npm test -- --watch
+
+# Run tests with coverage
+npm test -- --coverage
+
+# Run specific test file
+npm test -- Column.test.tsx
+
+# Run tests matching a pattern
+npm test -- --testNamePattern="copyNode"
+```
+
+### Test Coverage Report
+The test suite maintains high coverage across all components, utilities, and store functions. Coverage reports can be generated using the `--coverage` flag.
+
+## Mocking Strategy
+
+### Clipboard API Mocking
+The test suite includes comprehensive mocking for clipboard operations:
+- Mock `navigator.clipboard.writeText` and `navigator.clipboard.readText`
+- Mock `document.execCommand` for fallback scenarios
+- Test both success and error scenarios
+
+### File API Mocking
+- Mock `FileReader` for file loading operations
+- Mock `URL.createObjectURL` and `URL.revokeObjectURL` for file downloads
+- Mock file dialog interactions
+
+### Store Mocking
+- Type-safe Zustand store mocking using `createMockMindMapStore`
+- localStorage persistence testing with mocked localStorage
+
+## Test Data Management
+
+### Test Data Builders
+The project uses consistent test data builders:
+- `createTestMindMap()` for creating mind map structures
+- `createTestNode()` for creating individual nodes with children
+- Consistent naming and structure for predictable test results
+
+### Test Cleanup
+- Proper cleanup of mocked functions and DOM elements
+- Reset store state between tests
+- Clear localStorage between file path tests
+
+## Performance Testing
+
+### Large Mind Map Testing
+- Test rendering performance with large node structures
+- Test clipboard operations with large subtrees
+- Test file save/load operations with large data sets
+
+### Memory Management
+- Verify proper cleanup of event listeners
+- Test memory usage with repeated operations
+- Verify no memory leaks in long-running sessions
+
+## Future Testing Enhancements
+
+### End-to-End Testing
+- Future implementation of Cypress or Playwright for full end-to-end testing
+- Testing across different browsers and devices
+- Performance testing with real user scenarios
+
+### Accessibility Testing
+- Enhanced accessibility testing with axe-core
+- Keyboard navigation testing
+- Screen reader compatibility testing
+
+### Visual Regression Testing
+- Visual regression testing with Percy or similar tools
+- Testing UI consistency across different themes and screen sizes
+- Testing responsive design behavior

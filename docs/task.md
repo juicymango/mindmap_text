@@ -1662,3 +1662,11 @@ CRA already includes ESLint in the build process, which is why you see the error
 4. `npm run build` - Full build check (includes ESLint)
 
 This approach catches both TypeScript errors AND code quality issues before deployment.
+
+# task 40
+
+- keep running npm test. fix the errors. until no error throws.
+- update ./docs/ui_and_iteration_design.md based on the current implementation.
+- update ./docs/code_structure.md based on the current implementation.
+- update ./docs/test.md based on the current implementation.
+- commit and push all the changes.

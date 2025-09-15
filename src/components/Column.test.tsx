@@ -1,4 +1,4 @@
-import { render } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { Column } from './Column';
 import { MindNode } from '../types';
 
@@ -13,10 +13,10 @@ describe('Column', () => {
   ];
 
   it('should render nodes', () => {
-    const { getAllByTestId } = render(
+    render(
       <Column nodes={nodes} columnPath={[]} index={0} onNodeSelect={jest.fn()} />
     );
-    const renderedNodes = getAllByTestId('node');
+    const renderedNodes = screen.getAllByTestId('node');
     expect(renderedNodes).toHaveLength(2);
     expect(renderedNodes[0]).toHaveTextContent('Node 1');
     expect(renderedNodes[1]).toHaveTextContent('Node 2');
@@ -30,10 +30,10 @@ describe('Column', () => {
   });
 
   it('should pass correct path to nodes', () => {
-    const { getAllByTestId } = render(
+    render(
       <Column nodes={nodes} columnPath={[0, 1]} index={0} onNodeSelect={jest.fn()} />
     );
-    const renderedNodes = getAllByTestId('node');
+    const renderedNodes = screen.getAllByTestId('node');
     expect(renderedNodes).toHaveLength(2);
   });
 });

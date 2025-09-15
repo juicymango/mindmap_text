@@ -1,4 +1,4 @@
-import { render, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { Node } from './Node';
 import { createMockMindMapStore } from '../utils/test-utils';
 
@@ -23,7 +23,7 @@ describe('Node', () => {
   };
 
   beforeEach(() => {
-    const mockStore = createMockMindMapStore({
+    createMockMindMapStore({
       updateNodeText,
       setSelectedChild,
       addNode,
@@ -33,40 +33,40 @@ describe('Node', () => {
   });
 
   it('should render node text', () => {
-    const { getByText } = render(<Node node={node} path={[0]} index={0} onSelect={jest.fn()} />);
-    expect(getByText('Test Node')).toBeInTheDocument();
+    render(<Node node={node} path={[0]} index={0} onSelect={jest.fn()} />);
+    expect(screen.getByText('Test Node')).toBeInTheDocument();
   });
 
   it('should enter edit mode on double click', () => {
-    const { getByText, getByDisplayValue } = render(<Node node={node} path={[0]} index={0} onSelect={jest.fn()} />);
-    fireEvent.doubleClick(getByText('Test Node'));
-    expect(getByDisplayValue('Test Node')).toBeInTheDocument();
+    render(<Node node={node} path={[0]} index={0} onSelect={jest.fn()} />);
+    fireEvent.doubleClick(screen.getByText('Test Node'));
+    expect(screen.getByDisplayValue('Test Node')).toBeInTheDocument();
   });
 
   it('should call updateNodeText on blur', () => {
-    const { getByText, getByDisplayValue } = render(<Node node={node} path={[0]} index={0} onSelect={jest.fn()} />);
-    fireEvent.doubleClick(getByText('Test Node'));
-    const input = getByDisplayValue('Test Node');
+    render(<Node node={node} path={[0]} index={0} onSelect={jest.fn()} />);
+    fireEvent.doubleClick(screen.getByText('Test Node'));
+    const input = screen.getByDisplayValue('Test Node');
     fireEvent.change(input, { target: { value: 'Updated Text' } });
     fireEvent.blur(input);
     expect(updateNodeText).toHaveBeenCalledWith([0], 'Updated Text');
   });
 
   it('should call setSelectedChild on click', () => {
-    const { getByText } = render(<Node node={node} path={[0]} index={0} onSelect={jest.fn()} />);
-    fireEvent.click(getByText('Test Node'));
+    render(<Node node={node} path={[0]} index={0} onSelect={jest.fn()} />);
+    fireEvent.click(screen.getByText('Test Node'));
     expect(setSelectedChild).toHaveBeenCalledWith([], 0);
   });
 
   it('should call addNode on add child button click', () => {
-    const { getByText } = render(<Node node={node} path={[0]} index={0} onSelect={jest.fn()} />);
-    fireEvent.click(getByText('+'));
+    render(<Node node={node} path={[0]} index={0} onSelect={jest.fn()} />);
+    fireEvent.click(screen.getByText('+'));
     expect(addNode).toHaveBeenCalledWith([0], 'New Node');
   });
 
   it('should call deleteNode on delete button click', () => {
-    const { getByText } = render(<Node node={node} path={[0]} index={0} onSelect={jest.fn()} />);
-    fireEvent.click(getByText('x'));
+    render(<Node node={node} path={[0]} index={0} onSelect={jest.fn()} />);
+    fireEvent.click(screen.getByText('x'));
     expect(deleteNode).toHaveBeenCalledWith([0]);
   });
 });

@@ -1,4 +1,4 @@
-import { render } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { MindMap } from './MindMap';
 import { createMockMindMapStore } from '../utils/test-utils';
 import { SelectedPathProvider } from '../contexts/SelectedPathContext';
@@ -27,14 +27,14 @@ describe('MindMap', () => {
       },
     };
 
-    const mockStore = createMockMindMapStore({ mindmap, copyNode: jest.fn(), pasteNode: jest.fn() });
+    createMockMindMapStore({ mindmap, copyNode: jest.fn(), pasteNode: jest.fn() });
 
-    const { getAllByTestId } = render(
+    render(
       <SelectedPathProvider>
         <MindMap />
       </SelectedPathProvider>
     );
-    const columns = getAllByTestId('column');
+    const columns = screen.getAllByTestId('column');
     expect(columns).toHaveLength(3);
     expect(columns[0]).toHaveTextContent('[]');
     expect(columns[1]).toHaveTextContent('[0]');

@@ -2,7 +2,6 @@ import React from 'react';
 import { useMindMapStore } from '../store/mindmapStore';
 import { saveAsFile, loadFromFile, saveToFile } from '../utils/file';
 import { FileFormat } from '../types';
-import { useSelectedPath } from '../contexts/SelectedPathContext';
 import styled from 'styled-components';
 
 const ToolbarContainer = styled.div`
@@ -36,8 +35,7 @@ export const Toolbar: React.FC = () => {
     setTextFilePath
   } = useMindMapStore();
 
-  const { selectedPath } = useSelectedPath();
-
+  
   const handleSave = async () => {
     if (jsonFilePath) {
       await saveToFile(mindmap, jsonFilePath);

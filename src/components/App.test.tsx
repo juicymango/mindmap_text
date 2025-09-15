@@ -1,5 +1,5 @@
 
-import { render } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { App } from './App';
 
 jest.mock('./Toolbar', () => ({
@@ -12,8 +12,8 @@ jest.mock('./MindMap', () => ({
 
 describe('App', () => {
   it('should render Toolbar and MindMap', () => {
-    const { getByTestId } = render(<App />);
-    expect(getByTestId('toolbar')).toBeInTheDocument();
-    expect(getByTestId('mindmap')).toBeInTheDocument();
+    render(<App />);
+    expect(screen.getByTestId('toolbar')).toBeInTheDocument();
+    expect(screen.getByTestId('mindmap')).toBeInTheDocument();
   });
 });

@@ -24,7 +24,10 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "react-scripts test",
+    "test": "npm run test:types && npm run test:lint && npm run test:basic",
+    "test:basic": "react-scripts test --watchAll=false",
+    "test:lint": "eslint src/ --max-warnings=0",
+    "test:types": "tsc --noEmit",
     "eject": "react-scripts eject",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d build"

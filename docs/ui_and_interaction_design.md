@@ -17,7 +17,7 @@ The UI is a horizontally scrolling view of columns with a toolbar at the top:
 
 ```
 +-------------------------------------------------------------+
-| Toolbar: [Add Node] [Save] [Save As] [Load File]             |
+| Toolbar: [Add Node] [Save As JSON] [Save As Text] [Load File] |
 | Current file: /path/to/file.json                            |
 +-------------------------------------------------------------+
 | Column 1 (Root) | Column 2         | Column 3         |
@@ -61,7 +61,6 @@ The UI is a horizontally scrolling view of columns with a toolbar at the top:
     - Deletion removes the node and all its children.
 
 7.  **File Operations:**
-    - **Save:** Saves the mind map to the remembered file path. If no path is remembered, the button is disabled.
     - **Save As JSON:** Saves as JSON format using the default file name "mindmap.json" and remembers the path.
     - **Save As Text:** Saves as text format using the default file name "mindmap.txt" and remembers the path. The auxiliary root node is automatically excluded from the text output.
     - **Load File:** Opens a file dialog to load and automatically remembers the path based on the file format.
@@ -76,16 +75,11 @@ The UI is a horizontally scrolling view of columns with a toolbar at the top:
     - The auxiliary root node is automatically managed during copy/paste operations to ensure proper hierarchy preservation.
     - **Copy Logic Enhancement:** Fixed compatibility with auxiliary root node logic - when copying, the node becomes a child of the auxiliary root in the temporary structure, ensuring the copied content is preserved correctly in text format.
     - **Paste Logic Enhancement:** Fixed auxiliary root handling for both root and non-root targets - when pasting to root, the root text is updated and children are added; when pasting to non-root nodes, the auxiliary root's children are added directly to maintain proper hierarchy.
-
-
-10. **Data Formats:**
-
 ## Technical Implementation
 
 ### State Management
 - **Zustand:** Used for state management with actions for node operations and file path memory.
 - **File Path Memory:** Stores JSON and text file paths separately with localStorage persistence.
-
 
 ### Components
 - **App:** Main application component that renders Toolbar and MindMap.
