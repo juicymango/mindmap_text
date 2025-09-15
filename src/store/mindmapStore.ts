@@ -12,8 +12,8 @@ export interface MindMapState {
   pasteNode: (path: number[]) => Promise<void>;
   setSelectedChild: (parentPath: number[], childIndex: number | undefined) => void;
   // New node operations
-  moveNodeUp: (path: number[]) => void;
-  moveNodeDown: (path: number[]) => void;
+  moveNodeUp: (path: number[]) => number[];
+  moveNodeDown: (path: number[]) => number[];
   copyNodeAsJson: (path: number[]) => Promise<void>;
   copyNodeAsText: (path: number[]) => Promise<void>;
   pasteNodeAsJson: (path: number[]) => Promise<void>;
@@ -216,7 +216,7 @@ export const useMindMapStore: UseBoundStore<StoreApi<MindMapState>> = create<Min
   },
   moveNodeUp: (path: number[]) => {
   const { mindmap } = get();
-  if (path.length === 0) return; // Can't move root
+  if (path.length === 0) return path; // Can't move root
   
   const newMindMap = { ...mindmap };
   const parent = findParent(newMindMap.root, path);
@@ -230,11 +230,16 @@ export const useMindMapStore: UseBoundStore<StoreApi<MindMapState>> = create<Min
     // Update selected_child_idx
     parent.selected_child_idx = nodeIndex - 1;
     set({ mindmap: newMindMap });
+    
+    // Return the new path so UI can update selection
+    const parentPath = path.slice(0, -1);
+    return [...parentPath, nodeIndex - 1];
   }
+  return path; // Return original path if no move happened
 },
 moveNodeDown: (path: number[]) => {
   const { mindmap } = get();
-  if (path.length === 0) return; // Can't move root
+  if (path.length === 0) return path; // Can't move root
   
   const newMindMap = { ...mindmap };
   const parent = findParent(newMindMap.root, path);
@@ -248,7 +253,12 @@ moveNodeDown: (path: number[]) => {
     // Update selected_child_idx
     parent.selected_child_idx = nodeIndex + 1;
     set({ mindmap: newMindMap });
+    
+    // Return the new path so UI can update selection
+    const parentPath = path.slice(0, -1);
+    return [...parentPath, nodeIndex + 1];
   }
+  return path; // Return original path if no move happened
 },
 copyNodeAsJson: async (path: number[]) => {
   const { mindmap } = get();

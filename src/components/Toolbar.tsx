@@ -43,7 +43,7 @@ export const Toolbar: React.FC = () => {
     setTextFilePath
   } = useMindMapStore();
   
-  const { selectedPath } = useSelectedPath();
+  const { selectedPath, setSelectedPath } = useSelectedPath();
   const hasSelection = selectedPath.length > 0;
 
   const handleSaveAs = async (format: FileFormat) => {
@@ -85,13 +85,19 @@ export const Toolbar: React.FC = () => {
 
   const handleMoveUp = () => {
     if (hasSelection) {
-      moveNodeUp(selectedPath);
+      const newPath = moveNodeUp(selectedPath);
+      if (newPath !== selectedPath) {
+        setSelectedPath(newPath);
+      }
     }
   };
 
   const handleMoveDown = () => {
     if (hasSelection) {
-      moveNodeDown(selectedPath);
+      const newPath = moveNodeDown(selectedPath);
+      if (newPath !== selectedPath) {
+        setSelectedPath(newPath);
+      }
     }
   };
 

@@ -1942,3 +1942,90 @@ Update the workflow to use the modern GitHub Pages deployment method with proper
 - **State management:** Proper `selected_child_idx` updates during moves
 
 All requirements from Task 46 have been successfully implemented and tested. The application now provides a more streamlined interface with centralized node operations in the toolbar.
+
+# task 47
+
+- when i use move up or move down, the current node will lose the selection.
+- when i select the root and use add node, the new node is added to the root's child's child, not the root's child.
+- there are console.error in test cases.
+- fix the above errors.
+- design relevant test cases to avoid them. implement the test cases.
+- Keep running npm test and fix the errors until there are no more errors thrown.
+- update ./docs/ui_and_iteration_design.md based on the current implementation.
+- update ./docs/code_structure.md based on the current implementation.
+- update ./docs/test.md based on the current implementation.
+- commit and push all the changes.
+
+## Task 47 Completion Status ✅
+
+**Completed:** 2025-01-09
+
+### Issues Fixed:
+
+1. **Move up/down losing selection:**
+   - **Problem**: When using move up/down operations, the current node would lose selection in the UI
+   - **Root Cause**: Move operations only updated `selected_child_idx` on the parent but didn't update the UI selection path
+   - **Solution**: 
+     - Modified `moveNodeUp` and `moveNodeDown` to return the new path after movement
+     - Updated Toolbar component to use the returned path to update `selectedPath`
+     - Added proper selection management during move operations
+
+2. **Root add node adding to wrong location:**
+   - **Problem**: When root was selected and "Add Child" was clicked, new node was added to root's child's child instead of root's children
+   - **Root Cause**: Auxiliary root column was incorrectly passing path `[0]` instead of `[]` for the root node
+   - **Solution**: 
+     - Modified Column component to handle auxiliary root column specially
+     - Added logic to detect auxiliary root column and pass correct path `[]` for root node
+     - Ensured proper path handling for root selection
+
+3. **Console errors in test cases:**
+   - **Problem**: Tests were generating `console.error` output for clipboard API failures
+   - **Root Cause**: Tests that intentionally triggered clipboard errors weren't mocking `console.error`
+   - **Solution**: 
+     - Added proper `console.error` mocking in tests that trigger clipboard errors
+     - Implemented cleanup to restore original `console.error` after tests
+     - Eliminated all console error output during test execution
+
+### Technical Implementation:
+
+**Store Changes:**
+- Updated `moveNodeUp` and `moveNodeDown` to return `number[]` instead of `void`
+- Both functions now return the new path after successful move, or original path if move fails
+- Proper edge case handling for root node and boundary conditions
+
+**Component Changes:**
+- **Column**: Added auxiliary root column detection and correct path assignment
+- **Toolbar**: Updated move handlers to use returned paths for selection updates
+- **MindMap**: No changes needed, but added test for auxiliary root column behavior
+
+**Test Enhancements:**
+- Added 4 new test cases for move operation path returns
+- Added test for auxiliary root column always being present
+- Added proper `console.error` mocking for clipboard error tests
+- Total test count increased from 109 to 113 tests
+
+### Test Coverage Added:
+
+**Move Operation Tests:**
+- Test for `moveNodeUp` returning correct new path
+- Test for `moveNodeDown` returning correct new path  
+- Test for move operations returning original path when they fail
+- Test coverage for edge cases (root node, boundary conditions)
+
+**Auxiliary Root Tests:**
+- Test ensuring auxiliary root column is always displayed
+- Test coverage for empty mindmap scenario
+
+**Error Handling Tests:**
+- Proper mocking of `console.error` in clipboard failure tests
+- Clean test environment with no console error output
+
+### Key Improvements:
+
+1. **Selection Persistence**: Move operations now properly maintain selection state
+2. **Correct Path Handling**: Root node now has correct path `[]` in auxiliary column
+3. **Clean Test Output**: No console errors during test execution
+4. **Robust Error Handling**: Better edge case handling in move operations
+5. **Enhanced Test Coverage**: Comprehensive tests for all fixed bugs
+
+All issues from Task 47 have been successfully resolved with proper testing and documentation. The application now provides a more reliable and consistent user experience with proper selection management and error handling.

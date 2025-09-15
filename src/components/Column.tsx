@@ -22,13 +22,16 @@ const ColumnContainer = styled.div`
 `;
 
 export const Column: React.FC<ColumnProps> = ({ nodes, columnPath, index, onNodeSelect }) => {
+  // Special handling for auxiliary root column (index 0) which contains only the root node
+  const isAuxiliaryRootColumn = index === 0 && columnPath.length === 0 && nodes.length === 1;
+  
   return (
     <ColumnContainer>
       {nodes.map((node, nodeIndex) => (
         <Node 
           key={nodeIndex} 
           node={node} 
-          path={[...columnPath, nodeIndex]} 
+          path={isAuxiliaryRootColumn && nodeIndex === 0 ? [] : [...columnPath, nodeIndex]} 
           index={nodeIndex}
           onSelect={onNodeSelect}
         />

@@ -682,6 +682,72 @@ describe('mindmapStore', () => {
       expect(store.mindmap.root.children[0].children[2].text).toBe('Child 3');
       expect(store.mindmap.root.children[0].selected_child_idx).toBe(1); // Updated selected_child_idx
     });
+
+    // Task 47: Move operation path return tests
+    it('should return new path when moving node up', () => {
+      const initialMindmap = {
+        root: {
+          text: 'Root',
+          children: [
+            { text: 'Node 1', children: [] },
+            { text: 'Node 2', children: [] },
+            { text: 'Node 3', children: [] },
+          ],
+        },
+      };
+
+      useMindMapStore.setState({ mindmap: initialMindmap });
+      const store = useMindMapStore.getState();
+
+      const newPath = store.moveNodeUp([2]); // Move Node 3 up
+      expect(newPath).toEqual([1]); // Should return new position [1]
+    });
+
+    it('should return new path when moving node down', () => {
+      const initialMindmap = {
+        root: {
+          text: 'Root',
+          children: [
+            { text: 'Node 1', children: [] },
+            { text: 'Node 2', children: [] },
+            { text: 'Node 3', children: [] },
+          ],
+        },
+      };
+
+      useMindMapStore.setState({ mindmap: initialMindmap });
+      const store = useMindMapStore.getState();
+
+      const newPath = store.moveNodeDown([0]); // Move Node 1 down
+      expect(newPath).toEqual([1]); // Should return new position [1]
+    });
+
+    it('should return original path when move operation fails', () => {
+      const initialMindmap = {
+        root: {
+          text: 'Root',
+          children: [
+            { text: 'Node 1', children: [] },
+            { text: 'Node 2', children: [] },
+          ],
+        },
+      };
+
+      useMindMapStore.setState({ mindmap: initialMindmap });
+      const store = useMindMapStore.getState();
+
+      // Try to move first node up (should fail)
+      const newPath1 = store.moveNodeUp([0]);
+      expect(newPath1).toEqual([0]); // Should return original path
+
+      // Try to move last node down (should fail)
+      const newPath2 = store.moveNodeDown([1]);
+      expect(newPath2).toEqual([1]); // Should return original path
+
+      // Try to move root (should fail)
+      const newPath3 = store.moveNodeUp([]);
+      expect(newPath3).toEqual([]); // Should return original path
+    });
   });
 
   // Task 46: Format-Specific Copy/Paste Tests
@@ -741,6 +807,10 @@ describe('mindmapStore', () => {
     });
 
     it('should handle clipboard API failure with fallback', async () => {
+      // Mock console.error to suppress error output
+      const originalError = console.error;
+      console.error = jest.fn();
+      
       jest.spyOn(navigator.clipboard, 'writeText').mockRejectedValue(new Error('Clipboard API failed'));
       const mockExecCommand = jest.spyOn(document, 'execCommand').mockReturnValue(true);
       const mockCreateElement = jest.spyOn(document, 'createElement').mockImplementation((tagName: string) => {
@@ -771,6 +841,9 @@ describe('mindmapStore', () => {
 
       expect(mockCreateElement).toHaveBeenCalledWith('textarea');
       expect(mockExecCommand).toHaveBeenCalledWith('copy');
+      
+      // Restore console.error
+      console.error = originalError;
     });
   });
 
@@ -855,6 +928,10 @@ describe('mindmapStore', () => {
     });
 
     it('should not paste invalid JSON', async () => {
+      // Mock console.error to suppress error output
+      const originalError = console.error;
+      console.error = jest.fn();
+      
       jest.spyOn(navigator.clipboard, 'readText').mockResolvedValue('invalid json');
 
       const initialMindmap = {
@@ -872,6 +949,9 @@ describe('mindmapStore', () => {
       await store.pasteNodeAsJson([0]);
 
       expect(store.mindmap.root.children[0].children).toHaveLength(0);
+      
+      // Restore console.error
+      console.error = originalError;
     });
 
     it('should not paste node without required structure', async () => {
