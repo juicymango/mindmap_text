@@ -2116,3 +2116,15 @@ Date:   Mon Sep 15 22:09:57 2025 +0800
 - update ./docs/code_structure.md based on the current implementation.
 - update ./docs/test.md based on the current implementation.
 - commit and push all the changes.
+
+# task 52
+
+- the height of the background white block of a column is fixed to the size of the window. it is not adjustable for a node with many children.
+- fix it.
+- design test cases to prevent it. implement the test cases.
+- Keep running npm test and fix the errors until there are no more errors thrown.
+- update ./docs/ui_and_iteration_design.md based on the current implementation.
+- update ./docs/code_structure.md based on the current implementation.
+- update ./docs/test.md based on the current implementation.
+- update ./README.md based on the current implementation.
+- commit and push all the changes.

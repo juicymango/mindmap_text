@@ -48,6 +48,13 @@ The UI is a vertically organized layout with three main sections:
    - Enhanced column styling with shadows and improved spacing
    - Root column highlighted with blue left border
    - Custom scrollbar styling for better aesthetics
+   - **Task 52: Column Height Improvements:**
+     - Columns now have adjustable height with vertical scrolling
+     - Maximum column height set to `calc(100vh - 120px)` to account for toolbar and status bar
+     - Individual columns scroll vertically when containing many nodes
+     - Custom vertical scrollbar styling (6px width) for consistent aesthetics
+     - Fixed width maintained (240px) while allowing flexible height
+     - Columns align to top when they have different heights
 
 3. **Status Bar (32px height)**
    - Save status indicator (saved/unsaved/saving)

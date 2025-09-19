@@ -4,7 +4,7 @@ This document provides comprehensive testing documentation for the mind map appl
 
 ## Test Overview
 
-The application has comprehensive test coverage with 116 tests across 11 test files, covering unit tests, integration tests, and component tests using React Testing Library and Jest. The test suite covers all UI components including the newly enhanced Toolbar, StatusBar, and improved visual styling components.
+The application has comprehensive test coverage with 122 tests across 11 test files, covering unit tests, integration tests, and component tests using React Testing Library and Jest. The test suite covers all UI components including the newly enhanced Toolbar, StatusBar, improved visual styling components, and Task 52 column height improvements.
 
 ## Testing Philosophy
 
@@ -67,6 +67,12 @@ src/
 - Test enhanced container styling with flex layout and background
 - Test improved spacing and visual hierarchy
 - Test responsive design across different screen sizes
+- **Task 52: Column Layout Integration Tests:**
+  - Test prevention of vertical scrolling at MindMap level with `overflow-y: hidden`
+  - Test top alignment of columns with different heights using `align-items: flex-start`
+  - Test flex container behavior with `min-height: 0` for proper shrinking
+  - Test background color and spacing for column container
+  - Test proper integration with Column component scrolling behavior
 
 #### Column Component Tests (`src/components/Column.test.tsx`)
 - Test column rendering with nodes
@@ -76,6 +82,17 @@ src/
 - Test improved visual design with better borders and shadows
 - Test root column blue border highlighting
 - Test enhanced spacing and layout organization
+- **Task 52: Column Height and Scrolling Tests:**
+  - Test scrollable container behavior when many nodes are present (50+ nodes)
+  - Test node display without truncation with large numbers of nodes
+  - Test root column styling with blue left border
+  - Test fixed width maintenance (240px) while allowing height flexibility
+  - Test custom vertical scrollbar styling (6px width)
+  - Test very long node text content handling
+  - Test maximum height constraint: `calc(100vh - 120px)`
+  - Test vertical scrolling behavior with `overflow-y: auto`
+  - Test proper alignment of columns with different heights
+  - Test accessibility with proper test ID attributes
 
 #### Node Component Tests (`src/components/Node.test.tsx`)
 - Test node rendering with color-coded states
@@ -257,10 +274,16 @@ src/
 
 ### Column-Based UI
 - **Column Rendering:** Each selected node generates a column showing its children
-- **Fixed Width:** Verify columns maintain 220px width to prevent shrinking
+- **Fixed Width:** Verify columns maintain 240px width to prevent shrinking
 - **Horizontal Scrolling:** Test scrolling behavior for deep hierarchies
 - **Column Behavior:** Selecting nodes automatically expands children in next column
 - **Empty Columns:** Verify empty columns are not displayed
+- **Task 52: Adjustable Column Height:**
+  - Test maximum height constraint: `calc(100vh - 120px)` accounting for toolbar and status bar
+  - Test vertical scrolling when content exceeds maximum height
+  - Test custom vertical scrollbar styling (6px width) for consistent aesthetics
+  - Test proper column alignment when columns have different heights
+  - Test that columns maintain fixed width while allowing height flexibility
 
 ### Text Format Support
 - **Auxiliary Root Handling:** Verify root node is excluded from text output
@@ -318,7 +341,7 @@ npm test -- --testNamePattern="copyNode"
 ```
 
 ### Test Coverage Report
-The test suite maintains high coverage across all components, utilities, and store functions with 116 tests covering comprehensive scenarios including the enhanced UI system, icon integration, improved styling, status bar functionality, visual DOM testing, selected_child_idx path coloring, and root node button state management. Coverage reports can be generated using the `--coverage` flag.
+The test suite maintains high coverage across all components, utilities, and store functions with 122 tests covering comprehensive scenarios including the enhanced UI system, icon integration, improved styling, status bar functionality, visual DOM testing, selected_child_idx path coloring, root node button state management, and Task 52 column height improvements. Coverage reports can be generated using the `--coverage` flag.
 
 ## UI Enhancement Testing
 
@@ -469,3 +492,51 @@ The project uses consistent test data builders:
 - Testing UI consistency across different themes and screen sizes
 - Testing responsive design behavior
 - Testing color consistency across different browser environments
+
+## Task 52: Column Height Testing Strategy
+
+### Test Objectives
+The Task 52 test suite specifically addresses the column height issue where background white blocks were fixed to window size and not adjustable for nodes with many children.
+
+### Core Functionality Tests
+- **Height Constraint Testing:** Verify columns have `max-height: calc(100vh - 120px)` to account for toolbar (48px) and status bar (32px) plus margins
+- **Vertical Scrolling:** Test `overflow-y: auto` behavior when content exceeds maximum height
+- **Scrollbar Styling:** Verify custom vertical scrollbar styling with 6px width and proper hover effects
+- **Fixed Width Maintenance:** Ensure columns maintain 240px width while allowing height flexibility
+
+### Component Integration Tests
+- **MindMap-Level Prevention:** Test that MindMap component prevents vertical scrolling with `overflow-y: hidden`
+- **Column Alignment:** Verify columns align to top when they have different heights using `align-items: flex-start`
+- **Flex Container Behavior:** Test proper flex container shrinking with `min-height: 0`
+
+### Performance and Scalability Tests
+- **Large Node Counts:** Test rendering with 50+ nodes to ensure scrolling performance
+- **Long Text Content:** Test handling of very long node text content within scrollable columns
+- **Multiple Column Heights:** Test behavior when columns have significantly different heights
+
+### Visual and UX Tests
+- **Scrollbar Aesthetics:** Test custom scrollbar styling matches application design
+- **Root Column Highlighting:** Verify root column blue border (4px solid #4A90E2) displays correctly
+- **Visual Consistency:** Test that scrolling doesn't break visual hierarchy or styling
+
+### Accessibility Compliance
+- **Test ID Attributes:** Verify proper `data-testid="column-container"` for testing accessibility
+- **Keyboard Navigation:** Test that scrolling behavior doesn't interfere with keyboard navigation
+- **Screen Reader Compatibility:** Test that scrollable regions are properly announced
+
+### Regression Prevention
+- **Cross-Browser Testing:** Verify scrollbar behavior across different browsers
+- **Responsive Design:** Test column height behavior on different screen sizes
+- **Memory Management:** Test that scrolling doesn't cause memory leaks or performance issues
+- **State Preservation:** Test that scrolling state doesn't interfere with application state
+
+### Test Implementation Details
+- **Mock Components:** Test uses mock Node component for isolated Column testing
+- **Large Data Sets:** Tests create arrays of 50+ nodes to verify scrolling behavior
+- **Style Verification:** Tests verify both presence and correct values of CSS properties
+- **Edge Case Handling:** Tests cover empty columns, single-node columns, and overflow scenarios
+
+### Integration with Existing Test Suite
+- **No Breaking Changes:** Task 52 tests verify that existing functionality remains intact
+- **Enhanced Coverage:** New tests complement existing test coverage for Column and MindMap components
+- **Documentation Updates:** Test documentation updated to reflect new test cases and coverage

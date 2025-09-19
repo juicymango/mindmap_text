@@ -8,10 +8,13 @@ import { MindNode } from '../types';
 const MindMapContainer = styled.div`
   display: flex;
   overflow-x: auto;
+  overflow-y: hidden; // Prevent vertical scrolling at MindMap level
   flex: 1;
   background: #F9FAFB;
+  align-items: flex-start; // Align columns to top when they have different heights
+  min-height: 0; // Allow flex container to shrink properly
   
-  // Custom scrollbar styling
+  // Custom scrollbar styling for horizontal scroll
   &::-webkit-scrollbar {
     height: 8px;
   }
