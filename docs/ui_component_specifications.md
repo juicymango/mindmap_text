@@ -4,6 +4,562 @@
 
 This document provides detailed design specifications for the current UI components and proposed enhancements. Each component is analyzed with current implementation details, visual specifications, and improvement recommendations.
 
+## Mobile UI Design Specifications
+
+### Overview
+The mobile UI design transforms the column-based desktop interface into a touch-friendly single-column view with expandable nodes. This design addresses mobile constraints while maintaining functionality and usability.
+
+### Mobile Layout Structure
+
+#### Mobile Container
+```typescript
+const MobileContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: #F9FAFB;
+  position: relative;
+`;
+
+const MobileContent = styled.div`
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  
+  // Hide scrollbar for cleaner look
+  &::-webkit-scrollbar {
+    display: none;
+  }
+`;
+```
+
+#### Mobile Header with Breadcrumb Navigation
+```typescript
+const MobileHeader = styled.div`
+  background: #FFFFFF;
+  border-bottom: 1px solid #E5E7EB;
+  padding: 12px 16px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+`;
+
+const BreadcrumbContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+`;
+
+const BreadcrumbItem = styled.button`
+  background: none;
+  border: none;
+  color: #4A90E2;
+  font-size: 14px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  
+  &:hover {
+    background: #F3F4F6;
+  }
+  
+  &:disabled {
+    color: #6B7280;
+    cursor: default;
+  }
+`;
+
+const BreadcrumbSeparator = styled.span`
+  color: #9CA3AF;
+  font-size: 14px;
+`;
+
+const CurrentNodeTitle = styled.div`
+  font-size: 16px;
+  font-weight: 600;
+  color: #1F2937;
+  margin-top: 8px;
+`;
+```
+
+#### Mobile Node Component (Expandable Tree View)
+```typescript
+const MobileNodeContainer = styled.div<{ $depth: number; $isSelected: boolean; $isExpanded: boolean }>`
+  margin-left: ${props => props.$depth * 16}px;
+  margin-bottom: 4px;
+  border-radius: 8px;
+  background: ${props => props.$isSelected ? '#E8F4FD' : '#FFFFFF'};
+  border: 1px solid ${props => props.$isSelected ? '#4A90E2' : '#E5E7EB'};
+  transition: all 0.2s ease;
+`;
+
+const MobileNodeContent = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  min-height: 48px;
+`;
+
+const MobileNodeMain = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+`;
+
+const ExpandButton = styled.button<{ $hasChildren: boolean }>`
+  width: 32px;
+  height: 32px;
+  border-radius: 16px;
+  border: none;
+  background: ${props => props.$hasChildren ? '#F3F4F6' : 'transparent'};
+  color: ${props => props.$hasChildren ? '#6B7280' : 'transparent'};
+  cursor: ${props => props.$hasChildren ? 'pointer' : 'default'};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  
+  ${props => props.$hasChildren && `
+    &:hover {
+      background: #E5E7EB;
+    }
+  `}
+`;
+
+const MobileNodeText = styled.div<{ $isSelected: boolean }>`
+  font-size: 16px;
+  color: ${props => props.$isSelected ? '#1F2937' : '#374151'};
+  font-weight: ${props => props.$isSelected ? '600' : '400'};
+  flex: 1;
+  word-break: break-word;
+`;
+
+const ChildrenContainer = styled.div<{ $isExpanded: boolean }>`
+  overflow: hidden;
+  max-height: ${props => props.$isExpanded ? 'none' : '0'};
+  transition: max-height 0.3s ease;
+  margin-top: ${props => props.$isExpanded ? '8px' : '0'};
+`;
+
+const ChildrenIndicator = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #F3F4F6;
+  color: #6B7280;
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 12px;
+  margin-left: 8px;
+`;
+```
+
+#### Mobile Action Buttons
+```typescript
+const ActionButton = styled.button<{ $variant?: 'primary' | 'danger' }>`
+  width: 36px;
+  height: 36px;
+  border-radius: 18px;
+  border: none;
+  background: ${props => 
+    props.$variant === 'primary' ? '#4A90E2' :
+    props.$variant === 'danger' ? '#FEE2E2' :
+    '#F3F4F6'
+  };
+  color: ${props => 
+    props.$variant === 'primary' ? '#FFFFFF' :
+    props.$variant === 'danger' ? '#EF4444' :
+    '#6B7280'
+  };
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background: ${props => 
+      props.$variant === 'primary' ? '#357ABD' :
+      props.$variant === 'danger' ? '#FECACA' :
+      '#E5E7EB'
+    };
+  }
+  
+  &:active {
+    transform: scale(0.95);
+  }
+`;
+```
+
+#### Mobile Bottom Navigation Bar
+```typescript
+const MobileBottomBar = styled.div`
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #FFFFFF;
+  border-top: 1px solid #E5E7EB;
+  padding: 8px 16px;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+`;
+
+const NavButton = styled.button<{ $isActive?: boolean }>`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  color: ${props => props.$isActive ? '#4A90E2' : '#6B7280'};
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background: #F9FAFB;
+  }
+`;
+
+const NavButtonText = styled.span`
+  font-size: 11px;
+  font-weight: 500;
+`;
+```
+
+#### Mobile Search Bar
+```typescript
+const MobileSearchContainer = styled.div`
+  position: sticky;
+  top: 80px;
+  background: #FFFFFF;
+  padding: 12px 16px;
+  border-bottom: 1px solid #E5E7EB;
+  z-index: 90;
+`;
+
+const MobileSearchInput = styled.input`
+  width: 100%;
+  padding: 12px 16px 12px 44px;
+  border: 1px solid #D1D5DB;
+  border-radius: 12px;
+  font-size: 16px;
+  background: #F9FAFB;
+  
+  &:focus {
+    outline: none;
+    border-color: #4A90E2;
+    background: #FFFFFF;
+  }
+`;
+
+const SearchIcon = styled.div`
+  position: absolute;
+  left: 32px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9CA3AF;
+`;
+```
+
+#### Mobile Menu/Context Sheet
+```typescript
+const MobileMenuSheet = styled.div<{ $isOpen: boolean }>`
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #FFFFFF;
+  border-radius: 20px 20px 0 0;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+  transform: translateY(${props => props.$isOpen ? '0' : '100%'});
+  transition: transform 0.3s ease;
+  z-index: 200;
+  max-height: 70vh;
+  overflow-y: auto;
+`;
+
+const MenuHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  border-bottom: 1px solid #E5E7EB;
+`;
+
+const MenuItem = styled.button<{ $variant?: 'danger' }>`
+  width: 100%;
+  padding: 16px;
+  background: none;
+  border: none;
+  color: ${props => props.$variant === 'danger' ? '#EF4444' : '#374151'};
+  font-size: 16px;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  
+  &:hover {
+    background: #F9FAFB;
+  }
+  
+  &:active {
+    background: #F3F4F6;
+  }
+`;
+```
+
+### Mobile Component Implementation
+
+#### Mobile Node Component
+```typescript
+interface MobileNodeProps {
+  node: MindNode;
+  path: number[];
+  depth: number;
+  isSelected: boolean;
+  isExpanded: boolean;
+  onToggleExpand: (path: number[]) => void;
+  onSelect: (path: number[]) => void;
+  onEdit: (path: number[]) => void;
+  onDelete: (path: number[]) => void;
+  onAddChild: (path: number[]) => void;
+}
+
+export const MobileNode: React.FC<MobileNodeProps> = ({
+  node,
+  path,
+  depth,
+  isSelected,
+  isExpanded,
+  onToggleExpand,
+  onSelect,
+  onEdit,
+  onDelete,
+  onAddChild
+}) => {
+  const [showActions, setShowActions] = useState(false);
+  const hasChildren = node.children.length > 0;
+
+  const handleNodeClick = () => {
+    onSelect(path);
+    if (hasChildren) {
+      onToggleExpand(path);
+    }
+  };
+
+  const handleExpandClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (hasChildren) {
+      onToggleExpand(path);
+    }
+  };
+
+  return (
+    <>
+      <MobileNodeContainer $depth={depth} $isSelected={isSelected} $isExpanded={isExpanded}>
+        <MobileNodeContent>
+          <MobileNodeMain>
+            <ExpandButton 
+              $hasChildren={hasChildren}
+              onClick={handleExpandClick}
+            >
+              {hasChildren && (
+                <ChevronRight 
+                  size={20} 
+                  style={{ 
+                    transform: isExpanded ? 'rotate(90deg)' : 'none',
+                    transition: 'transform 0.2s ease'
+                  }} 
+                />
+              )}
+            </ExpandButton>
+            <MobileNodeText $isSelected={isSelected}>
+              {node.text}
+            </MobileNodeText>
+            {hasChildren && (
+              <ChildrenIndicator>
+                {node.children.length}
+              </ChildrenIndicator>
+            )}
+          </MobileNodeMain>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <ActionButton onClick={() => onAddChild(path)}>
+              <Plus size={18} />
+            </ActionButton>
+            <ActionButton onClick={() => setShowActions(true)}>
+              <MoreVertical size={18} />
+            </ActionButton>
+          </div>
+        </MobileNodeContent>
+      </MobileNodeContainer>
+      
+      {hasChildren && isExpanded && (
+        <ChildrenContainer $isExpanded={isExpanded}>
+          {node.children.map((child, index) => (
+            <MobileNode
+              key={index}
+              node={child}
+              path={[...path, index]}
+              depth={depth + 1}
+              isSelected={false}
+              isExpanded={false}
+              onToggleExpand={onToggleExpand}
+              onSelect={onSelect}
+              onEdit={onEdit}
+              onDelete={onDelete}
+              onAddChild={onAddChild}
+            />
+          ))}
+        </ChildrenContainer>
+      )}
+      
+      {/* Mobile Action Menu */}
+      {showActions && (
+        <MobileMenuSheet $isOpen={showActions}>
+          <MenuHeader>
+            <h3 style={{ margin: 0 }}>Node Actions</h3>
+            <button 
+              onClick={() => setShowActions(false)}
+              style={{ background: 'none', border: 'none', fontSize: '20px' }}
+            >
+              ×
+            </button>
+          </MenuHeader>
+          <MenuItem onClick={() => { onEdit(path); setShowActions(false); }}>
+            <Edit size={20} />
+            Edit Node
+          </MenuItem>
+          <MenuItem onClick={() => { onAddChild(path); setShowActions(false); }}>
+            <Plus size={20} />
+            Add Child
+          </MenuItem>
+          <MenuItem onClick={() => { onDelete(path); setShowActions(false); }} $variant="danger">
+            <Trash2 size={20} />
+            Delete Node
+          </MenuItem>
+        </MobileMenuSheet>
+      )}
+    </>
+  );
+};
+```
+
+#### Mobile Mind Map Component
+```typescript
+interface MobileMindMapProps {
+  mindmap: MindMap;
+  selectedPath: number[];
+  onNodeSelect: (path: number[]) => void;
+  onNodeEdit: (path: number[]) => void;
+  onNodeDelete: (path: number[]) => void;
+  onAddChild: (path: number[]) => void;
+}
+
+export const MobileMindMap: React.FC<MobileMindMapProps> = ({
+  mindmap,
+  selectedPath,
+  onNodeSelect,
+  onNodeEdit,
+  onNodeDelete,
+  onAddChild
+}) => {
+  const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
+
+  const getNodeKey = (path: number[]) => path.join('-');
+
+  const handleToggleExpand = (path: number[]) => {
+    const key = getNodeKey(path);
+    const newExpanded = new Set(expandedNodes);
+    if (newExpanded.has(key)) {
+      newExpanded.delete(key);
+    } else {
+      newExpanded.add(key);
+    }
+    setExpandedNodes(newExpanded);
+  };
+
+  const isNodeExpanded = (path: number[]) => {
+    return expandedNodes.has(getNodeKey(path));
+  };
+
+  return (
+    <MobileContent>
+      <MobileNode
+        node={mindmap.root}
+        path={[]}
+        depth={0}
+        isSelected={selectedPath.length === 0}
+        isExpanded={isNodeExpanded([])}
+        onToggleExpand={handleToggleExpand}
+        onSelect={onNodeSelect}
+        onEdit={onNodeEdit}
+        onDelete={onNodeDelete}
+        onAddChild={onAddChild}
+      />
+    </MobileContent>
+  );
+};
+```
+
+### Responsive Design Implementation
+
+#### Responsive Container Component
+```typescript
+const ResponsiveContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+`;
+
+export const ResponsiveMindMap: React.FC = () => {
+  const { mindmap } = useMindMapStore();
+  const { selectedPath, setSelectedPath } = useSelectedPath();
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Detect mobile screen size
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  return (
+    <ResponsiveContainer>
+      <Toolbar />
+      {isMobile ? (
+        <MobileMindMap
+          mindmap={mindmap}
+          selectedPath={selectedPath}
+          onNodeSelect={setSelectedPath}
+          onNodeEdit={(path) => { /* handle edit */ }}
+          onNodeDelete={(path) => { /* handle delete */ }}
+          onAddChild={(path) => { /* handle add child */ }}
+        />
+      ) : (
+        <MindMap />
+      )}
+      <StatusBar />
+    </ResponsiveContainer>
+  );
+};
+```
+
 ## 1. Toolbar Component
 
 ### Current Implementation

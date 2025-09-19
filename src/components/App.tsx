@@ -1,9 +1,10 @@
 import React from 'react';
-import { MindMap } from './MindMap';
+import { ResponsiveMindMap } from './ResponsiveMindMap';
 import { Toolbar } from './Toolbar';
 import { StatusBar } from './StatusBar';
 import { GlobalStyles } from '../styles/GlobalStyles';
 import { SelectedPathProvider } from '../contexts/SelectedPathContext';
+import { useMobileDetection } from '../hooks/useMobileDetection';
 import styled from 'styled-components';
 
 const AppContainer = styled.div`
@@ -21,15 +22,17 @@ const MainContent = styled.div`
 `;
 
 export const App: React.FC = () => {
+  const isMobile = useMobileDetection();
+  
   return (
     <SelectedPathProvider>
       <GlobalStyles />
       <AppContainer>
-        <Toolbar />
+        {!isMobile && <Toolbar />}
         <MainContent>
-          <MindMap />
+          <ResponsiveMindMap />
         </MainContent>
-        <StatusBar />
+        {!isMobile && <StatusBar />}
       </AppContainer>
     </SelectedPathProvider>
   );
