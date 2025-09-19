@@ -16,9 +16,9 @@ Mind Map Text is a web-based mind mapping application that uses a column-based i
 *   **File Path Memory:** Remembers your last used file paths for quick saving and loading.
 *   **Enhanced Visual Design:** Modern styling with improved spacing, shadows, and color-coded node states.
 *   **Status Bar:** Real-time display of save status, file information, and node count statistics.
-*   **Comprehensive Testing:** 158 tests across 15 test files ensuring robust functionality and preventing regressions.
+*   **Comprehensive Testing:** 159 tests across 15 test files ensuring robust functionality and preventing regressions.
 *   **Zero Console Warnings:** Clean development experience with no styled-components or other console warnings.
-*   **Enhanced Mobile Experience:** Improved mobile menu functionality with proper positioning and smooth animations.
+*   **Enhanced Mobile Experience:** Comprehensive mobile UI improvements with complete feature parity and optimized user experience.
 
 ## Demo
 
@@ -60,7 +60,7 @@ This will start the development server and open the application in your default 
 npm test
 ```
 
-This will launch the test runner in interactive watch mode. The test suite includes 158 tests covering all components, utilities, and edge cases, including comprehensive tests for responsive behavior, mobile detection, scrolling functionality, styled-components fixes, and mobile menu functionality.
+This will launch the test runner in interactive watch mode. The test suite includes 159 tests covering all components, utilities, and edge cases, including comprehensive tests for responsive behavior, mobile detection, scrolling functionality, styled-components fixes, mobile menu functionality, and Task 56 mobile UI improvements.
 
 ## Usage
 
@@ -73,13 +73,15 @@ This will launch the test runner in interactive watch mode. The test suite inclu
 *   **Copy and Paste:** Select a node and use "Copy JSON"/"Copy Text" to copy to clipboard, then "Paste JSON"/"Paste Text" to paste as a child of another selected node.
 
 ### Mobile Interface
-*   **Navigation:** Use breadcrumb navigation to quickly jump to parent nodes
-*   **Select a node:** Tap on a node to select it. Expand/collapse nodes with the chevron button.
-*   **Add a child node:** Select a node and tap the "Add" button in the bottom navigation bar.
-*   **Delete a node:** Select a node and tap the "More" button, then "Delete Node".
-*   **Edit a node:** Select a node and tap the "More" button, then "Edit Node".
-*   **Copy and Paste:** Use the copy/paste buttons in the bottom navigation bar.
-*   **Home:** Return to the root node using the "Home" button.
+*   **Navigation:** Use swipe gestures (left/right) to navigate between columns with visual feedback indicators
+*   **Select a node:** Tap on a node to select it. Children automatically appear in the next column.
+*   **Add a child node:** Select a node and tap the "Add" button in the bottom toolbar.
+*   **Delete a node:** Select a node and tap the "Delete" button in the bottom toolbar.
+*   **Edit a node:** Long-press (500ms) on a node's text to edit it directly.
+*   **Copy and Paste:** Use the "More" menu to access Copy as JSON/Text and Paste JSON/Text operations.
+*   **Move Nodes:** Use the "More" menu to access Move Up/Down functionality for reordering nodes.
+*   **Home:** Enhanced home button with scroll-to-top functionality for better navigation.
+*   **Load/Save:** Access save/load functionality through the main "Load" button and "More" menu options.
 
 ### Responsive Behavior
 *   **Automatic Switching:** The interface automatically switches between desktop and mobile views at 768px screen width.
@@ -114,15 +116,18 @@ The application has been enhanced with several visual and functional improvement
 - **Custom Scrollbars:** Both horizontal and vertical scrollbars are styled for consistency
 - **Flexible Layout:** The interface adapts to different screen sizes while maintaining usability
 
-### Mobile Features (New!)
+### Mobile Features (Enhanced with Task 56!)
+- **Complete Feature Parity:** All desktop functionality now available on mobile including move up/down and copy/paste operations
 - **Preserved Column Architecture:** The core column-based design is maintained even on mobile devices
-- **Touch-Optimized Navigation:** Swipe left/right to navigate between columns with visual indicators
-- **Mobile Toolbar:** Bottom-mounted toolbar with essential actions (Home, Add, Delete, Load, More)
+- **Enhanced Gesture Navigation:** Optimized swipe gestures with 80px minimum distance and 30px max vertical deviation for better user control
+- **Comprehensive Mobile Toolbar:** Bottom-mounted toolbar with Home (enhanced), Add, Delete, Load, and expanded More menu
+- **Long-Press Text Editing:** Mobile-optimized text editing with 500ms long-press detection and 10px move cancellation
 - **Responsive Column Widths:** Columns automatically adjust width based on screen size (180px mobile, 240px desktop)
-- **Gesture Support:** Native touch gestures with 50px minimum swipe distance and vertical deviation detection
-- **Safe Area Handling:** Proper handling of notched devices with env(safe-area-inset-bottom) support
+- **Enhanced Safe Area Handling:** Proper handling of notched devices with env(safe-area-inset-bottom) support
 - **44px Touch Targets:** All interactive elements meet mobile accessibility standards
 - **Performance Optimized:** Smooth 60fps scrolling with hardware acceleration
+- **Improved Menu Organization:** Cleaner interface with duplicate "Load File" removed from More menu
+- **Enhanced Home Button:** Now includes scroll-to-top functionality alongside selection clearing
 
 ### Bug Fixes and Improvements (Task 55)
 - **Styled-Components Fix:** Resolved console warnings about unknown "variant" prop by implementing transient props ($variant)
@@ -130,6 +135,18 @@ The application has been enhanced with several visual and functional improvement
 - **Enhanced Testing:** Added comprehensive test coverage for both fixes with zero console warnings
 - **Code Quality:** Improved code quality following styled-components best practices
 - **User Experience:** Enhanced mobile user experience with properly functioning menus and interactions
+
+### Comprehensive Mobile UI Improvements (Task 56)
+- **Phone UI Problem Resolution:** Fixed all identified mobile UI issues including missing functionality and poor user experience
+- **Enhanced Text Editing:** Implemented long-press (500ms) text editing for mobile devices with move cancellation to prevent accidental triggers
+- **Improved Home Button:** Enhanced home button with scroll-to-top functionality alongside selection clearing for better navigation
+- **Complete Feature Parity:** Added missing mobile functionality including Move Up/Down and Copy/Paste JSON/Text operations
+- **Optimized Gesture Navigation:** Adjusted gesture sensitivity (80px min swipe distance, 30px max vertical deviation) for better scrolling experience
+- **Enhanced Menu Design:** Redesigned mobile button UI with proper disabled state handling and better feature access
+- **Clarified Load Functionality:** Removed duplicate "Load File" from More menu to eliminate user confusion
+- **Improved Button Accessibility:** All mobile buttons now maintain 44px minimum touch target size with proper visual feedback
+- **Enhanced Testing:** Comprehensive test coverage for all mobile improvements with 159 total tests and zero warnings
+- **Cross-Platform Consistency:** Ensured consistent behavior between desktop and mobile versions while optimizing each platform's strengths
 
 ## File Formats
 

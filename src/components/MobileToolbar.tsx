@@ -5,7 +5,7 @@ import { useMobileDetection } from '../hooks/useMobileDetection';
 import { saveAsFile, loadFromFile } from '../utils/file';
 import { FileFormat } from '../types';
 import styled from 'styled-components';
-import { Plus, Trash2, Save, FolderOpen, MoreVertical, Home, Edit } from 'lucide-react';
+import { Plus, Trash2, Save, FolderOpen, MoreVertical, Home, Edit, ChevronUp, ChevronDown, Copy, FileText } from 'lucide-react';
 
 const MobileToolbarContainer = styled.div`
   position: fixed;
@@ -95,24 +95,25 @@ const MenuOverlay = styled.div<{ $isOpen: boolean }>`
   z-index: 199;
 `;
 
-const MenuItem = styled.div`
+const MenuItem = styled.div<{ $disabled?: boolean }>`
   width: 100%;
   padding: 16px;
-  color: #374151;
+  color: ${props => props.$disabled ? '#9CA3AF' : '#374151'};
   font-size: 16px;
   display: flex;
   align-items: center;
   gap: 12px;
-  cursor: pointer;
+  cursor: ${props => props.$disabled ? 'not-allowed' : 'pointer'};
   transition: background-color 0.2s ease;
   border-bottom: 1px solid #F3F4F6;
+  opacity: ${props => props.$disabled ? 0.5 : 1};
   
   &:hover {
-    background: #F9FAFB;
+    background: ${props => props.$disabled ? 'transparent' : '#F9FAFB'};
   }
   
   &:active {
-    background: #F3F4F6;
+    background: ${props => props.$disabled ? 'transparent' : '#F3F4F6'};
   }
   
   &:last-child {
@@ -135,6 +136,12 @@ export const MobileToolbar: React.FC = () => {
     setMindmap, 
     addNode, 
     deleteNode,
+    moveNodeUp,
+    moveNodeDown,
+    copyNodeAsJson,
+    copyNodeAsText,
+    pasteNodeAsJson,
+    pasteNodeAsText,
     setJsonFilePath, 
     setTextFilePath
   } = useMindMapStore();
@@ -185,6 +192,50 @@ export const MobileToolbar: React.FC = () => {
 
   const handleGoHome = () => {
     setSelectedPath([]);
+    // Scroll to top when going home
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleMoveUp = () => {
+    if (hasSelection) {
+      const newPath = moveNodeUp(selectedPath);
+      if (newPath !== selectedPath) {
+        setSelectedPath(newPath);
+      }
+    }
+  };
+
+  const handleMoveDown = () => {
+    if (hasSelection) {
+      const newPath = moveNodeDown(selectedPath);
+      if (newPath !== selectedPath) {
+        setSelectedPath(newPath);
+      }
+    }
+  };
+
+  const handleCopyJson = () => {
+    if (hasSelection || hasRootSelection) {
+      copyNodeAsJson(selectedPath);
+    }
+  };
+
+  const handleCopyText = () => {
+    if (hasSelection || hasRootSelection) {
+      copyNodeAsText(selectedPath);
+    }
+  };
+
+  const handlePasteJson = () => {
+    if (hasSelection || hasRootSelection) {
+      pasteNodeAsJson(selectedPath);
+    }
+  };
+
+  const handlePasteText = () => {
+    if (hasSelection || hasRootSelection) {
+      pasteNodeAsText(selectedPath);
+    }
   };
 
   const handleMenuItemClick = (action: () => void) => {
@@ -198,7 +249,7 @@ export const MobileToolbar: React.FC = () => {
   return (
     <>
       <MobileToolbarContainer data-testid="mobile-toolbar">
-        <MobileToolbarButton onClick={handleGoHome} title="Go to Root">
+        <MobileToolbarButton onClick={handleGoHome} title="Go to Root and Scroll to Top">
           <Home size={20} />
           <MobileButtonLabel>Home</MobileButtonLabel>
         </MobileToolbarButton>
@@ -268,9 +319,52 @@ export const MobileToolbar: React.FC = () => {
           Save as Text
         </MenuItem>
         
-        <MenuItem onClick={() => handleMenuItemClick(handleLoad)}>
-          <FolderOpen size={20} />
-          Load File
+        <MenuItem 
+          onClick={() => !hasSelection || handleMenuItemClick(handleMoveUp)} 
+          $disabled={!hasSelection}
+        >
+          <ChevronUp size={20} />
+          Move Up
+        </MenuItem>
+        
+        <MenuItem 
+          onClick={() => !hasSelection || handleMenuItemClick(handleMoveDown)} 
+          $disabled={!hasSelection}
+        >
+          <ChevronDown size={20} />
+          Move Down
+        </MenuItem>
+        
+        <MenuItem 
+          onClick={() => !(hasSelection || hasRootSelection) || handleMenuItemClick(handleCopyJson)} 
+          $disabled={!(hasSelection || hasRootSelection)}
+        >
+          <Copy size={20} />
+          Copy as JSON
+        </MenuItem>
+        
+        <MenuItem 
+          onClick={() => !(hasSelection || hasRootSelection) || handleMenuItemClick(handleCopyText)} 
+          $disabled={!(hasSelection || hasRootSelection)}
+        >
+          <FileText size={20} />
+          Copy as Text
+        </MenuItem>
+        
+        <MenuItem 
+          onClick={() => !(hasSelection || hasRootSelection) || handleMenuItemClick(handlePasteJson)} 
+          $disabled={!(hasSelection || hasRootSelection)}
+        >
+          <Copy size={20} />
+          Paste JSON
+        </MenuItem>
+        
+        <MenuItem 
+          onClick={() => !(hasSelection || hasRootSelection) || handleMenuItemClick(handlePasteText)} 
+          $disabled={!(hasSelection || hasRootSelection)}
+        >
+          <FileText size={20} />
+          Paste Text
         </MenuItem>
       </MobileActionMenu>
     </>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { MindNode } from '../types';
 import { useMindMapStore } from '../store/mindmapStore';
 import { useSelectedPath } from '../contexts/SelectedPathContext';
@@ -67,10 +67,68 @@ export const Node: React.FC<NodeProps> = ({ node, path, index, onSelect, isMobil
   const { selectedPath } = useSelectedPath();
   const [isEditing, setIsEditing] = useState(false);
   const [text, setText] = useState(node.text);
+  const [isLongPress, setIsLongPress] = useState(false);
+  const longPressTimer = useRef<NodeJS.Timeout | null>(null);
+  const touchStartPos = useRef<{ x: number; y: number } | null>(null);
 
   const handleDoubleClick = () => {
-    setIsEditing(true);
+    if (!isMobile) {
+      setIsEditing(true);
+    }
   };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (!isMobile) return;
+    
+    const touch = e.touches[0];
+    touchStartPos.current = { x: touch.clientX, y: touch.clientY };
+    
+    // Start long press timer
+    longPressTimer.current = setTimeout(() => {
+      setIsLongPress(true);
+      setIsEditing(true);
+    }, 500); // 500ms for long press
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isMobile || !touchStartPos.current) return;
+    
+    const touch = e.touches[0];
+    const deltaX = Math.abs(touch.clientX - touchStartPos.current.x);
+    const deltaY = Math.abs(touch.clientY - touchStartPos.current.y);
+    
+    // If moved more than 10px, cancel long press
+    if (deltaX > 10 || deltaY > 10) {
+      if (longPressTimer.current) {
+        clearTimeout(longPressTimer.current);
+        longPressTimer.current = null;
+      }
+    }
+  };
+
+  const handleTouchEnd = () => {
+    if (!isMobile) return;
+    
+    // Clear long press timer
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+    
+    // Reset long press state
+    setTimeout(() => {
+      setIsLongPress(false);
+    }, 100);
+  };
+
+  // Clean up timer on unmount
+  useEffect(() => {
+    return () => {
+      if (longPressTimer.current) {
+        clearTimeout(longPressTimer.current);
+      }
+    };
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setText(e.target.value);
@@ -81,7 +139,13 @@ export const Node: React.FC<NodeProps> = ({ node, path, index, onSelect, isMobil
     setIsEditing(false);
   };
 
-  const handleClick = () => {
+  const handleClick = (e: React.MouseEvent | React.TouchEvent) => {
+    // Prevent click if long press was triggered
+    if (isLongPress) {
+      setIsLongPress(false);
+      return;
+    }
+    
     const parentPath = path.slice(0, -1);
     setSelectedChild(parentPath, index);
     onSelect(path);
@@ -93,6 +157,9 @@ export const Node: React.FC<NodeProps> = ({ node, path, index, onSelect, isMobil
     <NodeContainer
       onDoubleClick={handleDoubleClick}
       onClick={handleClick}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
       $nodeType={nodeType}
       $isMobile={isMobile}
       tabIndex={0} // Make focusable for accessibility

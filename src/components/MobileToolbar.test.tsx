@@ -19,6 +19,13 @@ const mockSaveAsFile = saveAsFile as jest.MockedFunction<typeof saveAsFile>;
 const mockLoadFromFile = loadFromFile as jest.MockedFunction<typeof loadFromFile>;
 
 describe('MobileToolbar', () => {
+  // Mock window.scrollTo
+  beforeEach(() => {
+    Object.defineProperty(window, 'scrollTo', {
+      value: jest.fn(),
+      writable: true,
+    });
+  });
   const mockMindMapStore = {
     mindmap: {
       root: {
@@ -33,6 +40,12 @@ describe('MobileToolbar', () => {
     setMindmap: jest.fn(),
     addNode: jest.fn(),
     deleteNode: jest.fn(),
+    moveNodeUp: jest.fn(),
+    moveNodeDown: jest.fn(),
+    copyNodeAsJson: jest.fn(),
+    copyNodeAsText: jest.fn(),
+    pasteNodeAsJson: jest.fn(),
+    pasteNodeAsText: jest.fn(),
     setJsonFilePath: jest.fn(),
     setTextFilePath: jest.fn(),
   };
@@ -156,7 +169,12 @@ describe('MobileToolbar', () => {
     expect(screen.getByText('More Options')).toBeInTheDocument();
     expect(screen.getByText('Save as JSON')).toBeInTheDocument();
     expect(screen.getByText('Save as Text')).toBeInTheDocument();
-    expect(screen.getByText('Load File')).toBeInTheDocument();
+    expect(screen.getByText('Move Up')).toBeInTheDocument();
+    expect(screen.getByText('Move Down')).toBeInTheDocument();
+    expect(screen.getByText('Copy as JSON')).toBeInTheDocument();
+    expect(screen.getByText('Copy as Text')).toBeInTheDocument();
+    expect(screen.getByText('Paste JSON')).toBeInTheDocument();
+    expect(screen.getByText('Paste Text')).toBeInTheDocument();
   });
 
   it('should hide action menu when overlay is clicked', () => {
@@ -212,23 +230,54 @@ describe('MobileToolbar', () => {
     expect(screen.getByTestId('menu-overlay')).not.toBeVisible();
   });
 
-  it('should call handleLoad when load file is clicked from menu', async () => {
+  it('should call move functions when menu items are clicked', () => {
     render(React.createElement(MobileToolbar));
     
     // Show menu
     fireEvent.click(screen.getByRole('button', { name: /more/i }));
     
-    // Click load file
-    fireEvent.click(screen.getByText('Load File'));
+    // Test move up
+    fireEvent.click(screen.getByText('Move Up'));
+    expect(mockMindMapStore.moveNodeUp).toHaveBeenCalledWith([0]);
     
-    await waitFor(() => {
-      expect(mockLoadFromFile).toHaveBeenCalled();
-    });
+    // Show menu again (it closes after each click)
+    fireEvent.click(screen.getByRole('button', { name: /more/i }));
     
-    expect(mockMindMapStore.setMindmap).toHaveBeenCalledWith(mockMindMapStore.mindmap);
+    // Test move down
+    fireEvent.click(screen.getByText('Move Down'));
+    expect(mockMindMapStore.moveNodeDown).toHaveBeenCalledWith([0]);
+  });
+
+  it('should call copy/paste functions when menu items are clicked', () => {
+    render(React.createElement(MobileToolbar));
     
-    // Menu should be closed
-    expect(screen.getByTestId('menu-overlay')).not.toBeVisible();
+    // Show menu
+    fireEvent.click(screen.getByRole('button', { name: /more/i }));
+    
+    // Test copy as JSON
+    fireEvent.click(screen.getByText('Copy as JSON'));
+    expect(mockMindMapStore.copyNodeAsJson).toHaveBeenCalledWith([0]);
+    
+    // Show menu again
+    fireEvent.click(screen.getByRole('button', { name: /more/i }));
+    
+    // Test copy as Text
+    fireEvent.click(screen.getByText('Copy as Text'));
+    expect(mockMindMapStore.copyNodeAsText).toHaveBeenCalledWith([0]);
+    
+    // Show menu again
+    fireEvent.click(screen.getByRole('button', { name: /more/i }));
+    
+    // Test paste JSON
+    fireEvent.click(screen.getByText('Paste JSON'));
+    expect(mockMindMapStore.pasteNodeAsJson).toHaveBeenCalledWith([0]);
+    
+    // Show menu again
+    fireEvent.click(screen.getByRole('button', { name: /more/i }));
+    
+    // Test paste Text
+    fireEvent.click(screen.getByText('Paste Text'));
+    expect(mockMindMapStore.pasteNodeAsText).toHaveBeenCalledWith([0]);
   });
 
   it('should close menu when close button is clicked', () => {
@@ -338,6 +387,11 @@ describe('MobileToolbar', () => {
     expect(screen.getByText('More Options')).toBeInTheDocument();
     expect(screen.getByText('Save as JSON')).toBeInTheDocument();
     expect(screen.getByText('Save as Text')).toBeInTheDocument();
-    expect(screen.getByText('Load File')).toBeInTheDocument();
+    expect(screen.getByText('Move Up')).toBeInTheDocument();
+    expect(screen.getByText('Move Down')).toBeInTheDocument();
+    expect(screen.getByText('Copy as JSON')).toBeInTheDocument();
+    expect(screen.getByText('Copy as Text')).toBeInTheDocument();
+    expect(screen.getByText('Paste JSON')).toBeInTheDocument();
+    expect(screen.getByText('Paste Text')).toBeInTheDocument();
   });
 });

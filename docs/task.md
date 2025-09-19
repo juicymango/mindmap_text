@@ -2264,3 +2264,22 @@ __webpack_require__	@	bootstrap:22
 - update ./docs/test.md based on the current implementation.
 - update ./README.md based on the current implementation.
 - commit and push all the changes.
+
+# task 56
+
+- there are still problems in the phone ui.
+- what is the difference between "load" and "more - load file"?
+- i can't modify the text in a node.
+- "home" seems useless.
+- i don't see buttons of move up / down, copy / paste text / json. you should keep all the features available. redesign the button ui.
+- it seems it will select the next sibling when i scroll horizontally.
+- fix the above problems.
+- design and implement relevant test cases to prevent it.
+- Keep running npm test and fix the errors until there are no more errors thrown.
+- update ./docs/ui_and_iteration_design.md based on the current implementation.
+- update ./docs/ui_component_specifications.md based on the current implementation.
+- update ./docs/code_structure.md based on the current implementation.
+- update ./docs/test.md based on the current implementation.
+- update ./README.md based on the current implementation.
+- commit and push all the changes.
+

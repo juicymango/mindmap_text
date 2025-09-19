@@ -571,73 +571,85 @@ mindmap-app/
 - **Icon Integration:** Added Lucide React icons for better visual communication
 - **Test Coverage:** Added test cases to verify no console warnings are generated
 
+**Task 56 Mobile UI Improvements:**
+- **Complete Feature Parity:** Added move up/down and copy/paste functionality to mobile More menu
+- **Enhanced Text Editing:** Implemented long-press (500ms) text editing for mobile devices with move cancellation
+- **Improved Home Button:** Added scroll-to-top functionality alongside selection clearing for better navigation
+- **Gesture Optimization:** Adjusted swipe sensitivity (80px min, 30px max vertical) for better scrolling experience
+- **Enhanced Accessibility:** Added proper disabled state handling for all mobile menu items with visual feedback
+- **Menu Organization:** Removed duplicate "Load File" from More menu for cleaner UI and better UX
+- **Touch Optimization:** All mobile buttons maintain 44px minimum touch target size for accessibility
+- **Safe Area Support:** Added proper handling for notched devices with env(safe-area-inset-bottom)
+
+**Task 56 Node Component Enhancements:**
+- **Long-Press Text Editing:** Mobile-specific text editing with 500ms timer and 10px move cancellation
+- **Touch Event Handling:** Comprehensive touch event management with proper cleanup
+- **Platform Detection:** Automatic detection of mobile devices to enable/disable touch features
+- **State Management:** Proper handling of editing state with timers and cleanup on unmount
+
 ### `src/components/MobileToolbar.tsx`
 
--   **Function:** Touch-optimized mobile toolbar component with bottom positioning, gesture navigation, and action menu. Fixed menu positioning issue using `translateY(100vh)` for proper off-screen hiding.
+-   **Function:** Enhanced touch-optimized mobile toolbar component with complete functionality parity, gesture navigation, and comprehensive action menu. Implements Task 56 mobile UI improvements including long-press text editing, enhanced home button, and full feature accessibility.
 -   **Structure:**
     ```typescript
-    import React, { useState } from 'react';
+    import React from 'react';
     import { useMindMapStore } from '../store/mindmapStore';
     import { useSelectedPath } from '../contexts/SelectedPathContext';
-    import { useMobileDetection } from '../utils/mobileUtils';
-    import { useGestureNavigation } from '../utils/gestureNavigation';
+    import { useMobileDetection } from '../hooks/useMobileDetection';
+    import { saveAsFile, loadFromFile } from '../utils/file';
+    import { FileFormat } from '../types';
     import styled from 'styled-components';
-    import { Home, Plus, Trash2, Copy, Save, Upload, MoreVertical, X, Edit } from 'lucide-react';
+    import { Plus, Trash2, Save, FolderOpen, MoreVertical, Home, Edit, ChevronUp, ChevronDown, Copy, FileText } from 'lucide-react';
 
     const MobileToolbarContainer = styled.div`
       position: fixed;
       bottom: 0;
       left: 0;
       right: 0;
-      height: 60px;
       background: #FFFFFF;
       border-top: 1px solid #E5E7EB;
+      padding: 8px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+      z-index: 100;
+      padding-bottom: max(8px, env(safe-area-inset-bottom));
+    `;
+
+    const MenuItem = styled.div<{ $disabled?: boolean }>`
+      width: 100%;
+      padding: 16px;
+      color: ${props => props.$disabled ? '#9CA3AF' : '#374151'};
+      font-size: 16px;
       display: flex;
       align-items: center;
-      justify-content: space-around;
-      padding-bottom: env(safe-area-inset-bottom, 0);
-      box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
-      z-index: 1000;
-    `;
-
-    const MobileActionMenu = styled.div<{ $isOpen: boolean }>`
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: #FFFFFF;
-      border-top: 1px solid #E5E7EB;
-      border-radius: 16px 16px 0 0;
-      padding: 20px;
-      padding-bottom: env(safe-area-inset-bottom, 0);
-      transform: translateY(${props => props.$isOpen ? '0' : '100vh'});
-      transition: transform 0.3s ease;
-      box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
-      z-index: 1001;
-    `;
-
-    const MenuOverlay = styled.div<{ $isOpen: boolean }>`
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0, 0, 0, 0.5);
-      opacity: ${props => props.$isOpen ? '1' : '0'};
-      transition: opacity 0.3s ease;
-      pointer-events: ${props => props.$isOpen ? 'auto' : 'none'};
-      z-index: 1000;
+      gap: 12px;
+      cursor: ${props => props.$disabled ? 'not-allowed' : 'pointer'};
+      opacity: ${props => props.$disabled ? 0.5 : 1};
+      border-bottom: 1px solid #F3F4F6;
     `;
 
     export const MobileToolbar: React.FC = () => {
-      const { selectedPath, setSelectedPath } = useSelectedPath();
-      const { addNode, deleteNode, copyNodeAsJson, copyNodeAsText, pasteNodeAsJson, pasteNodeAsText } = useMindMapStore();
       const { isMobile } = useMobileDetection();
-      const [isMenuOpen, setIsMenuOpen] = useState(false);
-      const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
+      const { 
+        mindmap, 
+        setMindmap, 
+        addNode, 
+        deleteNode,
+        moveNodeUp,
+        moveNodeDown,
+        copyNodeAsJson,
+        copyNodeAsText,
+        pasteNodeAsJson,
+        pasteNodeAsText,
+        setJsonFilePath, 
+        setTextFilePath
+      } = useMindMapStore();
 
-      const handleHome = () => {
+      const handleGoHome = () => {
         setSelectedPath([]);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       };
 
       const handleAddChild = () => {
@@ -1449,21 +1461,33 @@ mindmap-app/
 
 ### `src/utils/mobileUtils.ts`
 
--   **Function:** Comprehensive mobile detection utilities with responsive breakpoints and gesture navigation support.
+-   **Function:** Comprehensive mobile detection utilities with responsive breakpoints, gesture navigation support, and Task 56 optimizations for better user experience.
 -   **Structure:**
     ```typescript
-    import { useState, useEffect } from 'react';
+    import { useState, useEffect, useRef } from 'react';
 
     export const useMobileDetection = () => {
       const [isMobile, setIsMobile] = useState(false);
+      const [isTablet, setIsTablet] = useState(false);
+      const [isDesktop, setIsDesktop] = useState(false);
+      const [screenWidth, setScreenWidth] = useState(0);
+      const [columnWidth, setColumnWidth] = useState(240);
 
       useEffect(() => {
         const checkMobile = () => {
+          const width = window.innerWidth;
+          setScreenWidth(width);
+          
           const hasTouchSupport = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-          const isSmallScreen = window.innerWidth <= 768;
+          const isSmallScreen = width <= 768;
+          const isMediumScreen = width > 768 && width <= 1024;
+          const isLargeScreen = width > 1024;
           const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
           
           setIsMobile(hasTouchSupport && (isSmallScreen || isMobileDevice));
+          setIsTablet(isMediumScreen);
+          setIsDesktop(isLargeScreen);
+          setColumnWidth(hasTouchSupport && (isSmallScreen || isMobileDevice) ? 180 : 240);
         };
 
         checkMobile();
@@ -1472,42 +1496,82 @@ mindmap-app/
         return () => window.removeEventListener('resize', checkMobile);
       }, []);
 
-      return { isMobile };
+      return { 
+        isMobile, 
+        isTablet, 
+        isDesktop, 
+        screenWidth, 
+        columnWidth 
+      };
     };
 
-    export const useGestureNavigation = () => {
-      const [touchStart, setTouchStart] = useState(0);
-      const [touchEnd, setTouchEnd] = useState(0);
-
-      const minSwipeDistance = 50;
+    export const useGestureNavigation = ({ 
+      onSwipeLeft, 
+      onSwipeRight, 
+      minSwipeDistance = 80,  // Increased from 50 for better UX
+      maxVerticalDeviation = 30  // Decreased from 50 for stricter horizontal detection
+    }: {
+      onSwipeLeft: () => void;
+      onSwipeRight: () => void;
+      minSwipeDistance?: number;
+      maxVerticalDeviation?: number;
+    }) => {
+      const touchStartRef = useRef({ x: 0, y: 0 });
+      const touchEndRef = useRef({ x: 0, y: 0 });
+      const [indicators, setIndicators] = useState({
+        showLeft: false,
+        showRight: false,
+      });
 
       const onTouchStart = (e: React.TouchEvent) => {
-        setTouchEnd(0);
-        setTouchStart(e.targetTouches[0].clientX);
+        const touch = e.touches[0];
+        touchStartRef.current = { x: touch.clientX, y: touch.clientY };
+        touchEndRef.current = { x: touch.clientX, y: touch.clientY };
       };
 
       const onTouchMove = (e: React.TouchEvent) => {
-        setTouchEnd(e.targetTouches[0].clientX);
-      };
-
-      const onTouchEnd = (onSwipeLeft: () => void, onSwipeRight: () => void) => {
-        if (!touchStart || !touchEnd) return;
+        const touch = e.touches[0];
+        touchEndRef.current = { x: touch.clientX, y: touch.clientY };
         
-        const distance = touchStart - touchEnd;
-        const isLeftSwipe = distance > minSwipeDistance;
-        const isRightSwipe = distance < -minSwipeDistance;
-
-        if (isLeftSwipe) {
-          onSwipeLeft();
-        } else if (isRightSwipe) {
-          onSwipeRight();
+        // Calculate current distance and deviation
+        const deltaX = touchStartRef.current.x - touchEndRef.current.x;
+        const deltaY = Math.abs(touchStartRef.current.y - touchEndRef.current.y);
+        
+        // Update indicators based on swipe progress
+        if (Math.abs(deltaX) > minSwipeDistance * 0.7 && deltaY <= maxVerticalDeviation) {
+          setIndicators({
+            showLeft: deltaX > 0,
+            showRight: deltaX < 0,
+          });
+        } else {
+          setIndicators({ showLeft: false, showRight: false });
         }
       };
 
+      const onTouchEnd = () => {
+        const deltaX = touchStartRef.current.x - touchEndRef.current.x;
+        const deltaY = Math.abs(touchStartRef.current.y - touchEndRef.current.y);
+        
+        // Check if swipe meets criteria
+        if (Math.abs(deltaX) >= minSwipeDistance && deltaY <= maxVerticalDeviation) {
+          if (deltaX > 0) {
+            onSwipeLeft();
+          } else {
+            onSwipeRight();
+          }
+        }
+        
+        // Reset indicators
+        setIndicators({ showLeft: false, showRight: false });
+      };
+
       return {
-        onTouchStart,
-        onTouchMove,
-        onTouchEnd,
+        touchHandlers: {
+          onTouchStart,
+          onTouchMove,
+          onTouchEnd,
+        },
+        indicators,
       };
     };
 
@@ -1518,7 +1582,19 @@ mindmap-app/
     export const getResponsiveFontSize = (isMobile: boolean) => {
       return isMobile ? '14px' : '16px';
     };
+
+    export const isTouchDevice = () => {
+      return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    };
     ```
+
+**Task 56 Mobile Utils Enhancements:**
+- **Enhanced Mobile Detection:** Added tablet and desktop detection with screen width tracking
+- **Improved Gesture Navigation:** Configurable gesture parameters with visual feedback indicators
+- **Optimized Sensitivity:** Increased minSwipeDistance to 80px and decreased maxVerticalDeviation to 30px
+- **Visual Feedback:** Added swipe indicators that appear during gesture progression
+- **Responsive Column Width:** Dynamic column width adjustment based on device detection
+- **Touch Device Detection:** Utility function for reliable touch capability detection
 
 ### `src/utils/test-utils.ts`
 

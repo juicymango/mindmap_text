@@ -109,8 +109,8 @@ export const MindMap: React.FC = () => {
   const { touchHandlers, indicators } = useGestureNavigation({
     onSwipeLeft: handleSwipeLeft,
     onSwipeRight: handleSwipeRight,
-    minSwipeDistance: 50,
-    maxVerticalDeviation: 50,
+    minSwipeDistance: 80,  // Increased from 50 to 80 to make it less sensitive
+    maxVerticalDeviation: 30,  // Decreased from 50 to 30 to be more strict about horizontal swipes
   });
 
   const getColumns = () => {
