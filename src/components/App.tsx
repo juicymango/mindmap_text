@@ -2,6 +2,7 @@ import React from 'react';
 import { ResponsiveMindMap } from './ResponsiveMindMap';
 import { Toolbar } from './Toolbar';
 import { StatusBar } from './StatusBar';
+import { MobileToolbar } from './MobileToolbar';
 import { GlobalStyles } from '../styles/GlobalStyles';
 import { SelectedPathProvider } from '../contexts/SelectedPathContext';
 import { useMobileDetection } from '../hooks/useMobileDetection';
@@ -22,7 +23,7 @@ const MainContent = styled.div`
 `;
 
 export const App: React.FC = () => {
-  const isMobile = useMobileDetection();
+  const { isMobile } = useMobileDetection();
   
   return (
     <SelectedPathProvider>
@@ -33,6 +34,7 @@ export const App: React.FC = () => {
           <ResponsiveMindMap />
         </MainContent>
         {!isMobile && <StatusBar />}
+        {isMobile && <MobileToolbar />}
       </AppContainer>
     </SelectedPathProvider>
   );

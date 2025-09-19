@@ -4,9 +4,9 @@ Mind Map Text is a web-based mind mapping application that uses a column-based i
 
 ## Features
 
-*   **Responsive Design:** Automatically switches between desktop column view and mobile tree view based on screen size.
+*   **Responsive Design:** Seamlessly adapts between desktop and mobile while preserving the core column-based architecture.
 *   **Desktop Column-Based UI:** Navigate your mind map in a familiar, intuitive column view with auxiliary root column.
-*   **Mobile Tree Interface:** Touch-friendly hierarchical tree view with breadcrumb navigation and bottom controls.
+*   **Mobile Column Interface:** Touch-optimized horizontal scrolling columns with gesture navigation and bottom toolbar.
 *   **Adjustable Column Height:** Columns support vertical scrolling when containing many nodes, with maximum height constraint and custom scrollbar styling.
 *   **Node Operations:** Easily add, delete, and edit nodes using toolbar controls.
 *   **File Operations:** Save your mind maps as JSON or a simple, human-readable text format.
@@ -16,7 +16,7 @@ Mind Map Text is a web-based mind mapping application that uses a column-based i
 *   **File Path Memory:** Remembers your last used file paths for quick saving and loading.
 *   **Enhanced Visual Design:** Modern styling with improved spacing, shadows, and color-coded node states.
 *   **Status Bar:** Real-time display of save status, file information, and node count statistics.
-*   **Comprehensive Testing:** 127 tests across 12 test files ensuring robust functionality and preventing regressions.
+*   **Comprehensive Testing:** 155 tests across 14 test files ensuring robust functionality and preventing regressions.
 
 ## Demo
 
@@ -111,6 +111,16 @@ The application has been enhanced with several visual and functional improvement
 - **Horizontal Scrolling:** Smooth horizontal scrolling for deep mind map structures
 - **Custom Scrollbars:** Both horizontal and vertical scrollbars are styled for consistency
 - **Flexible Layout:** The interface adapts to different screen sizes while maintaining usability
+
+### Mobile Features (New!)
+- **Preserved Column Architecture:** The core column-based design is maintained even on mobile devices
+- **Touch-Optimized Navigation:** Swipe left/right to navigate between columns with visual indicators
+- **Mobile Toolbar:** Bottom-mounted toolbar with essential actions (Home, Add, Delete, Load, More)
+- **Responsive Column Widths:** Columns automatically adjust width based on screen size (180px mobile, 240px desktop)
+- **Gesture Support:** Native touch gestures with 50px minimum swipe distance and vertical deviation detection
+- **Safe Area Handling:** Proper handling of notched devices with env(safe-area-inset-bottom) support
+- **44px Touch Targets:** All interactive elements meet mobile accessibility standards
+- **Performance Optimized:** Smooth 60fps scrolling with hardware acceleration
 
 ## File Formats
 

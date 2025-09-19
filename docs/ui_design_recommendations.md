@@ -625,3 +625,429 @@ const ResponsiveMindMap: React.FC = () => {
 4. **Phase 4**: Performance optimization and accessibility improvements
 
 This implementation plan provides a comprehensive approach to adding mobile UI support while maintaining the existing desktop functionality. The plan prioritizes user experience, performance, and maintainability while ensuring a smooth transition between desktop and mobile interfaces.
+
+## Task 54: Mobile Column-Based UI Implementation Plan
+
+### Overview
+Task 54 represents a paradigm shift from traditional tree-based mobile interfaces to a column-first approach that preserves the core interaction pattern of the desktop application. This implementation plan outlines the steps to create a mobile UI that maintains the column-based display while optimizing for phone screens.
+
+### Core Implementation Strategy
+
+#### 1. Architectural Decisions
+- **Column Preservation**: Maintain the horizontal column structure as the primary navigation metaphor
+- **Responsive Adaptation**: Create responsive components that adapt column dimensions for mobile screens
+- **Touch Enhancement**: Add gesture support while preserving click-based interactions
+- **Progressive Enhancement**: Ensure mobile features enhance rather than replace core functionality
+
+#### 2. Technical Approach
+- **Component Extensions**: Extend existing components rather than creating parallel mobile versions
+- **Shared State Management**: Use existing Zustand store with mobile-specific state additions
+- **Responsive Detection**: Implement robust mobile detection with appropriate breakpoints
+- **Performance Optimization**: Ensure mobile performance matches or exceeds desktop experience
+
+### Implementation Phases
+
+#### Phase 1: Foundation and Core Components (Week 1-2)
+
+**1.1 Mobile Detection and Responsive System**
+- Create `useMobileDetection.ts` hook with proper breakpoint handling
+- Implement `useResponsiveColumns.ts` for dynamic column sizing
+- Add mobile-specific state to existing Zustand store
+- Create responsive breakpoint constants and utilities
+
+```typescript
+// File: src/hooks/useMobileDetection.ts
+const useMobileDetection = () => {
+  const [isMobile, setIsMobile] = useState(false);
+  const [columnWidth, setColumnWidth] = useState(240);
+  
+  useEffect(() => {
+    const updateLayout = () => {
+      const width = window.innerWidth;
+      const mobile = width <= BREAKPOINTS.mobile;
+      setIsMobile(mobile);
+      
+      // Set responsive column width
+      if (mobile) {
+        setColumnWidth(180);
+      } else if (width <= BREAKPOINTS.tablet) {
+        setColumnWidth(200);
+      } else {
+        setColumnWidth(240);
+      }
+    };
+    
+    updateLayout();
+    window.addEventListener('resize', updateLayout);
+    return () => window.removeEventListener('resize', updateLayout);
+  }, []);
+  
+  return { isMobile, columnWidth };
+};
+```
+
+**1.2 Enhanced Column Component**
+- Extend `Column.tsx` with mobile-optimized styling
+- Add touch-friendly scrolling and gesture indicators
+- Implement responsive column width handling
+- Add column headers with mobile-specific actions
+
+```typescript
+// File: src/components/Column.tsx (enhanced)
+const ColumnContainer = styled.div<{ $isRoot?: boolean; $isMobile?: boolean; $columnWidth?: number }>`
+  margin: ${props => props.$isMobile ? '4px 2px' : '8px 4px'};
+  padding: ${props => props.$isMobile ? '8px' : '12px'};
+  border: 1px solid #E5E7EB;
+  border-radius: 8px;
+  width: ${props => props.$columnWidth || 240}px;
+  min-width: ${props => props.$isMobile ? '180px' : '240px'};
+  max-width: ${props => props.$isMobile ? '200px' : 'none'};
+  max-height: ${props => props.$isMobile ? '60vh' : 'calc(100vh - 120px)'};
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  background: #FFFFFF;
+  box-shadow: ${props => props.$isMobile ? '0 2px 8px rgba(0, 0, 0, 0.1)' : '0 1px 3px rgba(0, 0, 0, 0.1)'};
+  overflow-y: auto;
+  
+  // Mobile-optimized scrolling
+  ${props => props.$isMobile && `
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: y mandatory;
+  `}
+  
+  // Existing desktop styles...
+`;
+```
+
+**1.3 Mobile-Optimized Node Component**
+- Enhance `Node.tsx` with touch-friendly interactions
+- Increase touch targets to 44px minimum
+- Add touch feedback and mobile-specific styling
+- Implement long-press context menus
+
+```typescript
+// File: src/components/Node.tsx (enhanced)
+const NodeContainer = styled.div<{ $nodeType: NodeType; $isMobile?: boolean }>`
+  position: relative;
+  padding: ${props => props.$isMobile ? '16px 12px' : '12px'};
+  border: 2px solid ${(props) => NODE_COLORS[props.$nodeType].border};
+  border-radius: 8px;
+  margin-bottom: 8px;
+  background-color: ${(props) => NODE_COLORS[props.$nodeType].background};
+  color: ${(props) => NODE_COLORS[props.$nodeType].text};
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: ${props => props.$isMobile ? '48px' : '44px'};
+  user-select: none;
+  
+  // Mobile-specific touch feedback
+  ${props => props.$isMobile && `
+    -webkit-tap-highlight-color: transparent;
+    
+    &:active {
+      transform: scale(0.98);
+      background-color: ${NODE_COLORS[props.$nodeType].hover};
+    }
+  `}
+  
+  // Existing desktop styles...
+`;
+```
+
+#### Phase 2: Mobile Toolbar and Navigation (Week 2-3)
+
+**2.1 Bottom Toolbar System**
+- Create `MobileToolbar.tsx` with essential actions
+- Implement bottom-mounted toolbar with safe area handling
+- Add expandable action menu for secondary functions
+- Integrate with existing toolbar functionality
+
+```typescript
+// File: src/components/MobileToolbar.tsx
+const MobileToolbarContainer = styled.div`
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #FFFFFF;
+  border-top: 1px solid #E5E7EB;
+  padding: 8px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+  
+  // Safe area handling for notched devices
+  padding-bottom: max(8px, env(safe-area-inset-bottom));
+`;
+
+export const MobileToolbar: React.FC = () => {
+  const { isMobile } = useMobileDetection();
+  const { addNode, deleteNode, saveAsFile, loadFromFile } = useMindMapStore();
+  const { selectedPath } = useSelectedPath();
+  
+  if (!isMobile) return null;
+  
+  return (
+    <MobileToolbarContainer>
+      {/* Essential mobile actions */}
+      <MobileToolbarButton onClick={() => addNode(selectedPath, 'New Node')}>
+        <Plus size={20} />
+        <MobileButtonLabel>Add</MobileButtonLabel>
+      </MobileToolbarButton>
+      
+      {/* Additional actions and menu */}
+      <MobileToolbarButton onClick={handleShowMenu}>
+        <MoreVertical size={20} />
+        <MobileButtonLabel>More</MobileButtonLabel>
+      </MobileToolbarButton>
+    </MobileToolbarContainer>
+  );
+};
+```
+
+**2.2 Gesture Navigation System**
+- Implement swipe gestures for column navigation
+- Add visual indicators for swipe actions
+- Create touch event handlers with proper conflict resolution
+- Integrate with existing column selection logic
+
+```typescript
+// File: src/hooks/useGestureNavigation.ts
+const useGestureNavigation = () => {
+  const [showLeftIndicator, setShowLeftIndicator] = useState(false);
+  const [showRightIndicator, setShowRightIndicator] = useState(false);
+  
+  const handleTouchStart = (e: React.TouchEvent) => {
+    // Track initial touch position
+  };
+  
+  const handleTouchMove = (e: React.TouchEvent) => {
+    // Calculate swipe distance and show indicators
+  };
+  
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    // Determine if swipe should trigger navigation
+  };
+  
+  return {
+    touchHandlers: {
+      onTouchStart: handleTouchStart,
+      onTouchMove: handleTouchMove,
+      onTouchEnd: handleTouchEnd,
+    },
+    indicators: {
+      showLeft: showLeftIndicator,
+      showRight: showRightIndicator,
+    }
+  };
+};
+```
+
+**2.3 Responsive Mind Map Container**
+- Update `MindMap.tsx` to handle mobile responsiveness
+- Add mobile-specific styling and scroll behavior
+- Implement column width adaptation
+- Add safe area handling for mobile devices
+
+```typescript
+// File: src/components/MindMap.tsx (enhanced)
+const MindMapContainer = styled.div<{ $isMobile?: boolean }>`
+  display: flex;
+  overflow-x: auto;
+  overflow-y: hidden;
+  flex: 1;
+  background: #F9FAFB;
+  align-items: flex-start;
+  min-height: 0;
+  
+  // Mobile-optimized scrolling
+  ${props => props.$isMobile && `
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+    scroll-padding: 0 16px;
+    padding: 0 8px;
+    padding-bottom: 80px; // Space for bottom toolbar
+  `}
+  
+  // Existing desktop styles...
+`;
+```
+
+#### Phase 3: Integration and State Management (Week 3-4)
+
+**3.1 Enhanced State Management**
+- Extend Zustand store with mobile-specific state
+- Add mobile column width and active column tracking
+- Implement gesture navigation state
+- Add mobile menu context management
+
+```typescript
+// File: src/store/mindmapStore.ts (enhanced)
+interface MobileMindMapState {
+  // Mobile-specific state
+  mobileColumnWidth: number;
+  activeColumnIndex: number;
+  isSwipeNavigationActive: boolean;
+  showMobileActionMenu: boolean;
+  mobileMenuContext: {
+    path: number[];
+    nodeType: NodeType;
+  } | null;
+  
+  // Mobile actions
+  setMobileColumnWidth: (width: number) => void;
+  setActiveColumnIndex: (index: number) => void;
+  setSwipeNavigationActive: (active: boolean) => void;
+  setShowMobileActionMenu: (show: boolean) => void;
+  setMobileMenuContext: (context: MobileMenuContext | null) => void;
+}
+```
+
+**3.2 Responsive App Integration**
+- Update `App.tsx` for responsive layout handling
+- Implement mobile detection and component switching
+- Add state preservation across UI changes
+- Implement proper TypeScript interfaces
+
+```typescript
+// File: src/App.tsx (enhanced)
+const App: React.FC = () => {
+  const { isMobile, columnWidth } = useMobileDetection();
+  
+  return (
+    <div className="app-container">
+      <Toolbar />
+      <MindMap isMobile={isMobile} columnWidth={columnWidth} />
+      <StatusBar />
+      {isMobile && <MobileToolbar />}
+    </div>
+  );
+};
+```
+
+**3.3 Mobile Menu System**
+- Create context-aware action menus
+- Implement bottom-sheet style menus
+- Add mobile-specific dialog components
+- Integrate with existing action system
+
+#### Phase 4: Testing and Optimization (Week 4)
+
+**4.1 Mobile-Specific Testing**
+- Create mobile component tests with touch events
+- Add responsive behavior tests
+- Implement gesture interaction tests
+- Add accessibility testing for mobile
+
+**4.2 Performance Optimization**
+- Implement virtual scrolling for large column datasets
+- Optimize touch event handling
+- Add mobile-specific performance monitoring
+- Implement lazy loading for mobile components
+
+**4.3 Polish and Documentation**
+- Add smooth animations and transitions
+- Implement haptic feedback where appropriate
+- Create mobile-specific documentation
+- Add user guides for mobile interactions
+
+### File Structure and Organization
+
+#### New Mobile-Specific Files
+```
+src/
+├── hooks/
+│   ├── useMobileDetection.ts
+│   ├── useResponsiveColumns.ts
+│   └── useGestureNavigation.ts
+├── components/
+│   ├── MobileToolbar.tsx
+│   ├── MobileActionMenu.tsx
+│   ├── MobileMenuSheet.tsx
+│   └── SwipeIndicator.tsx
+├── utils/
+│   ├── mobileUtils.ts
+│   └── gestureUtils.ts
+└── styles/
+    └── mobileStyles.ts
+```
+
+#### Enhanced Existing Files
+```
+src/
+├── components/
+│   ├── MindMap.tsx (enhanced with mobile support)
+│   ├── Column.tsx (enhanced with mobile styling)
+│   ├── Node.tsx (enhanced with touch targets)
+│   └── Toolbar.tsx (enhanced with mobile detection)
+├── store/
+│   └── mindmapStore.ts (enhanced with mobile state)
+└── App.tsx (enhanced with responsive layout)
+```
+
+### Success Metrics and Testing
+
+#### User Experience Metrics
+- **Touch Target Compliance**: 100% of touch targets meet 44px minimum
+- **Navigation Efficiency**: Average 2-3 taps to reach any node
+- **Gesture Recognition**: >95% successful gesture recognition
+- **Load Performance**: <2 seconds initial load on mobile networks
+
+#### Technical Performance Metrics
+- **Scrolling Performance**: 60fps smooth scrolling on all devices
+- **Memory Usage**: <50MB increase over desktop version
+- **Bundle Size**: <100KB additional mobile-specific code
+- **Accessibility**: WCAG 2.1 AA compliance for mobile
+
+#### Testing Strategy
+- **Unit Tests**: Component rendering, state management, gesture handling
+- **Integration Tests**: Mobile-to-desktop transitions, state preservation
+- **End-to-End Tests**: Mobile user workflows, cross-device compatibility
+- **Performance Tests**: Memory usage, scrolling performance, load times
+
+### Risk Mitigation
+
+#### Technical Risks
+- **Gesture Conflict**: Implement proper touch event conflict resolution
+- **Performance Issues**: Use virtual scrolling and optimized touch handling
+- **Cross-Browser Compatibility**: Test on Safari, Chrome, Firefox mobile
+- **Device Fragmentation**: Implement responsive design with fallbacks
+
+#### User Experience Risks
+- **Learning Curve**: Maintain familiar column interaction patterns
+- **Feature Parity**: Ensure all desktop features work on mobile
+- **Touch Accessibility**: Implement proper touch target sizes and spacing
+- **Screen Reader Support**: Add comprehensive ARIA labels and mobile navigation
+
+### Timeline and Deliverables
+
+**Week 1-2**: Foundation and Core Components
+- Deliverables: Mobile detection hook, responsive column system, enhanced node component
+- Testing: Unit tests for all new components
+
+**Week 2-3**: Mobile Toolbar and Navigation
+- Deliverables: Mobile toolbar, gesture navigation, responsive mind map container
+- Testing: Integration tests for mobile workflows
+
+**Week 3-4**: Integration and State Management
+- Deliverables: Enhanced state management, responsive app integration, mobile menu system
+- Testing: End-to-end tests for mobile experience
+
+**Week 4**: Testing and Optimization
+- Deliverables: Performance optimizations, comprehensive test suite, documentation
+- Testing: Final QA, accessibility validation, performance benchmarks
+
+### Rollout Strategy
+
+1. **Internal Testing**: Team testing on various mobile devices
+2. **Beta Release**: Limited release with feedback collection
+3. **Full Release**: Production deployment with monitoring
+4. **Optimization**: Performance tuning based on usage data
+
+This implementation plan ensures that Task 54 successfully delivers a mobile UI that preserves the column-based display while providing an optimal touch-screen experience. The plan maintains architectural consistency while adding mobile-specific enhancements.
