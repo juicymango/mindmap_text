@@ -2044,3 +2044,65 @@ All issues from Task 47 have been successfully resolved with proper testing and 
 - update ./docs/code_structure.md based on the current implementation.
 - update ./docs/test.md based on the current implementation.
 - commit and push all the changes.
+
+# task 49 (COMPLETED)
+
+- add a new button for the selected node: generate prompt.
+- when clicked, it should be a place to let the user input a query. it may be a question to ask the llm.
+- then the generated llm prompt will be shown and copied to clipboard.
+- it should include the context of the selected node. the selected path, and the sibling nodes along the selected path, should be included.
+- you should also ask the llm to generate the result with the json mindmap format. use a hierarchic structure. don't push all the message to the root node.
+- you don't need to call the llm. just generate the prompt.
+- design implementation and test cases for it. append your plan to ./docs/plan.md.
+- implement the features and test cases.
+- Keep running npm test and fix the errors until there are no more errors thrown.
+- update ./docs/ui_and_iteration_design.md based on the current implementation.
+- update ./docs/code_structure.md based on the current implementation.
+- update ./docs/test.md based on the current implementation.
+- commit and push all the changes.
+
+**Implementation Details:**
+- Added Generate Prompt button to Toolbar component
+- Implemented prompt generation logic in mindmapStore
+- Built context including parent, siblings, and children of selected node
+- Added clipboard functionality with fallback support
+- Generated prompt includes JSON mindmap format instructions
+- Added comprehensive test cases (122 tests passing)
+- All functionality working correctly
+
+commit 696d9dc7b5ecf76ce042aa6d6bad7149b751eaf3 (HEAD -> feature/mindmap, origin/feature/mindmap)
+Author: juicymango <381030480@qq.com>
+Date:   Mon Sep 15 22:09:57 2025 +0800
+
+    feat: implement Task 49 - Generate Prompt feature
+    
+    - Add Generate Prompt button to Toolbar component
+    - Implement prompt generation logic with context building
+    - Include parent, siblings, and children in generated context
+    - Add clipboard functionality with fallback support
+    - Generate prompts with JSON mindmap format instructions
+    - Add comprehensive test cases (122 tests passing)
+    - Update documentation files (ui_and_interaction_design.md, code_structure.md, test.md)
+    - Mark Task 49 as completed in task.md
+    
+    The feature allows users to:
+    1. Select any node (including root)
+    2. Click Generate Prompt button
+    3. Enter their query/question for LLM
+    4. Get a comprehensive prompt with node context copied to clipboard
+    5. Use the prompt with external LLM services
+    
+    🤖 Generated with [Claude Code](https://claude.ai/code)
+    
+    Co-Authored-By: Claude <noreply@anthropic.com>
+
+# task 50
+
+- i revert the commit of task 49, for it doesn't meet my expectation.
+- now, we focus on the ui design.
+- read ./docs/task.md and ./docs/ui_and_interaction_design.md. understand this project.
+- read the current code implementation.
+- design the ui for the current features.
+- output relevant files to ./docs/.
+- don't modify implementations.
+- commit and push all the changes.
