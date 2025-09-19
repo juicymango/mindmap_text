@@ -13,24 +13,59 @@ The UI is composed of a series of columns. Each column represents a level in the
 
 ## UI Layout
 
-The UI is a horizontally scrolling view of columns with a toolbar at the top:
+The UI is a vertically organized layout with three main sections:
 
 ```
 +-----------------------------------------------------------+
-| Toolbar: [Add Node] [Save As JSON] [Save As Text] [Load File] |
-| Current file: /path/to/file.json                          |
+| Toolbar: [Add Child] [Delete] [Move Up] [Move Down] | [Copy] | [Save] | [Load] |
 +-----------------------------------------------------------+
-| Column 1 (Root) | Column 2         | Column 3         |
-|-----------------|------------------|------------------|
-| - Node 1.1 (S)  | - Node 2.1 (S)   | - Node 3.1       |
-| - Node 1.2      | - Node 2.2       | - Node 3.2 (S)   |
-| - Node 1.3      | - Node 2.3       | - Node 3.3       |
-+-----------------|------------------|------------------+
+|                                                           |
+|  Mind Map View (Horizontal Scrolling Columns)             |
+|                                                           |
+|  +-----------+  +-----------+  +-----------+           |
+|  |  Root     |  | Child 1   |  | Grandchild|           |
+|  |           |  |           |  |           |           |
+|  | + Node 1  |  | + Node A  |  | + Node X  |           |
+|  | + Node 2  |  | + Node B  |  | + Node Y  |           |
+|  | + Node 3  |  |           |  |           |           |
+|  +-----------+  +-----------+  +-----------+           |
+|                                                           |
++-----------------------------------------------------------+
+| Status: Saved | /path/to/file.json | Format: JSON | 12 nodes |
++-----------------------------------------------------------+
 ```
+
+### Layout Components
+
+1. **Toolbar (48px height)**
+   - Enhanced toolbar with icons and improved styling
+   - Three button groups: Node Operations, Copy/Paste Operations, File Operations
+   - Modern button design with hover effects and proper spacing
+   - File path display integrated into toolbar
+
+2. **Mind Map View (Flexible height)**
+   - Horizontally scrolling column-based interface
+   - Enhanced column styling with shadows and improved spacing
+   - Root column highlighted with blue left border
+   - Custom scrollbar styling for better aesthetics
+
+3. **Status Bar (32px height)**
+   - Save status indicator (saved/unsaved/saving)
+   - Current file path and format information
+   - Node count statistics
+   - Last saved timestamp
+
+### Key Improvements
+
+- **Visual Hierarchy**: Clear separation between toolbar, main content, and status bar
+- **Enhanced Styling**: Modern button design, improved spacing, and subtle shadows
+- **Better UX**: Icon integration, tooltips, and improved visual feedback
+- **Responsive Layout**: Proper flexbox layout that adapts to screen size
+- **Information Density**: Status bar provides additional context without cluttering the interface
 
 - `(S)` indicates the selected node in the column.
 - Nodes are color-coded based on their type and state (see Node Color Coding section below).
-- Each column has a fixed width of 220px to prevent shrinking.
+- Each column has a fixed width of 240px with enhanced styling.
 
 ## Interaction Design
 
@@ -139,13 +174,22 @@ The node color coding system uses sophisticated path detection algorithms to ens
 ### State Management
 - **Zustand:** Used for state management with actions for node operations and file path memory.
 - **File Path Memory:** Stores JSON and text file paths separately with localStorage persistence.
+- **Selection Context:** Custom context for managing selected path across components.
 
 ### Components
-- **App:** Main application component that renders Toolbar and MindMap.
-- **Toolbar:** Contains file operation buttons (Save As JSON, Save As Text, Load File, Add Node) and displays current file path.
-- **MindMap:** Renders columns based on the selected path and handles keyboard shortcuts.
-- **Column:** Renders a column of nodes.
-- **Node:** Renders an individual node with color-coded styling based on node type, edit and delete controls.
+- **App:** Main application component with organized layout structure.
+- **Toolbar:** Enhanced toolbar with icon integration, button groups, and improved styling.
+- **MindMap:** Renders columns with custom scrollbar styling and flex layout.
+- **Column:** Enhanced column design with root highlighting and improved spacing.
+- **Node:** Enhanced node styling with better hover effects and improved typography.
+- **StatusBar:** New component providing save status, file information, and statistics.
+
+### Enhanced Features
+- **Icon Integration:** Lucide React icons for better visual communication
+- **Improved Styling:** Modern design with shadows, better spacing, and enhanced interactions
+- **Status Indicators:** Visual feedback for save status and system information
+- **Better Accessibility:** Improved focus states and keyboard navigation
+- **Responsive Design:** Flexbox-based layout that adapts to different screen sizes
 
 ### Data Structure
 ```typescript

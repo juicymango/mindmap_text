@@ -2106,3 +2106,13 @@ Date:   Mon Sep 15 22:09:57 2025 +0800
 - output relevant files to ./docs/.
 - don't modify implementations.
 - commit and push all the changes.
+
+# task 51
+- read all docs in ./docs/. focus on the ui.
+- implement all steps in ./docs/ui_design_recommendations.md.
+- keep the features stable.
+- Keep running npm test and fix the errors until there are no more errors thrown.
+- update ./docs/ui_and_iteration_design.md based on the current implementation.
+- update ./docs/code_structure.md based on the current implementation.
+- update ./docs/test.md based on the current implementation.
+- commit and push all the changes.

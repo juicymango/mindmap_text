@@ -10,15 +10,22 @@ interface ColumnProps {
   onNodeSelect: (path: number[]) => void;
 }
 
-const ColumnContainer = styled.div`
-  margin: 8px;
-  padding: 8px;
-  border: 1px solid lightgrey;
-  border-radius: 4px;
-  width: 220px;
+const ColumnContainer = styled.div<{ $isRoot?: boolean }>`
+  margin: 8px 4px;
+  padding: 12px;
+  border: 1px solid #E5E7EB;
+  border-radius: 8px;
+  width: 240px;
+  min-height: 200px;
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
+  background: #FFFFFF;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  
+  ${props => props.$isRoot && `
+    border-left: 4px solid #4A90E2;
+  `}
 `;
 
 export const Column: React.FC<ColumnProps> = ({ nodes, columnPath, index, onNodeSelect }) => {
@@ -27,7 +34,7 @@ export const Column: React.FC<ColumnProps> = ({ nodes, columnPath, index, onNode
   const isRootColumn = index === 0 && columnPath.length === 0 && nodes.length === 1;
   
   return (
-    <ColumnContainer>
+    <ColumnContainer $isRoot={isRootColumn}>
       {nodes.map((node, nodeIndex) => (
         <Node 
           key={nodeIndex} 

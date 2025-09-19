@@ -15,12 +15,14 @@ mindmap-app/
 │   │   ├── Column.tsx
 │   │   ├── Node.tsx
 │   │   ├── Toolbar.tsx
+│   │   ├── StatusBar.tsx
 │   │   ├── App.test.tsx
 │   │   ├── MindMap.test.tsx
 │   │   ├── Column.test.tsx
 │   │   ├── Node.test.tsx
 │   │   ├── NodeColor.test.tsx
-│   │   └── Toolbar.test.tsx
+│   │   ├── Toolbar.test.tsx
+│   │   └── StatusBar.test.tsx
 │   ├── contexts/
 │   │   └── SelectedPathContext.tsx
 │   ├── store/
@@ -51,7 +53,7 @@ mindmap-app/
 
 -   `public/`: Contains the main HTML file.
 -   `src/`: Contains the source code of the application.
--   `src/components/`: Contains the React components.
+-   `src/components/`: Contains the React components including the new StatusBar component.
 -   `src/store/`: Contains the Zustand store with file path memory.
 -   `src/styles/`: Contains the global styles and node color constants.
 -   `src/types/`: Contains the TypeScript types.
@@ -61,21 +63,43 @@ mindmap-app/
 
 ### `src/components/App.tsx`
 
--   **Function:** The main component of the application.
+-   **Function:** The main component of the application with enhanced layout structure.
 -   **Structure:**
     ```typescript
     import React from 'react';
     import { MindMap } from './MindMap';
     import { Toolbar } from './Toolbar';
+    import { StatusBar } from './StatusBar';
     import { GlobalStyles } from '../styles/GlobalStyles';
+    import { SelectedPathProvider } from '../contexts/SelectedPathContext';
+    import styled from 'styled-components';
+
+    const AppContainer = styled.div`
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    `;
+
+    const MainContent = styled.div`
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    `;
 
     export const App: React.FC = () => {
       return (
-        <>
+        <SelectedPathProvider>
           <GlobalStyles />
-          <Toolbar />
-          <MindMap />
-        </>
+          <AppContainer>
+            <Toolbar />
+            <MainContent>
+              <MindMap />
+            </MainContent>
+            <StatusBar />
+          </AppContainer>
+        </SelectedPathProvider>
       );
     };
     ```
@@ -505,6 +529,76 @@ mindmap-app/
             Current file: {getCurrentFilePath()}
           </FilePathDisplay>
         </ToolbarContainer>
+      );
+    };
+    ```
+
+### `src/components/StatusBar.tsx`
+
+-   **Function:** New component that displays system status information including save status, file path, format, and node count statistics.
+-   **Structure:**
+    ```typescript
+    import React from 'react';
+    import { useMindMapStore } from '../store/mindmapStore';
+    import styled from 'styled-components';
+    import { Clock, FileText } from 'lucide-react';
+
+    const StatusBarContainer = styled.div`
+      height: 32px;
+      background: #F9FAFB;
+      border-top: 1px solid #E5E7EB;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      font-size: 12px;
+      color: #6B7280;
+    `;
+
+    const StatusIndicator = styled.div<{ $status: 'saved' | 'unsaved' | 'saving' }>`
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: ${props => 
+        props.$status === 'saved' ? '#10B981' :
+        props.$status === 'unsaved' ? '#F59E0B' :
+        '#6B7280'
+      };
+    `;
+
+    export const StatusBar: React.FC = () => {
+      const { mindmap, jsonFilePath, textFilePath } = useMindMapStore();
+      const [saveStatus] = React.useState<'saved' | 'unsaved' | 'saving'>('saved');
+      
+      const countNodes = (node: any): number => {
+        if (!node.children || node.children.length === 0) {
+          return 1;
+        }
+        return 1 + node.children.reduce((sum: number, child: any) => sum + countNodes(child), 0);
+      };
+      
+      const totalNodes = countNodes(mindmap.root);
+      const getCurrentFilePath = () => {
+        return jsonFilePath || textFilePath || 'No file selected';
+      };
+      
+      return (
+        <StatusBarContainer>
+          <div>
+            <StatusIndicator $status={saveStatus} />
+            <span>{saveStatus === 'saved' ? 'Saved' : 'Unsaved'}</span>
+          </div>
+          <div>
+            <FileText size={12} />
+            <span>{getCurrentFilePath()}</span>
+          </div>
+          <div>
+            <span>Format: {jsonFilePath ? 'JSON' : textFilePath ? 'Text' : 'None'}</span>
+          </div>
+          <div>
+            <span>{totalNodes} nodes</span>
+          </div>
+        </StatusBarContainer>
       );
     };
     ```

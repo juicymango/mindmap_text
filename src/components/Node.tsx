@@ -14,9 +14,10 @@ interface NodeProps {
 }
 
 const NodeContainer = styled.div<{ $nodeType: 'selected' | 'onPath' | 'withChildren' | 'withoutChildren' }>`
-  padding: 8px;
-  border: 1px solid ${(props) => NODE_COLORS[props.$nodeType].border};
-  border-radius: 4px;
+  position: relative;
+  padding: 12px;
+  border: 2px solid ${(props) => NODE_COLORS[props.$nodeType].border};
+  border-radius: 8px;
   margin-bottom: 8px;
   background-color: ${(props) => NODE_COLORS[props.$nodeType].background};
   color: ${(props) => NODE_COLORS[props.$nodeType].text};
@@ -25,11 +26,13 @@ const NodeContainer = styled.div<{ $nodeType: 'selected' | 'onPath' | 'withChild
   align-items: center;
   cursor: pointer;
   transition: all 0.2s ease;
+  min-height: 44px;
   
   &:hover {
     background-color: ${(props) => NODE_COLORS[props.$nodeType].hover};
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    border-color: ${(props) => NODE_COLORS[props.$nodeType].border};
   }
   
   &:focus {
@@ -84,13 +87,24 @@ export const Node: React.FC<NodeProps> = ({ node, path, index, onSelect }) => {
             backgroundColor: 'transparent',
             border: '1px solid currentColor',
             color: 'inherit',
-            padding: '2px',
-            borderRadius: '2px'
+            padding: '4px 8px',
+            borderRadius: '4px',
+            fontSize: '14px',
+            fontWeight: '500',
+            width: '100%',
+            outline: 'none'
           }}
         />
       ) : (
-        node.text
+        <span style={{ 
+          fontSize: '14px', 
+          fontWeight: '500',
+          lineHeight: '1.4',
+          wordBreak: 'break-word'
+        }}>
+          {node.text}
+        </span>
       )}
-          </NodeContainer>
+    </NodeContainer>
   );
 };
