@@ -4,25 +4,81 @@ import { useSelectedPath } from '../contexts/SelectedPathContext';
 import { saveAsFile, loadFromFile } from '../utils/file';
 import { FileFormat } from '../types';
 import styled from 'styled-components';
+import { Plus, Trash2, ChevronUp, ChevronDown, Copy, FileText, Save, FolderOpen } from 'lucide-react';
 
 const ToolbarContainer = styled.div`
-  padding: 8px;
-  border-bottom: 1px solid lightgrey;
+  height: 48px;
+  background: #FFFFFF;
+  border-bottom: 1px solid #DEE2E6;
   display: flex;
   align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
+  padding: 0 16px;
+  gap: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 `;
 
 const FilePathDisplay = styled.div`
   font-size: 12px;
   color: #666;
-  margin-left: 8px;
+  margin-left: auto;
+  padding-right: 16px;
+`;
+
+const ToolbarButton = styled.button<{ variant?: 'primary' | 'secondary' | 'danger' }>`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid #D1D5DB;
+  border-radius: 4px;
+  background: #FFFFFF;
+  color: #374151;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background: #F9FAFB;
+    border-color: #9CA3AF;
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  ${props => props.variant === 'primary' && `
+    background: #4A90E2;
+    border-color: #4A90E2;
+    color: white;
+    
+    &:hover {
+      background: #357ABD;
+      border-color: #357ABD;
+    }
+  `}
+  
+  ${props => props.variant === 'danger' && `
+    border-color: #EF4444;
+    color: #EF4444;
+    
+    &:hover {
+      background: #FEE2E2;
+      border-color: #DC2626;
+    }
+  `}
 `;
 
 const ButtonGroup = styled.div`
   display: flex;
   gap: 4px;
+  padding: 0 8px;
+  border-right: 1px solid #E5E7EB;
+  
+  &:last-child {
+    border-right: none;
+  }
 `;
 
 export const Toolbar: React.FC = () => {
@@ -133,27 +189,60 @@ export const Toolbar: React.FC = () => {
   return (
     <ToolbarContainer>
       <ButtonGroup>
-        <button onClick={handleAddChild} disabled={!(hasSelection || hasRootSelection)}>Add Child</button>
-        <button onClick={handleDelete} disabled={!hasSelection}>Delete</button>
-        <button onClick={handleMoveUp} disabled={!hasSelection}>Move Up</button>
-        <button onClick={handleMoveDown} disabled={!hasSelection}>Move Down</button>
+        <ToolbarButton onClick={handleAddChild} disabled={!(hasSelection || hasRootSelection)} title="Add Child Node">
+          <Plus size={16} />
+          <span>Add Child</span>
+        </ToolbarButton>
+        <ToolbarButton onClick={handleDelete} disabled={!hasSelection} variant="danger" title="Delete Node">
+          <Trash2 size={16} />
+          <span>Delete</span>
+        </ToolbarButton>
+        <ToolbarButton onClick={handleMoveUp} disabled={!hasSelection} title="Move Node Up">
+          <ChevronUp size={16} />
+          <span>Move Up</span>
+        </ToolbarButton>
+        <ToolbarButton onClick={handleMoveDown} disabled={!hasSelection} title="Move Node Down">
+          <ChevronDown size={16} />
+          <span>Move Down</span>
+        </ToolbarButton>
       </ButtonGroup>
       
       <ButtonGroup>
-        <button onClick={handleCopyJson} disabled={!(hasSelection || hasRootSelection)}>Copy JSON</button>
-        <button onClick={handleCopyText} disabled={!(hasSelection || hasRootSelection)}>Copy Text</button>
-        <button onClick={handlePasteJson} disabled={!(hasSelection || hasRootSelection)}>Paste JSON</button>
-        <button onClick={handlePasteText} disabled={!(hasSelection || hasRootSelection)}>Paste Text</button>
+        <ToolbarButton onClick={handleCopyJson} disabled={!(hasSelection || hasRootSelection)} title="Copy as JSON">
+          <Copy size={16} />
+          <span>Copy JSON</span>
+        </ToolbarButton>
+        <ToolbarButton onClick={handleCopyText} disabled={!(hasSelection || hasRootSelection)} title="Copy as Text">
+          <FileText size={16} />
+          <span>Copy Text</span>
+        </ToolbarButton>
+        <ToolbarButton onClick={handlePasteJson} disabled={!(hasSelection || hasRootSelection)} title="Paste JSON">
+          <Copy size={16} />
+          <span>Paste JSON</span>
+        </ToolbarButton>
+        <ToolbarButton onClick={handlePasteText} disabled={!(hasSelection || hasRootSelection)} title="Paste Text">
+          <FileText size={16} />
+          <span>Paste Text</span>
+        </ToolbarButton>
       </ButtonGroup>
       
       <ButtonGroup>
-        <button onClick={() => handleSaveAs('json')}>Save As JSON</button>
-        <button onClick={() => handleSaveAs('text')}>Save As Text</button>
-        <button onClick={handleLoad}>Load File</button>
+        <ToolbarButton onClick={() => handleSaveAs('json')} title="Save as JSON">
+          <Save size={16} />
+          <span>Save JSON</span>
+        </ToolbarButton>
+        <ToolbarButton onClick={() => handleSaveAs('text')} title="Save as Text">
+          <FileText size={16} />
+          <span>Save Text</span>
+        </ToolbarButton>
+        <ToolbarButton onClick={handleLoad} title="Load File">
+          <FolderOpen size={16} />
+          <span>Load File</span>
+        </ToolbarButton>
       </ButtonGroup>
       
-      <FilePathDisplay>
-        Current file: {getCurrentFilePath()}
+      <FilePathDisplay title="Current file path">
+        {getCurrentFilePath()}
       </FilePathDisplay>
     </ToolbarContainer>
   );

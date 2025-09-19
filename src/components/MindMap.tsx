@@ -8,6 +8,29 @@ import { MindNode } from '../types';
 const MindMapContainer = styled.div`
   display: flex;
   overflow-x: auto;
+  overflow-y: hidden; // Prevent vertical scrolling at MindMap level
+  flex: 1;
+  background: #F9FAFB;
+  align-items: flex-start; // Align columns to top when they have different heights
+  min-height: 0; // Allow flex container to shrink properly
+  
+  // Custom scrollbar styling for horizontal scroll
+  &::-webkit-scrollbar {
+    height: 8px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: #F3F4F6;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: #D1D5DB;
+    border-radius: 4px;
+  }
+  
+  &::-webkit-scrollbar-thumb:hover {
+    background: #9CA3AF;
+  }
 `;
 
 export const MindMap: React.FC = () => {

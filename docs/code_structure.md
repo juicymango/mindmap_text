@@ -15,12 +15,14 @@ mindmap-app/
 │   │   ├── Column.tsx
 │   │   ├── Node.tsx
 │   │   ├── Toolbar.tsx
+│   │   ├── StatusBar.tsx
 │   │   ├── App.test.tsx
 │   │   ├── MindMap.test.tsx
 │   │   ├── Column.test.tsx
 │   │   ├── Node.test.tsx
 │   │   ├── NodeColor.test.tsx
-│   │   └── Toolbar.test.tsx
+│   │   ├── Toolbar.test.tsx
+│   │   └── StatusBar.test.tsx
 │   ├── contexts/
 │   │   └── SelectedPathContext.tsx
 │   ├── store/
@@ -51,7 +53,7 @@ mindmap-app/
 
 -   `public/`: Contains the main HTML file.
 -   `src/`: Contains the source code of the application.
--   `src/components/`: Contains the React components.
+-   `src/components/`: Contains the React components including the new StatusBar component.
 -   `src/store/`: Contains the Zustand store with file path memory.
 -   `src/styles/`: Contains the global styles and node color constants.
 -   `src/types/`: Contains the TypeScript types.
@@ -61,21 +63,43 @@ mindmap-app/
 
 ### `src/components/App.tsx`
 
--   **Function:** The main component of the application.
+-   **Function:** The main component of the application with enhanced layout structure.
 -   **Structure:**
     ```typescript
     import React from 'react';
     import { MindMap } from './MindMap';
     import { Toolbar } from './Toolbar';
+    import { StatusBar } from './StatusBar';
     import { GlobalStyles } from '../styles/GlobalStyles';
+    import { SelectedPathProvider } from '../contexts/SelectedPathContext';
+    import styled from 'styled-components';
+
+    const AppContainer = styled.div`
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    `;
+
+    const MainContent = styled.div`
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    `;
 
     export const App: React.FC = () => {
       return (
-        <>
+        <SelectedPathProvider>
           <GlobalStyles />
-          <Toolbar />
-          <MindMap />
-        </>
+          <AppContainer>
+            <Toolbar />
+            <MainContent>
+              <MindMap />
+            </MainContent>
+            <StatusBar />
+          </AppContainer>
+        </SelectedPathProvider>
       );
     };
     ```
@@ -95,6 +119,11 @@ mindmap-app/
     const MindMapContainer = styled.div`
       display: flex;
       overflow-x: auto;
+      overflow-y: hidden; // Prevent vertical scrolling at MindMap level
+      flex: 1;
+      background: #F9FAFB;
+      align-items: flex-start; // Align columns to top when they have different heights
+      min-height: 0; // Allow flex container to shrink properly
     `;
 
     export const MindMap: React.FC = () => {
@@ -155,7 +184,7 @@ mindmap-app/
 
 ### `src/components/Column.tsx`
 
--   **Function:** Renders a single column of nodes with drag-and-drop support and proper root node path assignment.
+-   **Function:** Renders a single column of nodes with adjustable height, vertical scrolling, and proper root node path assignment.
 -   **Structure:**
     ```typescript
     import React from 'react';
@@ -170,15 +199,41 @@ mindmap-app/
       onNodeSelect: (path: number[]) => void;
     }
 
-    const ColumnContainer = styled.div`
-      margin: 8px;
-      padding: 8px;
-      border: 1px solid lightgrey;
-      border-radius: 4px;
-      width: 220px;
+    const ColumnContainer = styled.div<{ $isRoot?: boolean }>`
+      margin: 8px 4px;
+      padding: 12px;
+      border: 1px solid #E5E7EB;
+      border-radius: 8px;
+      width: 240px;
+      max-height: calc(100vh - 120px); // Account for toolbar and status bar
       display: flex;
       flex-direction: column;
       flex-shrink: 0;
+      background: #FFFFFF;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      overflow-y: auto; // Enable vertical scrolling when content exceeds max-height
+      
+      // Custom scrollbar styling for vertical scroll
+      &::-webkit-scrollbar {
+        width: 6px;
+      }
+      
+      &::-webkit-scrollbar-track {
+        background: #F9FAFB;
+      }
+      
+      &::-webkit-scrollbar-thumb {
+        background: #D1D5DB;
+        border-radius: 3px;
+      }
+      
+      &::-webkit-scrollbar-thumb:hover {
+        background: #9CA3AF;
+      }
+      
+      ${props => props.$isRoot && `
+        border-left: 4px solid #4A90E2;
+      `}
     `;
 
     export const Column: React.FC<ColumnProps> = ({ nodes, columnPath, index, onNodeSelect }) => {
@@ -187,7 +242,7 @@ mindmap-app/
       const isRootColumn = index === 0 && columnPath.length === 0 && nodes.length === 1;
       
       return (
-        <ColumnContainer>
+        <ColumnContainer $isRoot={isRootColumn} data-testid="column-container">
           {nodes.map((node, nodeIndex) => (
             <Node 
               key={nodeIndex} 
@@ -201,6 +256,14 @@ mindmap-app/
       );
     };
     ```
+
+**Task 52 Column Height Improvements:**
+- **Adjustable Height:** Columns now have `max-height: calc(100vh - 120px)` to account for toolbar and status bar height
+- **Vertical Scrolling:** Added `overflow-y: auto` to enable scrolling when content exceeds the maximum height
+- **Custom Scrollbar:** Implemented custom vertical scrollbar styling (6px width) for consistent aesthetics
+- **Fixed Width:** Maintains fixed width of 240px while allowing flexible height
+- **Root Highlighting:** Root columns have a blue left border for visual distinction
+- **Test Coverage:** Added comprehensive test cases to validate scrolling behavior and prevent regression
 
 ### `src/components/Node.tsx`
 
@@ -505,6 +568,76 @@ mindmap-app/
             Current file: {getCurrentFilePath()}
           </FilePathDisplay>
         </ToolbarContainer>
+      );
+    };
+    ```
+
+### `src/components/StatusBar.tsx`
+
+-   **Function:** New component that displays system status information including save status, file path, format, and node count statistics.
+-   **Structure:**
+    ```typescript
+    import React from 'react';
+    import { useMindMapStore } from '../store/mindmapStore';
+    import styled from 'styled-components';
+    import { Clock, FileText } from 'lucide-react';
+
+    const StatusBarContainer = styled.div`
+      height: 32px;
+      background: #F9FAFB;
+      border-top: 1px solid #E5E7EB;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      font-size: 12px;
+      color: #6B7280;
+    `;
+
+    const StatusIndicator = styled.div<{ $status: 'saved' | 'unsaved' | 'saving' }>`
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: ${props => 
+        props.$status === 'saved' ? '#10B981' :
+        props.$status === 'unsaved' ? '#F59E0B' :
+        '#6B7280'
+      };
+    `;
+
+    export const StatusBar: React.FC = () => {
+      const { mindmap, jsonFilePath, textFilePath } = useMindMapStore();
+      const [saveStatus] = React.useState<'saved' | 'unsaved' | 'saving'>('saved');
+      
+      const countNodes = (node: any): number => {
+        if (!node.children || node.children.length === 0) {
+          return 1;
+        }
+        return 1 + node.children.reduce((sum: number, child: any) => sum + countNodes(child), 0);
+      };
+      
+      const totalNodes = countNodes(mindmap.root);
+      const getCurrentFilePath = () => {
+        return jsonFilePath || textFilePath || 'No file selected';
+      };
+      
+      return (
+        <StatusBarContainer>
+          <div>
+            <StatusIndicator $status={saveStatus} />
+            <span>{saveStatus === 'saved' ? 'Saved' : 'Unsaved'}</span>
+          </div>
+          <div>
+            <FileText size={12} />
+            <span>{getCurrentFilePath()}</span>
+          </div>
+          <div>
+            <span>Format: {jsonFilePath ? 'JSON' : textFilePath ? 'Text' : 'None'}</span>
+          </div>
+          <div>
+            <span>{totalNodes} nodes</span>
+          </div>
+        </StatusBarContainer>
       );
     };
     ```

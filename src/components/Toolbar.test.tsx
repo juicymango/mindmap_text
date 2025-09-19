@@ -64,9 +64,13 @@ describe('Toolbar', () => {
     render(<Toolbar />);
     // Root node is selected, so Add Child and Copy/Paste should be enabled
     expect(screen.getByText('Add Child')).not.toBeDisabled();
-    expect(screen.getByText('Delete')).toBeDisabled(); // Root cannot be deleted
-    expect(screen.getByText('Move Up')).toBeDisabled(); // Root cannot be moved
-    expect(screen.getByText('Move Down')).toBeDisabled(); // Root cannot be moved
+    // Find the Delete button by its role and title
+    const deleteButton = screen.getByRole('button', { name: /Delete/i });
+    expect(deleteButton).toBeDisabled(); // Root cannot be deleted
+    const moveUpButton = screen.getByRole('button', { name: /Move Up/i });
+    expect(moveUpButton).toBeDisabled(); // Root cannot be moved
+    const moveDownButton = screen.getByRole('button', { name: /Move Down/i });
+    expect(moveDownButton).toBeDisabled(); // Root cannot be moved
     expect(screen.getByText('Copy JSON')).not.toBeDisabled();
     expect(screen.getByText('Copy Text')).not.toBeDisabled();
     expect(screen.getByText('Paste JSON')).not.toBeDisabled();
@@ -103,9 +107,12 @@ describe('Toolbar', () => {
     render(<Toolbar />);
     
     // Root node cannot be deleted or moved
-    expect(screen.getByText('Delete')).toBeDisabled();
-    expect(screen.getByText('Move Up')).toBeDisabled();
-    expect(screen.getByText('Move Down')).toBeDisabled();
+    const deleteButton = screen.getByRole('button', { name: /Delete/i });
+    expect(deleteButton).toBeDisabled();
+    const moveUpButton = screen.getByRole('button', { name: /Move Up/i });
+    expect(moveUpButton).toBeDisabled();
+    const moveDownButton = screen.getByRole('button', { name: /Move Down/i });
+    expect(moveDownButton).toBeDisabled();
   });
 
   it('should enable all buttons when non-root node is selected', () => {
@@ -134,7 +141,8 @@ describe('Toolbar', () => {
     });
     
     render(<Toolbar />);
-    expect(screen.getByText('Current file: No file selected')).toBeInTheDocument();
+    // The file path is now displayed without the "Current file:" prefix
+    expect(screen.getByText('No file selected')).toBeInTheDocument();
   });
 
   it('should display current file path when JSON file path is set', () => {
@@ -154,7 +162,8 @@ describe('Toolbar', () => {
     });
 
     render(<Toolbar />);
-    expect(screen.getByText('Current file: /path/to/file.json')).toBeInTheDocument();
+    // The file path is now displayed without the "Current file:" prefix
+    expect(screen.getByText('/path/to/file.json')).toBeInTheDocument();
   });
 
   it('should display current file path when text file path is set', () => {
@@ -174,7 +183,8 @@ describe('Toolbar', () => {
     });
 
     render(<Toolbar />);
-    expect(screen.getByText('Current file: /path/to/file.txt')).toBeInTheDocument();
+    // The file path is now displayed without the "Current file:" prefix
+    expect(screen.getByText('/path/to/file.txt')).toBeInTheDocument();
   });
 
   it('should call saveAsFile when Save As JSON is clicked', async () => {
@@ -187,7 +197,8 @@ describe('Toolbar', () => {
     });
 
     render(<Toolbar />);
-    fireEvent.click(screen.getByText('Save As JSON'));
+    // Find the Save JSON button by its text content
+    fireEvent.click(screen.getByText('Save JSON'));
 
     await act(async () => {
       await new Promise(resolve => setTimeout(resolve, 0));
@@ -210,7 +221,8 @@ describe('Toolbar', () => {
     });
 
     render(<Toolbar />);
-    fireEvent.click(screen.getByText('Save As Text'));
+    // Find the Save Text button by its text content
+    fireEvent.click(screen.getByText('Save Text'));
 
     await act(async () => {
       await new Promise(resolve => setTimeout(resolve, 0));
@@ -264,6 +276,7 @@ describe('Toolbar', () => {
     });
 
     render(<Toolbar />);
-    expect(screen.getByText('Current file: /path/to/file.json')).toBeInTheDocument();
+    // The file path is now displayed without the "Current file:" prefix
+    expect(screen.getByText('/path/to/file.json')).toBeInTheDocument();
   });
 });
