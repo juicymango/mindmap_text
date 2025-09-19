@@ -311,4 +311,33 @@ describe('MobileToolbar', () => {
     
     expect(mockMindMapStore.addNode).toHaveBeenCalledWith([], 'New Node');
   });
+
+  it('should properly position mobile menu off-screen when closed', () => {
+    render(React.createElement(MobileToolbar));
+    
+    // Menu should be hidden initially
+    const overlay = screen.getByTestId('menu-overlay');
+    expect(overlay).not.toBeVisible();
+    
+    // Menu should be positioned off-screen when closed
+    expect(overlay).toHaveStyle({ opacity: '0' });
+  });
+
+  it('should show mobile menu when more button is clicked', () => {
+    render(React.createElement(MobileToolbar));
+    
+    // Click more button to show menu
+    fireEvent.click(screen.getByRole('button', { name: /more/i }));
+    
+    // Menu should now be visible
+    const overlay = screen.getByTestId('menu-overlay');
+    expect(overlay).toBeVisible();
+    expect(overlay).toHaveStyle({ opacity: '1' });
+    
+    // Menu options should be visible
+    expect(screen.getByText('More Options')).toBeInTheDocument();
+    expect(screen.getByText('Save as JSON')).toBeInTheDocument();
+    expect(screen.getByText('Save as Text')).toBeInTheDocument();
+    expect(screen.getByText('Load File')).toBeInTheDocument();
+  });
 });

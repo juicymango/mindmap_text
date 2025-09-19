@@ -72,7 +72,7 @@ const MobileActionMenu = styled.div<{ $isOpen: boolean }>`
   background: #FFFFFF;
   border-radius: 12px;
   box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
-  transform: translateY(${props => props.$isOpen ? '0' : '100%'});
+  transform: translateY(${props => props.$isOpen ? '0' : '100vh'});
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 200;
   max-height: 50vh;

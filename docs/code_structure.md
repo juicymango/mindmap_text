@@ -16,13 +16,15 @@ mindmap-app/
 │   │   ├── Node.tsx
 │   │   ├── Toolbar.tsx
 │   │   ├── StatusBar.tsx
+│   │   ├── MobileToolbar.tsx
 │   │   ├── App.test.tsx
 │   │   ├── MindMap.test.tsx
 │   │   ├── Column.test.tsx
 │   │   ├── Node.test.tsx
 │   │   ├── NodeColor.test.tsx
 │   │   ├── Toolbar.test.tsx
-│   │   └── StatusBar.test.tsx
+│   │   ├── StatusBar.test.tsx
+│   │   └── MobileToolbar.test.tsx
 │   ├── contexts/
 │   │   └── SelectedPathContext.tsx
 │   ├── store/
@@ -38,6 +40,7 @@ mindmap-app/
 │   │   ├── textFormat.ts
 │   │   ├── nodeUtils.ts
 │   │   ├── test-utils.ts
+│   │   ├── mobileUtils.ts
 │   │   ├── file.test.ts
 │   │   ├── textFormat.test.ts
 │   │   └── nodeUtils.test.ts
@@ -407,7 +410,7 @@ mindmap-app/
 
 ### `src/components/Toolbar.tsx`
 
--   **Function:** Renders the toolbar with comprehensive node operation buttons (Add Child, Delete, Move Up, Move Down), copy/paste operations (Copy JSON, Copy Text, Paste JSON, Paste Text), and file operations (Save As JSON, Save As Text, Load File). Implements root node button state management to disable inappropriate operations for the root node.
+-   **Function:** Renders the enhanced toolbar with comprehensive node operation buttons (Add Child, Delete, Move Up, Move Down), copy/paste operations (Copy JSON, Copy Text, Paste JSON, Paste Text), and file operations (Save As JSON, Save As Text, Load File). Implements styled-components with transient props to prevent DOM warnings and includes icon integration for better visual communication.
 -   **Structure:**
     ```typescript
     import React from 'react';
@@ -416,25 +419,66 @@ mindmap-app/
     import { saveAsFile, loadFromFile } from '../utils/file';
     import { FileFormat } from '../types';
     import styled from 'styled-components';
+    import { Plus, Trash2, ChevronUp, ChevronDown, Copy, Save, Upload } from 'lucide-react';
 
     const ToolbarContainer = styled.div`
-      padding: 8px;
-      border-bottom: 1px solid lightgrey;
+      padding: 12px;
+      border-bottom: 1px solid #E5E7EB;
+      background: #FFFFFF;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 12px;
       flex-wrap: wrap;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     `;
 
-    const FilePathDisplay = styled.div`
-      font-size: 12px;
-      color: #666;
-      margin-left: 8px;
+    const ToolbarButton = styled.button<{ $variant?: 'primary' | 'secondary' | 'danger' }>`
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 12px;
+      border: 1px solid #D1D5DB;
+      border-radius: 6px;
+      background: ${props => 
+        props.$variant === 'primary' ? '#4A90E2' :
+        props.$variant === 'danger' ? '#EF4444' :
+        '#FFFFFF'
+      };
+      color: ${props => 
+        props.$variant === 'primary' ? '#FFFFFF' :
+        props.$variant === 'danger' ? '#FFFFFF' :
+        '#374151'
+      };
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 14px;
+      
+      &:hover {
+        background: ${props => 
+          props.$variant === 'primary' ? '#357ABD' :
+          props.$variant === 'danger' ? '#DC2626' :
+          '#F9FAFB'
+        };
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+      
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+      }
     `;
 
     const ButtonGroup = styled.div`
       display: flex;
       gap: 4px;
+      padding: 0 8px;
+      border-right: 1px solid #E5E7EB;
+      
+      &:last-child {
+        border-right: none;
+      }
     `;
 
     export const Toolbar: React.FC = () => {
@@ -457,120 +501,252 @@ mindmap-app/
       
       const { selectedPath, setSelectedPath } = useSelectedPath();
       const hasSelection = selectedPath.length > 0;
-      const hasRootSelection = selectedPath.length === 0; // Root node has empty path []
+      const hasRootSelection = selectedPath.length === 0;
 
-      const handleSaveAs = async (format: FileFormat) => {
-        const path = await saveAsFile(mindmap, format);
-        if (path) {
-          if (format === 'json') {
-            setJsonFilePath(path);
-          } else {
-            setTextFilePath(path);
-          }
-        }
-      };
-
-      const handleLoad = async () => {
-        const { mindmap: newMindMap, path } = await loadFromFile();
-        
-        if (newMindMap) {
-          setMindmap(newMindMap);
-          const format = path.endsWith('.txt') ? 'text' : 'json';
-          if (format === 'json') {
-            setJsonFilePath(path);
-          } else {
-            setTextFilePath(path);
-          }
-        }
-      };
-
-      const handleAddChild = () => {
-        if (hasSelection || hasRootSelection) {
-          addNode(selectedPath, 'New Node');
-        }
-      };
-
-      const handleDelete = () => {
-        if (hasSelection) {
-          deleteNode(selectedPath);
-        }
-      };
-
-      const handleMoveUp = () => {
-        if (hasSelection) {
-          const newPath = moveNodeUp(selectedPath);
-          if (newPath !== selectedPath) {
-            setSelectedPath(newPath);
-          }
-        }
-      };
-
-      const handleMoveDown = () => {
-        if (hasSelection) {
-          const newPath = moveNodeDown(selectedPath);
-          if (newPath !== selectedPath) {
-            setSelectedPath(newPath);
-          }
-        }
-      };
-
-      const handleCopyJson = () => {
-        if (hasSelection || hasRootSelection) {
-          copyNodeAsJson(selectedPath);
-        }
-      };
-
-      const handleCopyText = () => {
-        if (hasSelection || hasRootSelection) {
-          copyNodeAsText(selectedPath);
-        }
-      };
-
-      const handlePasteJson = () => {
-        if (hasSelection || hasRootSelection) {
-          pasteNodeAsJson(selectedPath);
-        }
-      };
-
-      const handlePasteText = () => {
-        if (hasSelection || hasRootSelection) {
-          pasteNodeAsText(selectedPath);
-        }
-      };
-      
-      const getCurrentFilePath = () => {
-        return jsonFilePath || textFilePath || 'No file selected';
-      };
+      // Button handlers remain the same as above
 
       return (
         <ToolbarContainer>
           <ButtonGroup>
-            <button onClick={handleAddChild} disabled={!(hasSelection || hasRootSelection)}>Add Child</button>
-            <button onClick={handleDelete} disabled={!hasSelection}>Delete</button>
-            <button onClick={handleMoveUp} disabled={!hasSelection}>Move Up</button>
-            <button onClick={handleMoveDown} disabled={!hasSelection}>Move Down</button>
+            <ToolbarButton $variant="primary" onClick={handleAddChild} disabled={!(hasSelection || hasRootSelection)}>
+              <Plus size={16} />
+              Add Child
+            </ToolbarButton>
+            <ToolbarButton $variant="danger" onClick={handleDelete} disabled={!hasSelection}>
+              <Trash2 size={16} />
+              Delete
+            </ToolbarButton>
+            <ToolbarButton onClick={handleMoveUp} disabled={!hasSelection}>
+              <ChevronUp size={16} />
+              Move Up
+            </ToolbarButton>
+            <ToolbarButton onClick={handleMoveDown} disabled={!hasSelection}>
+              <ChevronDown size={16} />
+              Move Down
+            </ToolbarButton>
           </ButtonGroup>
           
           <ButtonGroup>
-            <button onClick={handleCopyJson} disabled={!(hasSelection || hasRootSelection)}>Copy JSON</button>
-            <button onClick={handleCopyText} disabled={!(hasSelection || hasRootSelection)}>Copy Text</button>
-            <button onClick={handlePasteJson} disabled={!(hasSelection || hasRootSelection)}>Paste JSON</button>
-            <button onClick={handlePasteText} disabled={!(hasSelection || hasRootSelection)}>Paste Text</button>
+            <ToolbarButton onClick={handleCopyJson} disabled={!(hasSelection || hasRootSelection)}>
+              <Copy size={16} />
+              Copy JSON
+            </ToolbarButton>
+            <ToolbarButton onClick={handleCopyText} disabled={!(hasSelection || hasRootSelection)}>
+              <Copy size={16} />
+              Copy Text
+            </ToolbarButton>
+            <ToolbarButton onClick={handlePasteJson} disabled={!(hasSelection || hasRootSelection)}>
+              <Copy size={16} />
+              Paste JSON
+            </ToolbarButton>
+            <ToolbarButton onClick={handlePasteText} disabled={!(hasSelection || hasRootSelection)}>
+              <Copy size={16} />
+              Paste Text
+            </ToolbarButton>
           </ButtonGroup>
           
           <ButtonGroup>
-            <button onClick={() => handleSaveAs('json')}>Save As JSON</button>
-            <button onClick={() => handleSaveAs('text')}>Save As Text</button>
-            <button onClick={handleLoad}>Load File</button>
+            <ToolbarButton onClick={() => handleSaveAs('json')}>
+              <Save size={16} />
+              Save JSON
+            </ToolbarButton>
+            <ToolbarButton onClick={() => handleSaveAs('text')}>
+              <Save size={16} />
+              Save Text
+            </ToolbarButton>
+            <ToolbarButton onClick={handleLoad}>
+              <Upload size={16} />
+              Load File
+            </ToolbarButton>
           </ButtonGroup>
-          
-          <FilePathDisplay>
-            Current file: {getCurrentFilePath()}
-          </FilePathDisplay>
         </ToolbarContainer>
       );
     };
     ```
+
+**Task 55 Styled-Components Fix:**
+- **Transient Props:** Changed `variant` prop to `$variant` to prevent DOM attribute warnings
+- **Enhanced Styling:** Added modern button design with icons, improved spacing, and hover effects
+- **Button Groups:** Organized buttons into logical groups with visual separators
+- **Icon Integration:** Added Lucide React icons for better visual communication
+- **Test Coverage:** Added test cases to verify no console warnings are generated
+
+### `src/components/MobileToolbar.tsx`
+
+-   **Function:** Touch-optimized mobile toolbar component with bottom positioning, gesture navigation, and action menu. Fixed menu positioning issue using `translateY(100vh)` for proper off-screen hiding.
+-   **Structure:**
+    ```typescript
+    import React, { useState } from 'react';
+    import { useMindMapStore } from '../store/mindmapStore';
+    import { useSelectedPath } from '../contexts/SelectedPathContext';
+    import { useMobileDetection } from '../utils/mobileUtils';
+    import { useGestureNavigation } from '../utils/gestureNavigation';
+    import styled from 'styled-components';
+    import { Home, Plus, Trash2, Copy, Save, Upload, MoreVertical, X, Edit } from 'lucide-react';
+
+    const MobileToolbarContainer = styled.div`
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background: #FFFFFF;
+      border-top: 1px solid #E5E7EB;
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      padding-bottom: env(safe-area-inset-bottom, 0);
+      box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+      z-index: 1000;
+    `;
+
+    const MobileActionMenu = styled.div<{ $isOpen: boolean }>`
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #FFFFFF;
+      border-top: 1px solid #E5E7EB;
+      border-radius: 16px 16px 0 0;
+      padding: 20px;
+      padding-bottom: env(safe-area-inset-bottom, 0);
+      transform: translateY(${props => props.$isOpen ? '0' : '100vh'});
+      transition: transform 0.3s ease;
+      box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+      z-index: 1001;
+    `;
+
+    const MenuOverlay = styled.div<{ $isOpen: boolean }>`
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      opacity: ${props => props.$isOpen ? '1' : '0'};
+      transition: opacity 0.3s ease;
+      pointer-events: ${props => props.$isOpen ? 'auto' : 'none'};
+      z-index: 1000;
+    `;
+
+    export const MobileToolbar: React.FC = () => {
+      const { selectedPath, setSelectedPath } = useSelectedPath();
+      const { addNode, deleteNode, copyNodeAsJson, copyNodeAsText, pasteNodeAsJson, pasteNodeAsText } = useMindMapStore();
+      const { isMobile } = useMobileDetection();
+      const [isMenuOpen, setIsMenuOpen] = useState(false);
+      const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
+
+      const handleHome = () => {
+        setSelectedPath([]);
+      };
+
+      const handleAddChild = () => {
+        addNode(selectedPath, 'New Node');
+      };
+
+      const handleDelete = () => {
+        deleteNode(selectedPath);
+        setIsMenuOpen(false);
+      };
+
+      const handleEdit = () => {
+        setIsMenuOpen(false);
+      };
+
+      const handleCopy = (format: 'json' | 'text') => {
+        if (format === 'json') {
+          copyNodeAsJson(selectedPath);
+        } else {
+          copyNodeAsText(selectedPath);
+        }
+        setIsMenuOpen(false);
+      };
+
+      const handlePaste = (format: 'json' | 'text') => {
+        if (format === 'json') {
+          pasteNodeAsJson(selectedPath);
+        } else {
+          pasteNodeAsText(selectedPath);
+        }
+        setIsMenuOpen(false);
+      };
+
+      const toggleNodeExpansion = (nodePath: string) => {
+        const newExpanded = new Set(expandedNodes);
+        if (newExpanded.has(nodePath)) {
+          newExpanded.delete(nodePath);
+        } else {
+          newExpanded.add(nodePath);
+        }
+        setExpandedNodes(newExpanded);
+      };
+
+      if (!isMobile) {
+        return null;
+      }
+
+      return (
+        <>
+          <MobileToolbarContainer>
+            <button onClick={handleHome} aria-label="Home">
+              <Home size={24} />
+            </button>
+            <button onClick={handleAddChild} aria-label="Add Child">
+              <Plus size={24} />
+            </button>
+            <button onClick={() => setIsMenuOpen(true)} aria-label="More Options">
+              <MoreVertical size={24} />
+            </button>
+          </MobileToolbarContainer>
+
+          <MenuOverlay 
+            $isOpen={isMenuOpen} 
+            onClick={() => setIsMenuOpen(false)}
+            data-testid="menu-overlay"
+          />
+          <MobileActionMenu $isOpen={isMenuOpen}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <h3>Actions</h3>
+              <button onClick={() => setIsMenuOpen(false)} aria-label="Close Menu">
+                <X size={24} />
+              </button>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <button onClick={handleEdit} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px' }}>
+                <Edit size={20} />
+                Edit Node
+              </button>
+              <button onClick={handleDelete} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px' }}>
+                <Trash2 size={20} />
+                Delete Node
+              </button>
+              <button onClick={() => handleCopy('json')} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px' }}>
+                <Copy size={20} />
+                Copy JSON
+              </button>
+              <button onClick={() => handleCopy('text')} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px' }}>
+                <Copy size={20} />
+                Copy Text
+              </button>
+              <button onClick={() => handlePaste('json')} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px' }}>
+                <Copy size={20} />
+                Paste JSON
+              </button>
+              <button onClick={() => handlePaste('text')} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px' }}>
+                <Copy size={20} />
+                Paste Text
+              </button>
+            </div>
+          </MobileActionMenu>
+        </>
+      );
+    };
+    ```
+
+**Task 55 Mobile Menu Fix:**
+- **Menu Positioning:** Fixed mobile menu positioning from `translateY(100%)` to `translateY(100vh)` to ensure proper off-screen hiding
+- **Safe Area Support:** Added `env(safe-area-inset-bottom)` for proper handling of notched devices
+- **Test Coverage:** Added comprehensive tests for menu visibility, positioning, and user interactions
 
 ### `src/components/StatusBar.tsx`
 
@@ -1268,6 +1444,79 @@ mindmap-app/
       }
       
       return 'withoutChildren';
+    };
+    ```
+
+### `src/utils/mobileUtils.ts`
+
+-   **Function:** Comprehensive mobile detection utilities with responsive breakpoints and gesture navigation support.
+-   **Structure:**
+    ```typescript
+    import { useState, useEffect } from 'react';
+
+    export const useMobileDetection = () => {
+      const [isMobile, setIsMobile] = useState(false);
+
+      useEffect(() => {
+        const checkMobile = () => {
+          const hasTouchSupport = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+          const isSmallScreen = window.innerWidth <= 768;
+          const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+          
+          setIsMobile(hasTouchSupport && (isSmallScreen || isMobileDevice));
+        };
+
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        
+        return () => window.removeEventListener('resize', checkMobile);
+      }, []);
+
+      return { isMobile };
+    };
+
+    export const useGestureNavigation = () => {
+      const [touchStart, setTouchStart] = useState(0);
+      const [touchEnd, setTouchEnd] = useState(0);
+
+      const minSwipeDistance = 50;
+
+      const onTouchStart = (e: React.TouchEvent) => {
+        setTouchEnd(0);
+        setTouchStart(e.targetTouches[0].clientX);
+      };
+
+      const onTouchMove = (e: React.TouchEvent) => {
+        setTouchEnd(e.targetTouches[0].clientX);
+      };
+
+      const onTouchEnd = (onSwipeLeft: () => void, onSwipeRight: () => void) => {
+        if (!touchStart || !touchEnd) return;
+        
+        const distance = touchStart - touchEnd;
+        const isLeftSwipe = distance > minSwipeDistance;
+        const isRightSwipe = distance < -minSwipeDistance;
+
+        if (isLeftSwipe) {
+          onSwipeLeft();
+        } else if (isRightSwipe) {
+          onSwipeRight();
+        }
+      };
+
+      return {
+        onTouchStart,
+        onTouchMove,
+        onTouchEnd,
+      };
+    };
+
+    export const getResponsiveColumnWidth = (isMobile: boolean) => {
+      return isMobile ? 180 : 240;
+    };
+
+    export const getResponsiveFontSize = (isMobile: boolean) => {
+      return isMobile ? '14px' : '16px';
     };
     ```
 

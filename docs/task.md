@@ -2238,3 +2238,29 @@ All requirements from Task 53 have been successfully implemented with comprehens
 - update ./docs/test.md based on the current implementation.
 - update ./README.md based on the current implementation.
 - commit and push all the changes.
+
+# task 55
+
+Toolbar.tsx:194 styled-components: it looks like an unknown prop "variant" is being sent through to the DOM, which will likely trigger a React console error. If you would like automatic filtering of unknown props, you can opt-into that behavior via `<StyleSheetManager shouldForwardProp={...}>` (connect an API like `@emotion/is-prop-valid`) or consider using transient props (`$` prefix for automatic filtering.)
+<styled.button>		
+Toolbar	@	Toolbar.tsx:194
+<Toolbar>		
+App	@	App.tsx:31
+<App>		
+./src/index.tsx	@	index.tsx:9
+(anonymous)	@	react refresh:37
+__webpack_require__	@	bootstrap:22
+(anonymous)	@	startup:7
+(anonymous)	@	startup:7
+
+- i can only see the more options at the bottom, and when i click it, nothing happens.
+- i also found the above error.
+- fix the bugs.
+- design and implement relevant test cases to prevent it.
+- Keep running npm test and fix the errors until there are no more errors thrown.
+- update ./docs/ui_and_iteration_design.md based on the current implementation.
+- update ./docs/ui_component_specifications.md based on the current implementation.
+- update ./docs/code_structure.md based on the current implementation.
+- update ./docs/test.md based on the current implementation.
+- update ./README.md based on the current implementation.
+- commit and push all the changes.

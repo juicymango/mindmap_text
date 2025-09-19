@@ -279,4 +279,40 @@ describe('Toolbar', () => {
     // The file path is now displayed without the "Current file:" prefix
     expect(screen.getByText('/path/to/file.json')).toBeInTheDocument();
   });
+
+  it('should render danger variant button without console warnings', () => {
+    // Mock console.warn to check for styled-components warnings
+    const originalWarn = console.warn;
+    const warnSpy = jest.fn();
+    console.warn = warnSpy;
+
+    mockUseSelectedPath.mockReturnValue({
+      selectedPath: [0],
+      setSelectedPath: jest.fn()
+    });
+
+    createMockMindMapStore({
+      mindmap: { root: { text: 'Root', children: [{ text: 'Child', children: [] }] } },
+      setMindmap,
+      addNode,
+      jsonFilePath: null,
+      textFilePath: null,
+      setJsonFilePath,
+      setTextFilePath,
+    });
+
+    render(<Toolbar />);
+    
+    // Delete button should be present with danger styling
+    const deleteButton = screen.getByRole('button', { name: /Delete/i });
+    expect(deleteButton).toBeInTheDocument();
+    
+    // Check that no styled-components warnings were logged
+    expect(warnSpy).not.toHaveBeenCalledWith(
+      expect.stringContaining('unknown prop "variant"')
+    );
+
+    // Restore console.warn
+    console.warn = originalWarn;
+  });
 });

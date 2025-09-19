@@ -24,7 +24,7 @@ const FilePathDisplay = styled.div`
   padding-right: 16px;
 `;
 
-const ToolbarButton = styled.button<{ variant?: 'primary' | 'secondary' | 'danger' }>`
+const ToolbarButton = styled.button<{ $variant?: 'primary' | 'secondary' | 'danger' }>`
   display: flex;
   align-items: center;
   gap: 6px;
@@ -48,7 +48,7 @@ const ToolbarButton = styled.button<{ variant?: 'primary' | 'secondary' | 'dange
     cursor: not-allowed;
   }
   
-  ${props => props.variant === 'primary' && `
+  ${props => props.$variant === 'primary' && `
     background: #4A90E2;
     border-color: #4A90E2;
     color: white;
@@ -59,7 +59,7 @@ const ToolbarButton = styled.button<{ variant?: 'primary' | 'secondary' | 'dange
     }
   `}
   
-  ${props => props.variant === 'danger' && `
+  ${props => props.$variant === 'danger' && `
     border-color: #EF4444;
     color: #EF4444;
     
@@ -193,7 +193,7 @@ export const Toolbar: React.FC = () => {
           <Plus size={16} />
           <span>Add Child</span>
         </ToolbarButton>
-        <ToolbarButton onClick={handleDelete} disabled={!hasSelection} variant="danger" title="Delete Node">
+        <ToolbarButton onClick={handleDelete} disabled={!hasSelection} $variant="danger" title="Delete Node">
           <Trash2 size={16} />
           <span>Delete</span>
         </ToolbarButton>
