@@ -16,10 +16,10 @@ The UI is composed of a series of columns. Each column represents a level in the
 The UI is a horizontally scrolling view of columns with a toolbar at the top:
 
 ```
-+-------------------------------------------------------------------------------------------+
-| Toolbar: [Add Node] [Delete] [Move Up] [Move Down] [Copy JSON] [Copy Text] [Paste JSON] [Paste Text] [Generate Prompt] [Save As JSON] [Save As Text] [Load File] |
-| Current file: /path/to/file.json                                                          |
-+-------------------------------------------------------------------------------------------+
++-----------------------------------------------------------+
+| Toolbar: [Add Node] [Save As JSON] [Save As Text] [Load File] |
+| Current file: /path/to/file.json                          |
++-----------------------------------------------------------+
 | Column 1 (Root) | Column 2         | Column 3         |
 |-----------------|------------------|------------------|
 | - Node 1.1 (S)  | - Node 2.1 (S)   | - Node 3.1       |
@@ -75,15 +75,6 @@ The UI is a horizontally scrolling view of columns with a toolbar at the top:
     - The auxiliary root node is automatically managed during copy/paste operations to ensure proper hierarchy preservation.
     - **Copy Logic Enhancement:** Fixed compatibility with auxiliary root node logic - when copying, the node becomes a child of the auxiliary root in the temporary structure, ensuring the copied content is preserved correctly in text format.
     - **Paste Logic Enhancement:** Fixed auxiliary root handling for both root and non-root targets - when pasting to root, the root text is updated and children are added; when pasting to non-root nodes, the auxiliary root's children are added directly to maintain proper hierarchy.
-
-9.  **Generate Prompt Functionality:**
-    - **Generate Prompt Button:** Added to the toolbar for generating LLM prompts based on selected node context.
-    - **Context Building:** The feature collects hierarchical context including parent node, previous siblings, selected node, next siblings, and children of the selected node.
-    - **User Input:** When clicked, a browser prompt dialog appears for the user to enter their query/question for the LLM.
-    - **Prompt Generation:** Creates a comprehensive prompt that includes the node context, user query, and instructions for generating responses in JSON mind map format.
-    - **Clipboard Integration:** Automatically copies the generated prompt to the clipboard with fallback support for older browsers.
-    - **JSON Format Instructions:** The prompt includes specific instructions for generating hierarchical mind map structures with proper JSON formatting.
-    - **Button State:** The Generate Prompt button is enabled when any node is selected (including root node) and disabled when no node is selected.
 
 ## Node Color Coding System
 
@@ -151,7 +142,7 @@ The node color coding system uses sophisticated path detection algorithms to ens
 
 ### Components
 - **App:** Main application component that renders Toolbar and MindMap.
-- **Toolbar:** Contains comprehensive node operation buttons (Add Node, Delete, Move Up, Move Down, Copy JSON, Copy Text, Paste JSON, Paste Text, Generate Prompt) and file operation buttons (Save As JSON, Save As Text, Load File) with current file path display.
+- **Toolbar:** Contains file operation buttons (Save As JSON, Save As Text, Load File, Add Node) and displays current file path.
 - **MindMap:** Renders columns based on the selected path and handles keyboard shortcuts.
 - **Column:** Renders a column of nodes.
 - **Node:** Renders an individual node with color-coded styling based on node type, edit and delete controls.

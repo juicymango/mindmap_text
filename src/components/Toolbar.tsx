@@ -40,8 +40,7 @@ export const Toolbar: React.FC = () => {
     jsonFilePath, 
     textFilePath, 
     setJsonFilePath, 
-    setTextFilePath,
-    generatePrompt
+    setTextFilePath
   } = useMindMapStore();
   
   const { selectedPath, setSelectedPath } = useSelectedPath();
@@ -126,12 +125,6 @@ export const Toolbar: React.FC = () => {
       pasteNodeAsText(selectedPath);
     }
   };
-
-  const handleGeneratePrompt = () => {
-    if (hasSelection || hasRootSelection) {
-      generatePrompt(selectedPath);
-    }
-  };
   
   const getCurrentFilePath = () => {
     return jsonFilePath || textFilePath || 'No file selected';
@@ -151,7 +144,6 @@ export const Toolbar: React.FC = () => {
         <button onClick={handleCopyText} disabled={!(hasSelection || hasRootSelection)}>Copy Text</button>
         <button onClick={handlePasteJson} disabled={!(hasSelection || hasRootSelection)}>Paste JSON</button>
         <button onClick={handlePasteText} disabled={!(hasSelection || hasRootSelection)}>Paste Text</button>
-        <button onClick={handleGeneratePrompt} disabled={!(hasSelection || hasRootSelection)}>Generate Prompt</button>
       </ButtonGroup>
       
       <ButtonGroup>

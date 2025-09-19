@@ -18,8 +18,6 @@ export interface MindMapState {
   copyNodeAsText: (path: number[]) => Promise<void>;
   pasteNodeAsJson: (path: number[]) => Promise<void>;
   pasteNodeAsText: (path: number[]) => Promise<void>;
-  // Generate prompt functionality
-  generatePrompt: (path: number[]) => Promise<void>;
   // File path memory state
   jsonFilePath: string | null;
   textFilePath: string | null;
@@ -407,106 +405,7 @@ pasteNodeAsText: async (path: number[]) => {
     console.error('Failed to paste text:', error);
   }
 },
-generatePrompt: async (path: number[]) => {
-    const { mindmap } = get();
-    const selectedNode = findNode(mindmap.root, path);
-    
-    if (!selectedNode) return;
-    
-    // Get user input query
-    const query = await new Promise<string>((resolve) => {
-      const input = (global as any).prompt('Enter your query for LLM:');
-      resolve(input || '');
-    });
-    
-    if (!query.trim()) return;
-    
-    // Build context
-    const parent = findParent(mindmap.root, path);
-    const parentPath = path.slice(0, -1);
-    const parentNode = parentPath.length > 0 ? findNode(mindmap.root, parentPath) : null;
-    
-    // Get siblings
-    const siblings = parent ? parent.children : [];
-    const nodeIndex = path[path.length - 1];
-    const previousSiblings = siblings.slice(0, nodeIndex);
-    const nextSiblings = siblings.slice(nodeIndex + 1);
-    
-    // Build context string
-    let context = 'Context:\n';
-    if (parentNode) {
-      context += `Parent: ${parentNode.text}\n`;
-    }
-    
-    if (previousSiblings.length > 0) {
-      context += 'Previous Siblings:\n';
-      previousSiblings.forEach((sibling, index) => {
-        context += `- ${sibling.text}\n`;
-      });
-    }
-    
-    context += `Selected Node: ${selectedNode.text}\n`;
-    
-    if (nextSiblings.length > 0) {
-      context += 'Next Siblings:\n';
-      nextSiblings.forEach((sibling, index) => {
-        context += `- ${sibling.text}\n`;
-      });
-    }
-    
-    if (selectedNode.children && selectedNode.children.length > 0) {
-      context += 'Children:\n';
-      selectedNode.children.forEach((child, index) => {
-        context += `- ${child.text}\n`;
-      });
-    }
-    
-    // Generate prompt
-    const prompt = `${context}
-
-Query: ${query}
-
-Please provide a response in the following JSON mind map format:
-{
-  "root": {
-    "text": "Response",
-    "children": [
-      {
-        "text": "Point 1",
-        "children": []
-      },
-      {
-        "text": "Point 2", 
-        "children": [
-          {
-            "text": "Subpoint 2.1",
-            "children": []
-          }
-        ]
-      }
-    ]
-  }
-}
-
-The response should be structured hierarchically with proper indentation and logical grouping of related concepts.`;
-    
-    // Copy to clipboard
-    try {
-      await navigator.clipboard.writeText(prompt);
-      alert('Prompt generated and copied to clipboard!');
-    } catch (error) {
-      console.error('Failed to copy to clipboard:', error);
-      // Fallback
-      const textArea = document.createElement('textarea');
-      textArea.value = prompt;
-      document.body.appendChild(textArea);
-      textArea.select();
-      document.execCommand('copy');
-      document.body.removeChild(textArea);
-      alert('Prompt generated and copied to clipboard!');
-    }
-  },
-  reset: () => {
+reset: () => {
     set({ 
       mindmap: { root: { text: 'Root', children: [] } },
       jsonFilePath: null,
