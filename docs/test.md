@@ -4,7 +4,7 @@ This document provides comprehensive testing documentation for the mind map appl
 
 ## Test Overview
 
-The application has comprehensive test coverage with 122 tests across 11 test files, covering unit tests, integration tests, and component tests using React Testing Library and Jest. The test suite covers all UI components including the newly enhanced Toolbar, StatusBar, improved visual styling components, and Task 52 column height improvements.
+The application has comprehensive test coverage with 118 tests across 10 test files, covering unit tests, integration tests, and component tests using React Testing Library and Jest. The test suite covers all UI components including the newly enhanced Toolbar, improved visual styling components, and Task 52 column height improvements.
 
 ## Testing Philosophy
 
@@ -36,8 +36,7 @@ src/
 │   ├── Column.test.tsx
 │   ├── Node.test.tsx
 │   ├── NodeColor.test.tsx
-│   ├── Toolbar.test.tsx
-│   └── StatusBar.test.tsx
+│   └── Toolbar.test.tsx
 ├── store/
 │   └── mindmapStore.test.ts
 └── utils/
@@ -52,8 +51,8 @@ src/
 ### Component Tests
 
 #### App Component Tests (`src/components/App.test.tsx`)
-- Test main application rendering with enhanced layout structure
-- Test Toolbar, MindMap, and StatusBar component integration
+- Test main application rendering with simplified layout structure
+- Test Toolbar and MindMap component integration
 - Test global styles application and modern CSS reset
 - Test responsive flexbox layout behavior
 - Test proper component hierarchy and organization
@@ -89,7 +88,7 @@ src/
   - Test fixed width maintenance (240px) while allowing height flexibility
   - Test custom vertical scrollbar styling (6px width)
   - Test very long node text content handling
-  - Test maximum height constraint: `calc(100vh - 120px)`
+  - Test maximum height constraint: `calc(100vh - 80px)`
   - Test vertical scrolling behavior with `overflow-y: auto`
   - Test proper alignment of columns with different heights
   - Test accessibility with proper test ID attributes
@@ -139,16 +138,6 @@ src/
   - Test enhanced button styling with hover effects
   - Test improved toolbar layout with better organization
   - Test button text changes (e.g., "Save As JSON" → "Save JSON")
-
-#### StatusBar Component Tests (`src/components/StatusBar.test.tsx`)
-- Test status bar rendering with save status indicators
-- Test file path and format information display
-- Test node count statistics display
-- Test last saved timestamp functionality
-- Test status indicator colors (saved, unsaved, saving)
-- Test integration with main application layout
-- Test responsive design and proper positioning
-- Test information density and visual hierarchy
 
 ### Store Tests (`src/store/mindmapStore.test.ts`)
 - Test initial state of mind map and file paths
@@ -279,7 +268,7 @@ src/
 - **Column Behavior:** Selecting nodes automatically expands children in next column
 - **Empty Columns:** Verify empty columns are not displayed
 - **Task 52: Adjustable Column Height:**
-  - Test maximum height constraint: `calc(100vh - 120px)` accounting for toolbar and status bar
+  - Test maximum height constraint: `calc(100vh - 80px)` accounting for toolbar and status bar
   - Test vertical scrolling when content exceeds maximum height
   - Test custom vertical scrollbar styling (6px width) for consistent aesthetics
   - Test proper column alignment when columns have different heights

@@ -17,12 +17,6 @@ const ToolbarContainer = styled.div`
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 `;
 
-const FilePathDisplay = styled.div`
-  font-size: 12px;
-  color: #666;
-  margin-left: auto;
-  padding-right: 16px;
-`;
 
 const ToolbarButton = styled.button<{ variant?: 'primary' | 'secondary' | 'danger' }>`
   display: flex;
@@ -82,10 +76,10 @@ const ButtonGroup = styled.div`
 `;
 
 export const Toolbar: React.FC = () => {
-  const { 
-    mindmap, 
-    setMindmap, 
-    addNode, 
+  const {
+    mindmap,
+    setMindmap,
+    addNode,
     deleteNode,
     moveNodeUp,
     moveNodeDown,
@@ -93,9 +87,7 @@ export const Toolbar: React.FC = () => {
     copyNodeAsText,
     pasteNodeAsJson,
     pasteNodeAsText,
-    jsonFilePath, 
-    textFilePath, 
-    setJsonFilePath, 
+    setJsonFilePath,
     setTextFilePath
   } = useMindMapStore();
   
@@ -116,7 +108,7 @@ export const Toolbar: React.FC = () => {
 
   const handleLoad = async () => {
     const { mindmap: newMindMap, path } = await loadFromFile();
-    
+
     if (newMindMap) {
       setMindmap(newMindMap);
       const format = path.endsWith('.txt') ? 'text' : 'json';
@@ -181,10 +173,6 @@ export const Toolbar: React.FC = () => {
       pasteNodeAsText(selectedPath);
     }
   };
-  
-  const getCurrentFilePath = () => {
-    return jsonFilePath || textFilePath || 'No file selected';
-  };
 
   return (
     <ToolbarContainer>
@@ -240,10 +228,6 @@ export const Toolbar: React.FC = () => {
           <span>Load File</span>
         </ToolbarButton>
       </ButtonGroup>
-      
-      <FilePathDisplay title="Current file path">
-        {getCurrentFilePath()}
-      </FilePathDisplay>
     </ToolbarContainer>
   );
 };

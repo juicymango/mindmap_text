@@ -13,7 +13,7 @@ The UI is composed of a series of columns. Each column represents a level in the
 
 ## UI Layout
 
-The UI is a vertically organized layout with three main sections:
+The UI is a vertically organized layout with two main sections:
 
 ```
 +-----------------------------------------------------------+
@@ -31,8 +31,6 @@ The UI is a vertically organized layout with three main sections:
 |  +-----------+  +-----------+  +-----------+           |
 |                                                           |
 +-----------------------------------------------------------+
-| Status: Saved | /path/to/file.json | Format: JSON | 12 nodes |
-+-----------------------------------------------------------+
 ```
 
 ### Layout Components
@@ -41,7 +39,6 @@ The UI is a vertically organized layout with three main sections:
    - Enhanced toolbar with icons and improved styling
    - Three button groups: Node Operations, Copy/Paste Operations, File Operations
    - Modern button design with hover effects and proper spacing
-   - File path display integrated into toolbar
 
 2. **Mind Map View (Flexible height)**
    - Horizontally scrolling column-based interface
@@ -50,25 +47,19 @@ The UI is a vertically organized layout with three main sections:
    - Custom scrollbar styling for better aesthetics
    - **Task 52: Column Height Improvements:**
      - Columns now have adjustable height with vertical scrolling
-     - Maximum column height set to `calc(100vh - 120px)` to account for toolbar and status bar
+     - Maximum column height set to `calc(100vh - 80px)` to account for toolbar only
      - Individual columns scroll vertically when containing many nodes
      - Custom vertical scrollbar styling (6px width) for consistent aesthetics
      - Fixed width maintained (240px) while allowing flexible height
      - Columns align to top when they have different heights
 
-3. **Status Bar (32px height)**
-   - Save status indicator (saved/unsaved/saving)
-   - Current file path and format information
-   - Node count statistics
-   - Last saved timestamp
-
 ### Key Improvements
 
-- **Visual Hierarchy**: Clear separation between toolbar, main content, and status bar
+- **Visual Hierarchy**: Clear separation between toolbar and main content
 - **Enhanced Styling**: Modern button design, improved spacing, and subtle shadows
 - **Better UX**: Icon integration, tooltips, and improved visual feedback
 - **Responsive Layout**: Proper flexbox layout that adapts to screen size
-- **Information Density**: Status bar provides additional context without cluttering the interface
+- **Clean Interface**: Simplified layout focusing on mind map content without status bar distractions
 
 - `(S)` indicates the selected node in the column.
 - Nodes are color-coded based on their type and state (see Node Color Coding section below).
@@ -189,14 +180,13 @@ The node color coding system uses sophisticated path detection algorithms to ens
 - **MindMap:** Renders columns with custom scrollbar styling and flex layout.
 - **Column:** Enhanced column design with root highlighting and improved spacing.
 - **Node:** Enhanced node styling with better hover effects and improved typography.
-- **StatusBar:** New component providing save status, file information, and statistics.
 
 ### Enhanced Features
 - **Icon Integration:** Lucide React icons for better visual communication
 - **Improved Styling:** Modern design with shadows, better spacing, and enhanced interactions
-- **Status Indicators:** Visual feedback for save status and system information
 - **Better Accessibility:** Improved focus states and keyboard navigation
 - **Responsive Design:** Flexbox-based layout that adapts to different screen sizes
+- **Simplified Interface:** Clean layout without status bar distractions for focused mind mapping
 
 ### Data Structure
 ```typescript

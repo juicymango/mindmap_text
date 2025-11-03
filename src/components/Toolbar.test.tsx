@@ -134,59 +134,7 @@ describe('Toolbar', () => {
     expect(screen.getByText('Paste Text')).not.toBeDisabled();
   });
 
-  it('should display "No file selected" when no file path is set', () => {
-    mockUseSelectedPath.mockReturnValue({
-      selectedPath: [],
-      setSelectedPath: jest.fn()
-    });
-    
-    render(<Toolbar />);
-    // The file path is now displayed without the "Current file:" prefix
-    expect(screen.getByText('No file selected')).toBeInTheDocument();
-  });
-
-  it('should display current file path when JSON file path is set', () => {
-    createMockMindMapStore({
-      mindmap: { root: { text: 'Root', children: [] } },
-      setMindmap,
-      addNode,
-      jsonFilePath: '/path/to/file.json',
-      textFilePath: null,
-      setJsonFilePath,
-      setTextFilePath,
-    });
-
-    mockUseSelectedPath.mockReturnValue({
-      selectedPath: [],
-      setSelectedPath: jest.fn()
-    });
-
-    render(<Toolbar />);
-    // The file path is now displayed without the "Current file:" prefix
-    expect(screen.getByText('/path/to/file.json')).toBeInTheDocument();
-  });
-
-  it('should display current file path when text file path is set', () => {
-    createMockMindMapStore({
-      mindmap: { root: { text: 'Root', children: [] } },
-      setMindmap,
-      addNode,
-      jsonFilePath: null,
-      textFilePath: '/path/to/file.txt',
-      setJsonFilePath,
-      setTextFilePath,
-    });
-
-    mockUseSelectedPath.mockReturnValue({
-      selectedPath: [],
-      setSelectedPath: jest.fn()
-    });
-
-    render(<Toolbar />);
-    // The file path is now displayed without the "Current file:" prefix
-    expect(screen.getByText('/path/to/file.txt')).toBeInTheDocument();
-  });
-
+  
   it('should call saveAsFile when Save As JSON is clicked', async () => {
     const defaultPath = 'mindmap.json';
     (saveAsFile as jest.Mock).mockResolvedValue(defaultPath);
@@ -257,26 +205,5 @@ describe('Toolbar', () => {
     expect(loadFromFile).toHaveBeenCalled();
     expect(setMindmap).toHaveBeenCalledWith(mockResult.mindmap);
     expect(setJsonFilePath).toHaveBeenCalledWith('/path/to/file.json');
-  });
-
-  it('should prioritize JSON file path when both are set', () => {
-    createMockMindMapStore({
-      mindmap: { root: { text: 'Root', children: [] } },
-      setMindmap,
-      addNode,
-      jsonFilePath: '/path/to/file.json',
-      textFilePath: '/path/to/file.txt',
-      setJsonFilePath,
-      setTextFilePath,
-    });
-
-    mockUseSelectedPath.mockReturnValue({
-      selectedPath: [],
-      setSelectedPath: jest.fn()
-    });
-
-    render(<Toolbar />);
-    // The file path is now displayed without the "Current file:" prefix
-    expect(screen.getByText('/path/to/file.json')).toBeInTheDocument();
   });
 });
