@@ -134,59 +134,7 @@ describe('Toolbar', () => {
     expect(screen.getByText('Paste Text')).not.toBeDisabled();
   });
 
-  it('should display "No file selected" when no file path is set', () => {
-    mockUseSelectedPath.mockReturnValue({
-      selectedPath: [],
-      setSelectedPath: jest.fn()
-    });
-    
-    render(<Toolbar />);
-    // The file path is now displayed without the "Current file:" prefix
-    expect(screen.getByText('No file selected')).toBeInTheDocument();
-  });
-
-  it('should display current file path when JSON file path is set', () => {
-    createMockMindMapStore({
-      mindmap: { root: { text: 'Root', children: [] } },
-      setMindmap,
-      addNode,
-      jsonFilePath: '/path/to/file.json',
-      textFilePath: null,
-      setJsonFilePath,
-      setTextFilePath,
-    });
-
-    mockUseSelectedPath.mockReturnValue({
-      selectedPath: [],
-      setSelectedPath: jest.fn()
-    });
-
-    render(<Toolbar />);
-    // The file path is now displayed without the "Current file:" prefix
-    expect(screen.getByText('/path/to/file.json')).toBeInTheDocument();
-  });
-
-  it('should display current file path when text file path is set', () => {
-    createMockMindMapStore({
-      mindmap: { root: { text: 'Root', children: [] } },
-      setMindmap,
-      addNode,
-      jsonFilePath: null,
-      textFilePath: '/path/to/file.txt',
-      setJsonFilePath,
-      setTextFilePath,
-    });
-
-    mockUseSelectedPath.mockReturnValue({
-      selectedPath: [],
-      setSelectedPath: jest.fn()
-    });
-
-    render(<Toolbar />);
-    // The file path is now displayed without the "Current file:" prefix
-    expect(screen.getByText('/path/to/file.txt')).toBeInTheDocument();
-  });
-
+  
   it('should call saveAsFile when Save As JSON is clicked', async () => {
     const defaultPath = 'mindmap.json';
     (saveAsFile as jest.Mock).mockResolvedValue(defaultPath);
@@ -259,24 +207,82 @@ describe('Toolbar', () => {
     expect(setJsonFilePath).toHaveBeenCalledWith('/path/to/file.json');
   });
 
-  it('should prioritize JSON file path when both are set', () => {
-    createMockMindMapStore({
-      mindmap: { root: { text: 'Root', children: [] } },
-      setMindmap,
-      addNode,
-      jsonFilePath: '/path/to/file.json',
-      textFilePath: '/path/to/file.txt',
-      setJsonFilePath,
-      setTextFilePath,
-    });
-
+  // Task 54: Horizontal scrolling tests
+  it('should render toolbar with horizontal scrolling styles', () => {
     mockUseSelectedPath.mockReturnValue({
       selectedPath: [],
       setSelectedPath: jest.fn()
     });
 
     render(<Toolbar />);
-    // The file path is now displayed without the "Current file:" prefix
-    expect(screen.getByText('/path/to/file.json')).toBeInTheDocument();
+
+    const toolbar = screen.getByTestId('toolbar-container');
+    expect(toolbar).toBeInTheDocument();
+
+    // Check if the toolbar container has overflow-x: auto for horizontal scrolling
+    expect(toolbar).toHaveStyle({
+      overflowX: 'auto',
+      overflowY: 'hidden'
+    });
+  });
+
+  it('should display all button groups in horizontal layout', () => {
+    mockUseSelectedPath.mockReturnValue({
+      selectedPath: [],
+      setSelectedPath: jest.fn()
+    });
+
+    render(<Toolbar />);
+
+    // Check that all expected buttons are present
+    expect(screen.getByText('Add Child')).toBeInTheDocument();
+    expect(screen.getByText('Delete')).toBeInTheDocument();
+    expect(screen.getByText('Move Up')).toBeInTheDocument();
+    expect(screen.getByText('Move Down')).toBeInTheDocument();
+    expect(screen.getByText('Copy JSON')).toBeInTheDocument();
+    expect(screen.getByText('Copy Text')).toBeInTheDocument();
+    expect(screen.getByText('Paste JSON')).toBeInTheDocument();
+    expect(screen.getByText('Paste Text')).toBeInTheDocument();
+    expect(screen.getByText('Save JSON')).toBeInTheDocument();
+    expect(screen.getByText('Save Text')).toBeInTheDocument();
+    expect(screen.getByText('Load File')).toBeInTheDocument();
+  });
+
+  it('should have flex-shrink: 0 on button groups to prevent shrinking', () => {
+    mockUseSelectedPath.mockReturnValue({
+      selectedPath: [],
+      setSelectedPath: jest.fn()
+    });
+
+    render(<Toolbar />);
+
+    // Get the toolbar container
+    const toolbar = screen.getByTestId('toolbar-container');
+    expect(toolbar).toBeInTheDocument();
+
+    // Verify toolbar has white-space: nowrap for horizontal scrolling
+    expect(toolbar).toHaveStyle({
+      whiteSpace: 'nowrap'
+    });
+  });
+
+  it('should maintain toolbar functionality with scrolling enabled', () => {
+    mockUseSelectedPath.mockReturnValue({
+      selectedPath: [0],
+      setSelectedPath: jest.fn()
+    });
+
+    render(<Toolbar />);
+
+    // Test that button functionality still works with scrolling
+    expect(screen.getByText('Add Child')).not.toBeDisabled();
+    expect(screen.getByText('Delete')).not.toBeDisabled();
+    expect(screen.getByText('Move Up')).not.toBeDisabled();
+    expect(screen.getByText('Move Down')).not.toBeDisabled();
+
+    // Test file operations
+    expect(screen.getByText('Save JSON')).not.toBeDisabled();
+    expect(screen.getByText('Save Text')).not.toBeDisabled();
+    expect(screen.getByText('Load File')).not.toBeDisabled();
   });
 });

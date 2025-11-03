@@ -15,14 +15,34 @@ const ToolbarContainer = styled.div`
   padding: 0 16px;
   gap: 16px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+
+  /* Custom scrollbar styling for horizontal scrolling */
+  &::-webkit-scrollbar {
+    height: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #F9FAFB;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #D1D5DB;
+    border-radius: 3px;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: #9CA3AF;
+  }
+
+  /* Hide scrollbar when not hovering for cleaner appearance */
+  &:not(:hover)::-webkit-scrollbar {
+    height: 0;
+  }
 `;
 
-const FilePathDisplay = styled.div`
-  font-size: 12px;
-  color: #666;
-  margin-left: auto;
-  padding-right: 16px;
-`;
 
 const ToolbarButton = styled.button<{ variant?: 'primary' | 'secondary' | 'danger' }>`
   display: flex;
@@ -75,17 +95,18 @@ const ButtonGroup = styled.div`
   gap: 4px;
   padding: 0 8px;
   border-right: 1px solid #E5E7EB;
-  
+  flex-shrink: 0;
+
   &:last-child {
     border-right: none;
   }
 `;
 
 export const Toolbar: React.FC = () => {
-  const { 
-    mindmap, 
-    setMindmap, 
-    addNode, 
+  const {
+    mindmap,
+    setMindmap,
+    addNode,
     deleteNode,
     moveNodeUp,
     moveNodeDown,
@@ -93,9 +114,7 @@ export const Toolbar: React.FC = () => {
     copyNodeAsText,
     pasteNodeAsJson,
     pasteNodeAsText,
-    jsonFilePath, 
-    textFilePath, 
-    setJsonFilePath, 
+    setJsonFilePath,
     setTextFilePath
   } = useMindMapStore();
   
@@ -116,7 +135,7 @@ export const Toolbar: React.FC = () => {
 
   const handleLoad = async () => {
     const { mindmap: newMindMap, path } = await loadFromFile();
-    
+
     if (newMindMap) {
       setMindmap(newMindMap);
       const format = path.endsWith('.txt') ? 'text' : 'json';
@@ -181,13 +200,9 @@ export const Toolbar: React.FC = () => {
       pasteNodeAsText(selectedPath);
     }
   };
-  
-  const getCurrentFilePath = () => {
-    return jsonFilePath || textFilePath || 'No file selected';
-  };
 
   return (
-    <ToolbarContainer>
+    <ToolbarContainer data-testid="toolbar-container">
       <ButtonGroup>
         <ToolbarButton onClick={handleAddChild} disabled={!(hasSelection || hasRootSelection)} title="Add Child Node">
           <Plus size={16} />
@@ -240,10 +255,6 @@ export const Toolbar: React.FC = () => {
           <span>Load File</span>
         </ToolbarButton>
       </ButtonGroup>
-      
-      <FilePathDisplay title="Current file path">
-        {getCurrentFilePath()}
-      </FilePathDisplay>
     </ToolbarContainer>
   );
 };

@@ -13,8 +13,9 @@ Mind Map Text is a web-based mind mapping application that uses a column-based i
 *   **State Management:** Uses Zustand for efficient and predictable state management.
 *   **File Path Memory:** Remembers your last used file paths for quick saving and loading.
 *   **Enhanced Visual Design:** Modern styling with improved spacing, shadows, and color-coded node states.
-*   **Status Bar:** Real-time display of save status, file information, and node count statistics.
-*   **Comprehensive Testing:** 122 tests across 11 test files ensuring robust functionality and preventing regressions.
+*   **Simplified Interface:** Clean layout focused on mind map content without status bar distractions.
+*   **Responsive Toolbar:** Horizontal scrolling support for better usability on smaller screens and extensive button layouts.
+*   **Comprehensive Testing:** 122 tests across 10 test files ensuring robust functionality and preventing regressions.
 
 ## Demo
 
@@ -72,7 +73,7 @@ This will launch the test runner in interactive watch mode. The test suite inclu
 The application has been enhanced with several visual and functional improvements:
 
 ### Column Height Enhancements (Task 52)
-- **Adjustable Height:** Columns now have a maximum height constraint of `calc(100vh - 120px)` to account for toolbar and status bar
+- **Adjustable Height:** Columns now have a maximum height constraint of `calc(100vh - 80px)` to account for toolbar only
 - **Vertical Scrolling:** When a column contains many nodes, it automatically becomes scrollable with a custom-styled scrollbar
 - **Fixed Width:** Columns maintain a consistent 240px width while allowing flexible height
 - **Top Alignment:** Columns with different heights align to the top for better visual consistency
@@ -80,8 +81,15 @@ The application has been enhanced with several visual and functional improvement
 ### Visual Design
 - **Color-Coded Nodes:** Four distinct node types with appropriate colors (selected, on path, with children, without children)
 - **Enhanced Styling:** Modern button design, improved spacing, and subtle shadows
-- **Status Bar:** Real-time display of save status, current file path, format information, and node count
 - **Root Column Highlighting:** The root column is visually distinguished with a blue left border
+- **Clean Layout:** Simplified interface without status bar for focused mind mapping
+
+### Toolbar Enhancements (Task 54)
+- **Horizontal Scrolling:** Toolbar now supports horizontal scrolling when content exceeds viewport width
+- **Custom Scrollbar:** 6px horizontal scrollbar with hover visibility for cleaner appearance
+- **Button Preservation:** Button groups maintain fixed width and don't shrink during scrolling
+- **Responsive Design:** Maintains full functionality on smaller screens and mobile devices
+- **Accessibility:** All toolbar controls remain accessible with scrolling enabled
 
 ### Responsive Behavior
 - **Horizontal Scrolling:** Smooth horizontal scrolling for deep mind map structures

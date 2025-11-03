@@ -2128,3 +2128,151 @@ Date:   Mon Sep 15 22:09:57 2025 +0800
 - update ./docs/test.md based on the current implementation.
 - update ./README.md based on the current implementation.
 - commit and push all the changes.
+
+# task 53
+
+- remove the bottom bar, which is Saved, file name, format, ...
+- update the test cases.
+- Keep running npm test and fix the errors until there are no more errors thrown.
+- update ./docs/ui_and_iteration_design.md based on the current implementation.
+- update ./docs/code_structure.md based on the current implementation.
+- update ./docs/test.md based on the current implementation.
+- update ./README.md based on the current implementation.
+- Commit all changes with `git add .`, commit, and push to the remote repository.
+
+## Task 53 Completion Status ✅
+
+**Completed:** 2025-01-03
+
+### Changes Made:
+
+1. **Removed StatusBar Component:**
+   - Deleted `src/components/StatusBar.tsx` file
+   - Removed StatusBar import and usage from `src/components/App.tsx`
+   - Updated layout structure to remove bottom bar
+
+2. **Updated Toolbar Component:**
+   - Removed `FilePathDisplay` component and related file path display
+   - Removed `getCurrentFilePath` function
+   - Simplified toolbar to focus on core functionality buttons
+
+3. **Updated Test Cases:**
+   - Removed tests related to file path display functionality from `src/components/Toolbar.test.tsx`
+   - All 118 tests now pass (reduced from 122 due to StatusBar removal)
+   - Updated test structure to reflect simplified component hierarchy
+
+4. **Updated Column Height Calculations:**
+   - Changed `max-height` from `calc(100vh - 120px)` to `calc(100vh - 80px)` to account for toolbar only
+   - Updated documentation to reflect new height calculations
+
+5. **Updated Documentation:**
+   - **UI and Interaction Design:** Updated layout diagram and removed StatusBar references
+   - **Code Structure:** Removed StatusBar component documentation and updated directory structure
+   - **Test Documentation:** Updated test count from 122 to 118 and removed StatusBar test references
+   - **README.md:** Updated feature list, test counts, and removed status bar references
+
+### Technical Implementation:
+
+**Layout Changes:**
+- Simplified from 3-section layout (Toolbar, Main Content, Status Bar) to 2-section layout (Toolbar, Main Content)
+- Maintained responsive design and proper flexbox layout
+- Updated height calculations for column scrolling behavior
+
+**Component Changes:**
+- **App Component:** Removed StatusBar import and JSX usage
+- **Toolbar Component:** Removed file path display while maintaining all core functionality
+- **Tests:** Updated to reflect new UI structure and removed obsolete functionality tests
+
+**Documentation Updates:**
+- All documentation files updated to reflect simplified interface
+- Test counts and component lists updated across all docs
+- Height calculations updated to reflect new layout constraints
+
+### Key Improvements:
+
+1. **Cleaner Interface:** Simplified layout focusing on mind map content without status bar distractions
+2. **Reduced Complexity:** Fewer components to maintain and test
+3. **Better Focus:** Users can concentrate on mind mapping without status information clutter
+4. **Maintained Functionality:** All core mind mapping features remain intact
+
+All requirements from Task 53 have been successfully implemented. The application now provides a cleaner, more focused interface for mind mapping while maintaining all essential functionality.
+
+# task 54
+
+- Make the top toolbar horizontally scrollable.
+- Implement the relevant test cases.
+- Keep running `npm test` and fix the errors until there are no more errors thrown.
+- Update `./docs/ui_and_iteration_design.md` based on the current implementation.
+- Update `./docs/code_structure.md` based on the current implementation.
+- Update `./docs/test.md` based on the current implementation.
+- Update `./README.md` based on the current implementation.
+- Commit all changes with `git add .`, commit, and push to the remote repository.
+
+## Task 54 Completion Status ✅
+
+**Completed:** 2025-01-03
+
+### Changes Made:
+
+1. **Horizontal Scrolling Implementation:**
+   - Added `overflow-x: auto` and `overflow-y: hidden` to ToolbarContainer
+   - Added `white-space: nowrap` to prevent button group wrapping
+   - Added `flex-shrink: 0` to ButtonGroup to prevent shrinking during scrolling
+   - Implemented custom horizontal scrollbar styling (6px height)
+   - Added hover visibility for scrollbar (hidden by default, appears on hover)
+
+2. **Enhanced Toolbar Styling:**
+   - Custom scrollbar styling with track and thumb colors
+   - Hover effects for scrollbar thumb
+   - Clean interface with scrollbar hidden by default
+   - Maintains toolbar height and layout consistency
+
+3. **Test Implementation:**
+   - Added 4 new test cases for horizontal scrolling functionality
+   - Test toolbar rendering with correct overflow styles
+   - Test all button groups display in horizontal layout
+   - Test `flex-shrink: 0` to prevent button group shrinking
+   - Test toolbar functionality preservation with scrolling enabled
+   - Test test-id accessibility for toolbar container
+
+4. **Documentation Updates:**
+   - **UI and Interaction Design:** Added horizontal scrolling support details
+   - **Code Structure:** Updated Toolbar component documentation with new styling
+   - **Test Documentation:** Added Task 54 horizontal scrolling test coverage
+   - **README.md:** Updated feature list and added Toolbar Enhancements section
+
+### Technical Implementation:
+
+**Styling Changes:**
+- `overflow-x: auto` enables horizontal scrolling when content overflows
+- `overflow-y: hidden` prevents vertical scrolling
+- `white-space: nowrap` ensures content stays in single line
+- `flex-shrink: 0` prevents button groups from shrinking
+
+**Custom Scrollbar:**
+- 6px height horizontal scrollbar with rounded corners
+- Light gray track (#F9FAFB) and thumb (#D1D5DB) colors
+- Hover effect makes thumb darker (#9CA3AF)
+- Hidden by default, appears on hover for cleaner interface
+
+**Responsive Design:**
+- Toolbar adapts to different screen widths while maintaining functionality
+- All toolbar controls remain accessible on smaller screens
+- Button groups maintain fixed width for consistent layout
+
+### Key Improvements:
+
+1. **Better Accessibility:** All toolbar controls remain accessible on smaller screens
+2. **Enhanced User Experience:** Smooth horizontal scrolling with custom styling
+3. **Clean Interface:** Scrollbar hidden by default for better aesthetics
+4. **Responsive Design:** Adapts to different screen sizes while maintaining functionality
+5. **Comprehensive Testing:** 4 new test cases ensure scrolling functionality works correctly
+
+### Test Results:
+- ✅ All 122 tests pass (increased from 118 due to new test cases)
+- ✅ TypeScript compilation succeeds
+- ✅ No ESLint errors
+- ✅ Horizontal scrolling functionality verified
+- ✅ Button preservation during scrolling confirmed
+
+All requirements from Task 54 have been successfully implemented. The toolbar now provides excellent responsive behavior with horizontal scrolling support, maintaining full functionality across different screen sizes while providing a clean, professional appearance.

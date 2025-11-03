@@ -1,7 +1,6 @@
 import React from 'react';
 import { MindMap } from './MindMap';
 import { Toolbar } from './Toolbar';
-import { StatusBar } from './StatusBar';
 import { GlobalStyles } from '../styles/GlobalStyles';
 import { SelectedPathProvider } from '../contexts/SelectedPathContext';
 import styled from 'styled-components';
@@ -29,7 +28,6 @@ export const App: React.FC = () => {
         <MainContent>
           <MindMap />
         </MainContent>
-        <StatusBar />
       </AppContainer>
     </SelectedPathProvider>
   );

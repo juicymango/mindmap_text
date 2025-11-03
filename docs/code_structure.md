@@ -15,14 +15,12 @@ mindmap-app/
 │   │   ├── Column.tsx
 │   │   ├── Node.tsx
 │   │   ├── Toolbar.tsx
-│   │   ├── StatusBar.tsx
 │   │   ├── App.test.tsx
 │   │   ├── MindMap.test.tsx
 │   │   ├── Column.test.tsx
 │   │   ├── Node.test.tsx
 │   │   ├── NodeColor.test.tsx
-│   │   ├── Toolbar.test.tsx
-│   │   └── StatusBar.test.tsx
+│   │   └── Toolbar.test.tsx
 │   ├── contexts/
 │   │   └── SelectedPathContext.tsx
 │   ├── store/
@@ -53,7 +51,7 @@ mindmap-app/
 
 -   `public/`: Contains the main HTML file.
 -   `src/`: Contains the source code of the application.
--   `src/components/`: Contains the React components including the new StatusBar component.
+-   `src/components/`: Contains the React components.
 -   `src/store/`: Contains the Zustand store with file path memory.
 -   `src/styles/`: Contains the global styles and node color constants.
 -   `src/types/`: Contains the TypeScript types.
@@ -63,13 +61,12 @@ mindmap-app/
 
 ### `src/components/App.tsx`
 
--   **Function:** The main component of the application with enhanced layout structure.
+-   **Function:** The main component of the application with simplified layout structure.
 -   **Structure:**
     ```typescript
     import React from 'react';
     import { MindMap } from './MindMap';
     import { Toolbar } from './Toolbar';
-    import { StatusBar } from './StatusBar';
     import { GlobalStyles } from '../styles/GlobalStyles';
     import { SelectedPathProvider } from '../contexts/SelectedPathContext';
     import styled from 'styled-components';
@@ -97,7 +94,6 @@ mindmap-app/
             <MainContent>
               <MindMap />
             </MainContent>
-            <StatusBar />
           </AppContainer>
         </SelectedPathProvider>
       );
@@ -205,7 +201,7 @@ mindmap-app/
       border: 1px solid #E5E7EB;
       border-radius: 8px;
       width: 240px;
-      max-height: calc(100vh - 120px); // Account for toolbar and status bar
+      max-height: calc(100vh - 80px); // Account for toolbar only
       display: flex;
       flex-direction: column;
       flex-shrink: 0;
@@ -258,7 +254,7 @@ mindmap-app/
     ```
 
 **Task 52 Column Height Improvements:**
-- **Adjustable Height:** Columns now have `max-height: calc(100vh - 120px)` to account for toolbar and status bar height
+- **Adjustable Height:** Columns now have `max-height: calc(100vh - 80px)` to account for toolbar height only
 - **Vertical Scrolling:** Added `overflow-y: auto` to enable scrolling when content exceeds the maximum height
 - **Custom Scrollbar:** Implemented custom vertical scrollbar styling (6px width) for consistent aesthetics
 - **Fixed Width:** Maintains fixed width of 240px while allowing flexible height
@@ -407,7 +403,7 @@ mindmap-app/
 
 ### `src/components/Toolbar.tsx`
 
--   **Function:** Renders the toolbar with comprehensive node operation buttons (Add Child, Delete, Move Up, Move Down), copy/paste operations (Copy JSON, Copy Text, Paste JSON, Paste Text), and file operations (Save As JSON, Save As Text, Load File). Implements root node button state management to disable inappropriate operations for the root node.
+-   **Function:** Renders the toolbar with comprehensive node operation buttons (Add Child, Delete, Move Up, Move Down), copy/paste operations (Copy JSON, Copy Text, Paste JSON, Paste Text), and file operations (Save As JSON, Save As Text, Load File). Implements root node button state management to disable inappropriate operations for the root node. **Task 54:** Enhanced with horizontal scrolling support for responsive design and better usability on smaller screens.
 -   **Structure:**
     ```typescript
     import React from 'react';
@@ -418,30 +414,59 @@ mindmap-app/
     import styled from 'styled-components';
 
     const ToolbarContainer = styled.div`
-      padding: 8px;
-      border-bottom: 1px solid lightgrey;
+      height: 48px;
+      background: #FFFFFF;
+      border-bottom: 1px solid #DEE2E6;
       display: flex;
       align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-    `;
+      padding: 0 16px;
+      gap: 16px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      overflow-x: auto;
+      overflow-y: hidden;
+      white-space: nowrap;
 
-    const FilePathDisplay = styled.div`
-      font-size: 12px;
-      color: #666;
-      margin-left: 8px;
+      /* Custom scrollbar styling for horizontal scrolling */
+      &::-webkit-scrollbar {
+        height: 6px;
+      }
+
+      &::-webkit-scrollbar-track {
+        background: #F9FAFB;
+      }
+
+      &::-webkit-scrollbar-thumb {
+        background: #D1D5DB;
+        border-radius: 3px;
+      }
+
+      &::-webkit-scrollbar-thumb:hover {
+        background: #9CA3AF;
+      }
+
+      /* Hide scrollbar when not hovering for cleaner appearance */
+      &:not(:hover)::-webkit-scrollbar {
+        height: 0;
+      }
     `;
 
     const ButtonGroup = styled.div`
       display: flex;
       gap: 4px;
+      padding: 0 8px;
+      border-right: 1px solid #E5E7EB;
+      flex-shrink: 0;
+
+      &:last-child {
+        border-right: none;
+      }
     `;
 
     export const Toolbar: React.FC = () => {
-      const { 
-        mindmap, 
-        setMindmap, 
-        addNode, 
+      const {
+        mindmap,
+        setMindmap,
+        addNode,
         deleteNode,
         moveNodeUp,
         moveNodeDown,
@@ -449,12 +474,10 @@ mindmap-app/
         copyNodeAsText,
         pasteNodeAsJson,
         pasteNodeAsText,
-        jsonFilePath, 
-        textFilePath, 
-        setJsonFilePath, 
+        setJsonFilePath,
         setTextFilePath
       } = useMindMapStore();
-      
+
       const { selectedPath, setSelectedPath } = useSelectedPath();
       const hasSelection = selectedPath.length > 0;
       const hasRootSelection = selectedPath.length === 0; // Root node has empty path []
@@ -472,7 +495,7 @@ mindmap-app/
 
       const handleLoad = async () => {
         const { mindmap: newMindMap, path } = await loadFromFile();
-        
+
         if (newMindMap) {
           setMindmap(newMindMap);
           const format = path.endsWith('.txt') ? 'text' : 'json';
@@ -537,111 +560,73 @@ mindmap-app/
           pasteNodeAsText(selectedPath);
         }
       };
-      
-      const getCurrentFilePath = () => {
-        return jsonFilePath || textFilePath || 'No file selected';
-      };
 
       return (
-        <ToolbarContainer>
+        <ToolbarContainer data-testid="toolbar-container">
           <ButtonGroup>
-            <button onClick={handleAddChild} disabled={!(hasSelection || hasRootSelection)}>Add Child</button>
-            <button onClick={handleDelete} disabled={!hasSelection}>Delete</button>
-            <button onClick={handleMoveUp} disabled={!hasSelection}>Move Up</button>
-            <button onClick={handleMoveDown} disabled={!hasSelection}>Move Down</button>
+            <ToolbarButton onClick={handleAddChild} disabled={!(hasSelection || hasRootSelection)} title="Add Child Node">
+              <Plus size={16} />
+              <span>Add Child</span>
+            </ToolbarButton>
+            <ToolbarButton onClick={handleDelete} disabled={!hasSelection} variant="danger" title="Delete Node">
+              <Trash2 size={16} />
+              <span>Delete</span>
+            </ToolbarButton>
+            <ToolbarButton onClick={handleMoveUp} disabled={!hasSelection} title="Move Node Up">
+              <ChevronUp size={16} />
+              <span>Move Up</span>
+            </ToolbarButton>
+            <ToolbarButton onClick={handleMoveDown} disabled={!hasSelection} title="Move Node Down">
+              <ChevronDown size={16} />
+              <span>Move Down</span>
+            </ToolbarButton>
           </ButtonGroup>
-          
+
           <ButtonGroup>
-            <button onClick={handleCopyJson} disabled={!(hasSelection || hasRootSelection)}>Copy JSON</button>
-            <button onClick={handleCopyText} disabled={!(hasSelection || hasRootSelection)}>Copy Text</button>
-            <button onClick={handlePasteJson} disabled={!(hasSelection || hasRootSelection)}>Paste JSON</button>
-            <button onClick={handlePasteText} disabled={!(hasSelection || hasRootSelection)}>Paste Text</button>
+            <ToolbarButton onClick={handleCopyJson} disabled={!(hasSelection || hasRootSelection)} title="Copy as JSON">
+              <Copy size={16} />
+              <span>Copy JSON</span>
+            </ToolbarButton>
+            <ToolbarButton onClick={handleCopyText} disabled={!(hasSelection || hasRootSelection)} title="Copy as Text">
+              <FileText size={16} />
+              <span>Copy Text</span>
+            </ToolbarButton>
+            <ToolbarButton onClick={handlePasteJson} disabled={!(hasSelection || hasRootSelection)} title="Paste JSON">
+              <Copy size={16} />
+              <span>Paste JSON</span>
+            </ToolbarButton>
+            <ToolbarButton onClick={handlePasteText} disabled={!(hasSelection || hasRootSelection)} title="Paste Text">
+              <FileText size={16} />
+              <span>Paste Text</span>
+            </ToolbarButton>
           </ButtonGroup>
-          
+
           <ButtonGroup>
-            <button onClick={() => handleSaveAs('json')}>Save As JSON</button>
-            <button onClick={() => handleSaveAs('text')}>Save As Text</button>
-            <button onClick={handleLoad}>Load File</button>
+            <ToolbarButton onClick={() => handleSaveAs('json')} title="Save as JSON">
+              <Save size={16} />
+              <span>Save JSON</span>
+            </ToolbarButton>
+            <ToolbarButton onClick={() => handleSaveAs('text')} title="Save as Text">
+              <FileText size={16} />
+              <span>Save Text</span>
+            </ToolbarButton>
+            <ToolbarButton onClick={handleLoad} title="Load File">
+              <FolderOpen size={16} />
+              <span>Load File</span>
+            </ToolbarButton>
           </ButtonGroup>
-          
-          <FilePathDisplay>
-            Current file: {getCurrentFilePath()}
-          </FilePathDisplay>
         </ToolbarContainer>
       );
     };
     ```
 
-### `src/components/StatusBar.tsx`
-
--   **Function:** New component that displays system status information including save status, file path, format, and node count statistics.
--   **Structure:**
-    ```typescript
-    import React from 'react';
-    import { useMindMapStore } from '../store/mindmapStore';
-    import styled from 'styled-components';
-    import { Clock, FileText } from 'lucide-react';
-
-    const StatusBarContainer = styled.div`
-      height: 32px;
-      background: #F9FAFB;
-      border-top: 1px solid #E5E7EB;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 16px;
-      font-size: 12px;
-      color: #6B7280;
-    `;
-
-    const StatusIndicator = styled.div<{ $status: 'saved' | 'unsaved' | 'saving' }>`
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: ${props => 
-        props.$status === 'saved' ? '#10B981' :
-        props.$status === 'unsaved' ? '#F59E0B' :
-        '#6B7280'
-      };
-    `;
-
-    export const StatusBar: React.FC = () => {
-      const { mindmap, jsonFilePath, textFilePath } = useMindMapStore();
-      const [saveStatus] = React.useState<'saved' | 'unsaved' | 'saving'>('saved');
-      
-      const countNodes = (node: any): number => {
-        if (!node.children || node.children.length === 0) {
-          return 1;
-        }
-        return 1 + node.children.reduce((sum: number, child: any) => sum + countNodes(child), 0);
-      };
-      
-      const totalNodes = countNodes(mindmap.root);
-      const getCurrentFilePath = () => {
-        return jsonFilePath || textFilePath || 'No file selected';
-      };
-      
-      return (
-        <StatusBarContainer>
-          <div>
-            <StatusIndicator $status={saveStatus} />
-            <span>{saveStatus === 'saved' ? 'Saved' : 'Unsaved'}</span>
-          </div>
-          <div>
-            <FileText size={12} />
-            <span>{getCurrentFilePath()}</span>
-          </div>
-          <div>
-            <span>Format: {jsonFilePath ? 'JSON' : textFilePath ? 'Text' : 'None'}</span>
-          </div>
-          <div>
-            <span>{totalNodes} nodes</span>
-          </div>
-        </StatusBarContainer>
-      );
-    };
-    ```
-
+**Task 54 Horizontal Scrolling Enhancements:**
+- **Overflow Handling:** Added `overflow-x: auto` and `overflow-y: hidden` for horizontal scrolling
+- **Custom Scrollbar:** Implemented 6px horizontal scrollbar with hover visibility
+- **Button Group Preservation:** Added `flex-shrink: 0` to prevent button groups from shrinking
+- **Responsive Design:** Toolbar adapts to different screen widths while maintaining functionality
+- **Clean Interface:** Scrollbar hidden by default, appears on hover for better aesthetics
+- **Test Coverage:** Added 4 new test cases covering scrolling functionality and button preservation
 
 ### `src/store/mindmapStore.ts`
 
