@@ -39,6 +39,12 @@ The UI is a vertically organized layout with two main sections:
    - Enhanced toolbar with icons and improved styling
    - Three button groups: Node Operations, Copy/Paste Operations, File Operations
    - Modern button design with hover effects and proper spacing
+   - **Task 54: Horizontal Scrolling Support:**
+     - Toolbar now supports horizontal scrolling when content exceeds viewport width
+     - Custom horizontal scrollbar styling (6px height) with hover visibility
+     - Button groups maintain fixed width with `flex-shrink: 0` to prevent shrinking
+     - Scrollbar appears on hover for cleaner interface
+     - Responsive design that maintains accessibility on smaller screens
 
 2. **Mind Map View (Flexible height)**
    - Horizontally scrolling column-based interface
@@ -187,6 +193,7 @@ The node color coding system uses sophisticated path detection algorithms to ens
 - **Better Accessibility:** Improved focus states and keyboard navigation
 - **Responsive Design:** Flexbox-based layout that adapts to different screen sizes
 - **Simplified Interface:** Clean layout without status bar distractions for focused mind mapping
+- **Horizontal Toolbar Scrolling:** Enhanced toolbar with horizontal scrolling support for smaller screens and extensive button layouts
 
 ### Data Structure
 ```typescript

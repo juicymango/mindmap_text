@@ -15,6 +15,32 @@ const ToolbarContainer = styled.div`
   padding: 0 16px;
   gap: 16px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+
+  /* Custom scrollbar styling for horizontal scrolling */
+  &::-webkit-scrollbar {
+    height: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #F9FAFB;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #D1D5DB;
+    border-radius: 3px;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: #9CA3AF;
+  }
+
+  /* Hide scrollbar when not hovering for cleaner appearance */
+  &:not(:hover)::-webkit-scrollbar {
+    height: 0;
+  }
 `;
 
 
@@ -69,7 +95,8 @@ const ButtonGroup = styled.div`
   gap: 4px;
   padding: 0 8px;
   border-right: 1px solid #E5E7EB;
-  
+  flex-shrink: 0;
+
   &:last-child {
     border-right: none;
   }
@@ -175,7 +202,7 @@ export const Toolbar: React.FC = () => {
   };
 
   return (
-    <ToolbarContainer>
+    <ToolbarContainer data-testid="toolbar-container">
       <ButtonGroup>
         <ToolbarButton onClick={handleAddChild} disabled={!(hasSelection || hasRootSelection)} title="Add Child Node">
           <Plus size={16} />

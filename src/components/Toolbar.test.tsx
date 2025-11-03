@@ -206,4 +206,83 @@ describe('Toolbar', () => {
     expect(setMindmap).toHaveBeenCalledWith(mockResult.mindmap);
     expect(setJsonFilePath).toHaveBeenCalledWith('/path/to/file.json');
   });
+
+  // Task 54: Horizontal scrolling tests
+  it('should render toolbar with horizontal scrolling styles', () => {
+    mockUseSelectedPath.mockReturnValue({
+      selectedPath: [],
+      setSelectedPath: jest.fn()
+    });
+
+    render(<Toolbar />);
+
+    const toolbar = screen.getByTestId('toolbar-container');
+    expect(toolbar).toBeInTheDocument();
+
+    // Check if the toolbar container has overflow-x: auto for horizontal scrolling
+    expect(toolbar).toHaveStyle({
+      overflowX: 'auto',
+      overflowY: 'hidden'
+    });
+  });
+
+  it('should display all button groups in horizontal layout', () => {
+    mockUseSelectedPath.mockReturnValue({
+      selectedPath: [],
+      setSelectedPath: jest.fn()
+    });
+
+    render(<Toolbar />);
+
+    // Check that all expected buttons are present
+    expect(screen.getByText('Add Child')).toBeInTheDocument();
+    expect(screen.getByText('Delete')).toBeInTheDocument();
+    expect(screen.getByText('Move Up')).toBeInTheDocument();
+    expect(screen.getByText('Move Down')).toBeInTheDocument();
+    expect(screen.getByText('Copy JSON')).toBeInTheDocument();
+    expect(screen.getByText('Copy Text')).toBeInTheDocument();
+    expect(screen.getByText('Paste JSON')).toBeInTheDocument();
+    expect(screen.getByText('Paste Text')).toBeInTheDocument();
+    expect(screen.getByText('Save JSON')).toBeInTheDocument();
+    expect(screen.getByText('Save Text')).toBeInTheDocument();
+    expect(screen.getByText('Load File')).toBeInTheDocument();
+  });
+
+  it('should have flex-shrink: 0 on button groups to prevent shrinking', () => {
+    mockUseSelectedPath.mockReturnValue({
+      selectedPath: [],
+      setSelectedPath: jest.fn()
+    });
+
+    render(<Toolbar />);
+
+    // Get the toolbar container
+    const toolbar = screen.getByTestId('toolbar-container');
+    expect(toolbar).toBeInTheDocument();
+
+    // Verify toolbar has white-space: nowrap for horizontal scrolling
+    expect(toolbar).toHaveStyle({
+      whiteSpace: 'nowrap'
+    });
+  });
+
+  it('should maintain toolbar functionality with scrolling enabled', () => {
+    mockUseSelectedPath.mockReturnValue({
+      selectedPath: [0],
+      setSelectedPath: jest.fn()
+    });
+
+    render(<Toolbar />);
+
+    // Test that button functionality still works with scrolling
+    expect(screen.getByText('Add Child')).not.toBeDisabled();
+    expect(screen.getByText('Delete')).not.toBeDisabled();
+    expect(screen.getByText('Move Up')).not.toBeDisabled();
+    expect(screen.getByText('Move Down')).not.toBeDisabled();
+
+    // Test file operations
+    expect(screen.getByText('Save JSON')).not.toBeDisabled();
+    expect(screen.getByText('Save Text')).not.toBeDisabled();
+    expect(screen.getByText('Load File')).not.toBeDisabled();
+  });
 });

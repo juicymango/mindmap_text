@@ -403,7 +403,7 @@ mindmap-app/
 
 ### `src/components/Toolbar.tsx`
 
--   **Function:** Renders the toolbar with comprehensive node operation buttons (Add Child, Delete, Move Up, Move Down), copy/paste operations (Copy JSON, Copy Text, Paste JSON, Paste Text), and file operations (Save As JSON, Save As Text, Load File). Implements root node button state management to disable inappropriate operations for the root node.
+-   **Function:** Renders the toolbar with comprehensive node operation buttons (Add Child, Delete, Move Up, Move Down), copy/paste operations (Copy JSON, Copy Text, Paste JSON, Paste Text), and file operations (Save As JSON, Save As Text, Load File). Implements root node button state management to disable inappropriate operations for the root node. **Task 54:** Enhanced with horizontal scrolling support for responsive design and better usability on smaller screens.
 -   **Structure:**
     ```typescript
     import React from 'react';
@@ -414,17 +414,52 @@ mindmap-app/
     import styled from 'styled-components';
 
     const ToolbarContainer = styled.div`
-      padding: 8px;
-      border-bottom: 1px solid lightgrey;
+      height: 48px;
+      background: #FFFFFF;
+      border-bottom: 1px solid #DEE2E6;
       display: flex;
       align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
+      padding: 0 16px;
+      gap: 16px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      overflow-x: auto;
+      overflow-y: hidden;
+      white-space: nowrap;
+
+      /* Custom scrollbar styling for horizontal scrolling */
+      &::-webkit-scrollbar {
+        height: 6px;
+      }
+
+      &::-webkit-scrollbar-track {
+        background: #F9FAFB;
+      }
+
+      &::-webkit-scrollbar-thumb {
+        background: #D1D5DB;
+        border-radius: 3px;
+      }
+
+      &::-webkit-scrollbar-thumb:hover {
+        background: #9CA3AF;
+      }
+
+      /* Hide scrollbar when not hovering for cleaner appearance */
+      &:not(:hover)::-webkit-scrollbar {
+        height: 0;
+      }
     `;
 
     const ButtonGroup = styled.div`
       display: flex;
       gap: 4px;
+      padding: 0 8px;
+      border-right: 1px solid #E5E7EB;
+      flex-shrink: 0;
+
+      &:last-child {
+        border-right: none;
+      }
     `;
 
     export const Toolbar: React.FC = () => {
@@ -527,30 +562,71 @@ mindmap-app/
       };
 
       return (
-        <ToolbarContainer>
+        <ToolbarContainer data-testid="toolbar-container">
           <ButtonGroup>
-            <button onClick={handleAddChild} disabled={!(hasSelection || hasRootSelection)}>Add Child</button>
-            <button onClick={handleDelete} disabled={!hasSelection}>Delete</button>
-            <button onClick={handleMoveUp} disabled={!hasSelection}>Move Up</button>
-            <button onClick={handleMoveDown} disabled={!hasSelection}>Move Down</button>
+            <ToolbarButton onClick={handleAddChild} disabled={!(hasSelection || hasRootSelection)} title="Add Child Node">
+              <Plus size={16} />
+              <span>Add Child</span>
+            </ToolbarButton>
+            <ToolbarButton onClick={handleDelete} disabled={!hasSelection} variant="danger" title="Delete Node">
+              <Trash2 size={16} />
+              <span>Delete</span>
+            </ToolbarButton>
+            <ToolbarButton onClick={handleMoveUp} disabled={!hasSelection} title="Move Node Up">
+              <ChevronUp size={16} />
+              <span>Move Up</span>
+            </ToolbarButton>
+            <ToolbarButton onClick={handleMoveDown} disabled={!hasSelection} title="Move Node Down">
+              <ChevronDown size={16} />
+              <span>Move Down</span>
+            </ToolbarButton>
           </ButtonGroup>
 
           <ButtonGroup>
-            <button onClick={handleCopyJson} disabled={!(hasSelection || hasRootSelection)}>Copy JSON</button>
-            <button onClick={handleCopyText} disabled={!(hasSelection || hasRootSelection)}>Copy Text</button>
-            <button onClick={handlePasteJson} disabled={!(hasSelection || hasRootSelection)}>Paste JSON</button>
-            <button onClick={handlePasteText} disabled={!(hasSelection || hasRootSelection)}>Paste Text</button>
+            <ToolbarButton onClick={handleCopyJson} disabled={!(hasSelection || hasRootSelection)} title="Copy as JSON">
+              <Copy size={16} />
+              <span>Copy JSON</span>
+            </ToolbarButton>
+            <ToolbarButton onClick={handleCopyText} disabled={!(hasSelection || hasRootSelection)} title="Copy as Text">
+              <FileText size={16} />
+              <span>Copy Text</span>
+            </ToolbarButton>
+            <ToolbarButton onClick={handlePasteJson} disabled={!(hasSelection || hasRootSelection)} title="Paste JSON">
+              <Copy size={16} />
+              <span>Paste JSON</span>
+            </ToolbarButton>
+            <ToolbarButton onClick={handlePasteText} disabled={!(hasSelection || hasRootSelection)} title="Paste Text">
+              <FileText size={16} />
+              <span>Paste Text</span>
+            </ToolbarButton>
           </ButtonGroup>
 
           <ButtonGroup>
-            <button onClick={() => handleSaveAs('json')}>Save As JSON</button>
-            <button onClick={() => handleSaveAs('text')}>Save As Text</button>
-            <button onClick={handleLoad}>Load File</button>
+            <ToolbarButton onClick={() => handleSaveAs('json')} title="Save as JSON">
+              <Save size={16} />
+              <span>Save JSON</span>
+            </ToolbarButton>
+            <ToolbarButton onClick={() => handleSaveAs('text')} title="Save as Text">
+              <FileText size={16} />
+              <span>Save Text</span>
+            </ToolbarButton>
+            <ToolbarButton onClick={handleLoad} title="Load File">
+              <FolderOpen size={16} />
+              <span>Load File</span>
+            </ToolbarButton>
           </ButtonGroup>
         </ToolbarContainer>
       );
     };
     ```
+
+**Task 54 Horizontal Scrolling Enhancements:**
+- **Overflow Handling:** Added `overflow-x: auto` and `overflow-y: hidden` for horizontal scrolling
+- **Custom Scrollbar:** Implemented 6px horizontal scrollbar with hover visibility
+- **Button Group Preservation:** Added `flex-shrink: 0` to prevent button groups from shrinking
+- **Responsive Design:** Toolbar adapts to different screen widths while maintaining functionality
+- **Clean Interface:** Scrollbar hidden by default, appears on hover for better aesthetics
+- **Test Coverage:** Added 4 new test cases covering scrolling functionality and button preservation
 
 ### `src/store/mindmapStore.ts`
 

@@ -4,7 +4,7 @@ This document provides comprehensive testing documentation for the mind map appl
 
 ## Test Overview
 
-The application has comprehensive test coverage with 118 tests across 10 test files, covering unit tests, integration tests, and component tests using React Testing Library and Jest. The test suite covers all UI components including the newly enhanced Toolbar, improved visual styling components, and Task 52 column height improvements.
+The application has comprehensive test coverage with 122 tests across 10 test files, covering unit tests, integration tests, and component tests using React Testing Library and Jest. The test suite covers all UI components including the newly enhanced Toolbar with horizontal scrolling support, improved visual styling components, and Task 52 column height improvements.
 
 ## Testing Philosophy
 
@@ -117,15 +117,12 @@ src/
 - Test empty selected path handling and default color application
 
 #### Toolbar Component Tests (`src/components/Toolbar.test.tsx`)
-- Test file path display rendering
-- Test button states based on file path availability
 - Test Save As functionality with default file names ("mindmap.json" and "mindmap.txt")
 - Test load file functionality
 - Test format detection and file path memory
 - Test enhanced button grouping with icon integration
 - Test modern toolbar design with improved spacing and shadows
 - Test Lucide React icon integration and accessibility
-- Test file path display without "Current file:" prefix
 - **Task 48: Root Node Button States:**
   - Test Add Child button behavior when root node is selected (should be enabled)
   - Test Copy/Paste button behavior when root node is selected (should be enabled)
@@ -133,6 +130,13 @@ src/
   - Test Move Up/Down button behavior when root node is selected (should be disabled)
   - Test button states for non-root nodes (all operations should be enabled)
   - Test proper root node selection handling with path `[]`
+- **Task 54: Horizontal Scrolling Support:**
+  - Test toolbar rendering with horizontal overflow styles (`overflow-x: auto`, `overflow-y: hidden`)
+  - Test all button groups display in horizontal layout without wrapping
+  - Test `flex-shrink: 0` on button groups to prevent shrinking during scrolling
+  - Test toolbar maintains `white-space: nowrap` for proper horizontal scrolling
+  - Test toolbar functionality preservation with scrolling enabled
+  - Test test-id accessibility for toolbar container component
 - **UI Enhancement Testing:**
   - Test icon integration with Lucide React icons
   - Test enhanced button styling with hover effects

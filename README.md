@@ -14,7 +14,8 @@ Mind Map Text is a web-based mind mapping application that uses a column-based i
 *   **File Path Memory:** Remembers your last used file paths for quick saving and loading.
 *   **Enhanced Visual Design:** Modern styling with improved spacing, shadows, and color-coded node states.
 *   **Simplified Interface:** Clean layout focused on mind map content without status bar distractions.
-*   **Comprehensive Testing:** 118 tests across 10 test files ensuring robust functionality and preventing regressions.
+*   **Responsive Toolbar:** Horizontal scrolling support for better usability on smaller screens and extensive button layouts.
+*   **Comprehensive Testing:** 122 tests across 10 test files ensuring robust functionality and preventing regressions.
 
 ## Demo
 
@@ -56,7 +57,7 @@ This will start the development server and open the application in your default 
 npm test
 ```
 
-This will launch the test runner in interactive watch mode. The test suite includes 118 tests covering all components, utilities, and edge cases, including comprehensive tests for the column height improvements and scrolling behavior.
+This will launch the test runner in interactive watch mode. The test suite includes 122 tests covering all components, utilities, and edge cases, including comprehensive tests for the column height improvements and scrolling behavior.
 
 ## Usage
 
@@ -82,6 +83,13 @@ The application has been enhanced with several visual and functional improvement
 - **Enhanced Styling:** Modern button design, improved spacing, and subtle shadows
 - **Root Column Highlighting:** The root column is visually distinguished with a blue left border
 - **Clean Layout:** Simplified interface without status bar for focused mind mapping
+
+### Toolbar Enhancements (Task 54)
+- **Horizontal Scrolling:** Toolbar now supports horizontal scrolling when content exceeds viewport width
+- **Custom Scrollbar:** 6px horizontal scrollbar with hover visibility for cleaner appearance
+- **Button Preservation:** Button groups maintain fixed width and don't shrink during scrolling
+- **Responsive Design:** Maintains full functionality on smaller screens and mobile devices
+- **Accessibility:** All toolbar controls remain accessible with scrolling enabled
 
 ### Responsive Behavior
 - **Horizontal Scrolling:** Smooth horizontal scrolling for deep mind map structures
