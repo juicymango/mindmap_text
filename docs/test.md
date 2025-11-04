@@ -4,7 +4,7 @@ This document provides comprehensive testing documentation for the mind map appl
 
 ## Test Overview
 
-The application has comprehensive test coverage with 122 tests across 10 test files, covering unit tests, integration tests, and component tests using React Testing Library and Jest. The test suite covers all UI components including the newly enhanced Toolbar with horizontal scrolling support, improved visual styling components, and Task 52 column height improvements.
+The application has comprehensive test coverage with 133 tests across 11 test files, covering unit tests, integration tests, and component tests using React Testing Library and Jest. The test suite covers all UI components including the newly enhanced Toolbar with horizontal scrolling support, improved visual styling components, Task 52 column height improvements, and Task 55 cut functionality with comprehensive test coverage for both JSON and text cut operations.
 
 ## Testing Philosophy
 
@@ -137,6 +137,14 @@ src/
   - Test toolbar maintains `white-space: nowrap` for proper horizontal scrolling
   - Test toolbar functionality preservation with scrolling enabled
   - Test test-id accessibility for toolbar container component
+- **Task 55: Cut Button Tests:**
+  - Test Cut JSON and Cut Text buttons are displayed in toolbar
+  - Test cut buttons are enabled when root node is selected
+  - Test cut buttons are enabled when non-root nodes are selected
+  - Test handleCutJson function calls cutNodeAsJson with correct path
+  - Test handleCutText function calls cutNodeAsText with correct path
+  - Test cut button functionality with root node selected (path: [])
+  - Test cut button functionality with non-root node selected
 - **UI Enhancement Testing:**
   - Test icon integration with Lucide React icons
   - Test enhanced button styling with hover effects
@@ -164,6 +172,15 @@ src/
 - Test standalone root node pasting behavior
 - Test root content addition as children to non-root nodes
 - Test fallback clipboard API compatibility for older browsers
+- **Task 55 Cut Functionality Tests:**
+  - Test cutNodeAsJson copies node as JSON string and deletes it from mind map
+  - Test cutNodeAsJson with nodes containing children
+  - Test cutNodeAsJson handles non-existent nodes gracefully
+  - Test cutNodeAsJson clipboard API failure with fallback to document.execCommand
+  - Test cutNodeAsText copies node as text format and deletes it from mind map
+  - Test cutNodeAsText with nodes containing children
+  - Test cutNodeAsText handles non-existent nodes gracefully
+  - Test cut operations ensure node deletion even when clipboard copy fails
 - Test findNode and findParent helper functions
 
 ### Utility Tests

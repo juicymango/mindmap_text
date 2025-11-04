@@ -18,6 +18,8 @@ export interface MindMapState {
   copyNodeAsText: (path: number[]) => Promise<void>;
   pasteNodeAsJson: (path: number[]) => Promise<void>;
   pasteNodeAsText: (path: number[]) => Promise<void>;
+  cutNodeAsJson: (path: number[]) => Promise<void>;
+  cutNodeAsText: (path: number[]) => Promise<void>;
   // File path memory state
   jsonFilePath: string | null;
   textFilePath: string | null;
@@ -404,6 +406,58 @@ pasteNodeAsText: async (path: number[]) => {
   } catch (error) {
     console.error('Failed to paste text:', error);
   }
+},
+cutNodeAsJson: async (path: number[]) => {
+  const { mindmap } = get();
+  const node = findNode(mindmap.root, path);
+  if (!node) return;
+
+  const jsonString = JSON.stringify(node, null, 2);
+  try {
+    await navigator.clipboard.writeText(jsonString);
+  } catch (error) {
+    console.error('Failed to copy to clipboard:', error);
+    // Fallback: use document.execCommand for older browsers
+    const textArea = document.createElement('textarea');
+    textArea.value = jsonString;
+    document.body.appendChild(textArea);
+    textArea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textArea);
+  }
+
+  // Delete the node after copying
+  get().deleteNode(path);
+},
+cutNodeAsText: async (path: number[]) => {
+  const { mindmap } = get();
+  const node = findNode(mindmap.root, path);
+  if (!node) return;
+
+  // Create a temporary mind map with the node as root for text conversion
+  const tempMindMap: MindMap = {
+    root: {
+      text: 'Root',
+      children: [node]
+    }
+  };
+  const textFormat = mindMapToText(tempMindMap);
+
+  try {
+    await navigator.clipboard.writeText(textFormat);
+  } catch (error) {
+    console.error('Failed to copy to clipboard:', error);
+    // Fallback: use document.execCommand for older browsers
+    const textArea = document.createElement('textarea');
+    textArea.value = textFormat;
+    document.body.appendChild(textArea);
+    textArea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textArea);
+  }
+
+  // Delete the node after copying
+  get().deleteNode(path);
 },
 reset: () => {
     set({ 

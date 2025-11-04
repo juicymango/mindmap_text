@@ -37,7 +37,7 @@ The UI is a vertically organized layout with two main sections:
 
 1. **Toolbar (48px height)**
    - Enhanced toolbar with icons and improved styling
-   - Three button groups: Node Operations, Copy/Paste Operations, File Operations
+   - Three button groups: Node Operations, Copy/Paste/Cut Operations, File Operations
    - Modern button design with hover effects and proper spacing
    - **Task 54: Horizontal Scrolling Support:**
      - Toolbar now supports horizontal scrolling when content exceeds viewport width
@@ -107,11 +107,16 @@ The UI is a vertically organized layout with two main sections:
     - **Text Format Handling:** Text files use tab-indented format where the auxiliary root node is automatically created during loading and excluded during saving.
     - **Default File Names:** Save operations use default file names ("mindmap.json" and "mindmap.txt") instead of prompting users to choose file locations.
 
-8.  **Copy/Paste Operations:**
-    - **Copy:** Select a node and press Ctrl+C (Cmd+C on Mac) to copy the node and its entire subtree to clipboard in text format.
-    - **Paste:** Select a node and press Ctrl+V (Cmd+V on Mac) to paste clipboard content as children to the selected node.
+8.  **Copy/Paste/Cut Operations:**
+    - **Copy JSON:** Select a node and click "Copy JSON" to copy the node and its entire subtree to clipboard in JSON format.
+    - **Copy Text:** Select a node and click "Copy Text" to copy the node and its entire subtree to clipboard in text format.
+    - **Cut JSON:** Select a node and click "Cut JSON" to copy the node and its entire subtree to clipboard in JSON format, then delete the node from the mind map.
+    - **Cut Text:** Select a node and click "Cut Text" to copy the node and its entire subtree to clipboard in text format, then delete the node from the mind map.
+    - **Paste JSON:** Select a node and click "Paste JSON" to paste JSON clipboard content as children to the selected node.
+    - **Paste Text:** Select a node and click "Paste Text" to paste text clipboard content as children to the selected node.
+    - **Cut Functionality:** Cut operations perform both copy and delete - the selected node is first copied to the clipboard in the specified format, then immediately deleted from the mind map.
     - Uses the existing text format for clipboard operations with auxiliary root node handling.
-    - The auxiliary root node is automatically managed during copy/paste operations to ensure proper hierarchy preservation.
+    - The auxiliary root node is automatically managed during copy/paste/cut operations to ensure proper hierarchy preservation.
     - **Copy Logic Enhancement:** Fixed compatibility with auxiliary root node logic - when copying, the node becomes a child of the auxiliary root in the temporary structure, ensuring the copied content is preserved correctly in text format.
     - **Paste Logic Enhancement:** Fixed auxiliary root handling for both root and non-root targets - when pasting to root, the root text is updated and children are added; when pasting to non-root nodes, the auxiliary root's children are added directly to maintain proper hierarchy.
 

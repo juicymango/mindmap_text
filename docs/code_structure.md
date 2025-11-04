@@ -403,7 +403,7 @@ mindmap-app/
 
 ### `src/components/Toolbar.tsx`
 
--   **Function:** Renders the toolbar with comprehensive node operation buttons (Add Child, Delete, Move Up, Move Down), copy/paste operations (Copy JSON, Copy Text, Paste JSON, Paste Text), and file operations (Save As JSON, Save As Text, Load File). Implements root node button state management to disable inappropriate operations for the root node. **Task 54:** Enhanced with horizontal scrolling support for responsive design and better usability on smaller screens.
+-   **Function:** Renders the toolbar with comprehensive node operation buttons (Add Child, Delete, Move Up, Move Down), copy/paste/cut operations (Copy JSON, Copy Text, Cut JSON, Cut Text, Paste JSON, Paste Text), and file operations (Save As JSON, Save As Text, Load File). Implements root node button state management to disable inappropriate operations for the root node. **Task 54:** Enhanced with horizontal scrolling support for responsive design and better usability on smaller screens. **Task 55:** Added cut functionality that copies nodes to clipboard and then deletes them from the mind map.
 -   **Structure:**
     ```typescript
     import React from 'react';
@@ -474,6 +474,8 @@ mindmap-app/
         copyNodeAsText,
         pasteNodeAsJson,
         pasteNodeAsText,
+        cutNodeAsJson,
+        cutNodeAsText,
         setJsonFilePath,
         setTextFilePath
       } = useMindMapStore();
@@ -561,6 +563,18 @@ mindmap-app/
         }
       };
 
+      const handleCutJson = () => {
+        if (hasSelection || hasRootSelection) {
+          cutNodeAsJson(selectedPath);
+        }
+      };
+
+      const handleCutText = () => {
+        if (hasSelection || hasRootSelection) {
+          cutNodeAsText(selectedPath);
+        }
+      };
+
       return (
         <ToolbarContainer data-testid="toolbar-container">
           <ButtonGroup>
@@ -590,6 +604,14 @@ mindmap-app/
             <ToolbarButton onClick={handleCopyText} disabled={!(hasSelection || hasRootSelection)} title="Copy as Text">
               <FileText size={16} />
               <span>Copy Text</span>
+            </ToolbarButton>
+            <ToolbarButton onClick={handleCutJson} disabled={!(hasSelection || hasRootSelection)} title="Cut JSON">
+              <Scissors size={16} />
+              <span>Cut JSON</span>
+            </ToolbarButton>
+            <ToolbarButton onClick={handleCutText} disabled={!(hasSelection || hasRootSelection)} title="Cut Text">
+              <Scissors size={16} />
+              <span>Cut Text</span>
             </ToolbarButton>
             <ToolbarButton onClick={handlePasteJson} disabled={!(hasSelection || hasRootSelection)} title="Paste JSON">
               <Copy size={16} />
@@ -646,14 +668,23 @@ mindmap-app/
       updateNodeText: (path: number[], text: string) => void;
       copyNode: (path: number[]) => Promise<void>;
       pasteNode: (path: number[]) => Promise<void>;
-      onDragEnd: (result: DropResult) => void;
       setSelectedChild: (parentPath: number[], childIndex: number | undefined) => void;
+      // New node operations
+      moveNodeUp: (path: number[]) => number[];
+      moveNodeDown: (path: number[]) => number[];
+      copyNodeAsJson: (path: number[]) => Promise<void>;
+      copyNodeAsText: (path: number[]) => Promise<void>;
+      pasteNodeAsJson: (path: number[]) => Promise<void>;
+      pasteNodeAsText: (path: number[]) => Promise<void>;
+      cutNodeAsJson: (path: number[]) => Promise<void>;
+      cutNodeAsText: (path: number[]) => Promise<void>;
       // File path memory state
       jsonFilePath: string | null;
       textFilePath: string | null;
       setJsonFilePath: (path: string | null) => void;
       setTextFilePath: (path: string | null) => void;
       clearFilePaths: () => void;
+      reset: () => void;
     }
 
     const findNode = (root: MindNode, path: number[]): MindNode | null => {
