@@ -94,6 +94,7 @@ The UI is a vertically organized layout with two main sections:
 5.  **Node Editing:**
     - Double-clicking a node's text allows inline editing.
     - Pressing Enter or clicking away saves the changes.
+    - **Task 56 Bug Fix:** Fixed issue where moving a node up/down and then editing its text would revert to the pre-move text. The Node component now properly syncs its local text state with the underlying node data when the node prop changes (e.g., after move operations).
 
 6.  **Node Deletion:**
     - An "x" button next to each node deletes it.

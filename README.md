@@ -9,13 +9,13 @@ Mind Map Text is a web-based mind mapping application that uses a column-based i
 *   **Node Operations:** Easily add, delete, and edit nodes using toolbar controls.
 *   **File Operations:** Save your mind maps as JSON or a simple, human-readable text format.
 *   **Copy, Cut, and Paste:** Copy, cut, and paste nodes in JSON or text format using toolbar buttons. Cut operations copy nodes to clipboard and then delete them from the mind map.
-*   **Node Movement:** Move nodes up and down within their parent's children list.
+*   **Node Movement:** Move nodes up and down within their parent's children list with reliable text editing after move operations.
 *   **State Management:** Uses Zustand for efficient and predictable state management.
 *   **File Path Memory:** Remembers your last used file paths for quick saving and loading.
 *   **Enhanced Visual Design:** Modern styling with improved spacing, shadows, and color-coded node states.
 *   **Simplified Interface:** Clean layout focused on mind map content without status bar distractions.
 *   **Responsive Toolbar:** Horizontal scrolling support for better usability on smaller screens and extensive button layouts.
-*   **Comprehensive Testing:** 133 tests across 11 test files ensuring robust functionality and preventing regressions.
+*   **Comprehensive Testing:** 141 tests across 11 test files ensuring robust functionality and preventing regressions.
 
 ## Demo
 

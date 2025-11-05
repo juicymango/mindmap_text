@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MindNode } from '../types';
 import { useMindMapStore } from '../store/mindmapStore';
 import { useSelectedPath } from '../contexts/SelectedPathContext';
@@ -47,6 +47,11 @@ export const Node: React.FC<NodeProps> = ({ node, path, index, onSelect }) => {
   const { selectedPath } = useSelectedPath();
   const [isEditing, setIsEditing] = useState(false);
   const [text, setText] = useState(node.text);
+
+  // Sync local text state with node prop when it changes (e.g., after move operations)
+  useEffect(() => {
+    setText(node.text);
+  }, [node.text]);
 
   const handleDoubleClick = () => {
     setIsEditing(true);

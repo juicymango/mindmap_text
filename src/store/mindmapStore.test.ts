@@ -1272,4 +1272,143 @@ describe('mindmapStore', () => {
       expect(store.mindmap.root.children[0]?.text).toBe('Node 1');
     });
   });
+
+  // Task 56: Move + Edit Integration Tests
+  describe('Move + Edit Integration', () => {
+    it('should maintain correct text after move and edit operations', () => {
+      const initialMindmap = {
+        root: {
+          text: 'Root',
+          children: [
+            { text: 'Node 1', children: [] },
+            { text: 'Node 2', children: [] },
+            { text: 'Node 3', children: [] },
+          ],
+        },
+      };
+
+      useMindMapStore.setState({ mindmap: initialMindmap });
+      const store = useMindMapStore.getState();
+
+      // Move Node 3 up (should move to position 1)
+      const newPath = store.moveNodeUp([2]);
+      expect(newPath).toEqual([1]);
+
+      // Verify the move worked correctly
+      expect(store.mindmap.root.children[0]?.text).toBe('Node 1');
+      expect(store.mindmap.root.children[1]?.text).toBe('Node 3'); // Moved up
+      expect(store.mindmap.root.children[2]?.text).toBe('Node 2');
+
+      // Now edit the text of the moved node (at new path [1])
+      store.updateNodeText([1], 'Edited Node 3');
+
+      // Verify the correct node was updated
+      expect(store.mindmap.root.children[0]?.text).toBe('Node 1');
+      expect(store.mindmap.root.children[1]?.text).toBe('Edited Node 3');
+      expect(store.mindmap.root.children[2]?.text).toBe('Node 2');
+    });
+
+    it('should maintain correct text after move down and edit operations', () => {
+      const initialMindmap = {
+        root: {
+          text: 'Root',
+          children: [
+            { text: 'Node 1', children: [] },
+            { text: 'Node 2', children: [] },
+            { text: 'Node 3', children: [] },
+          ],
+        },
+      };
+
+      useMindMapStore.setState({ mindmap: initialMindmap });
+      const store = useMindMapStore.getState();
+
+      // Move Node 1 down (should move to position 1)
+      const newPath = store.moveNodeDown([0]);
+      expect(newPath).toEqual([1]);
+
+      // Verify the move worked correctly
+      expect(store.mindmap.root.children[0]?.text).toBe('Node 2');
+      expect(store.mindmap.root.children[1]?.text).toBe('Node 1'); // Moved down
+      expect(store.mindmap.root.children[2]?.text).toBe('Node 3');
+
+      // Now edit the text of the moved node (at new path [1])
+      store.updateNodeText([1], 'Edited Node 1');
+
+      // Verify the correct node was updated
+      expect(store.mindmap.root.children[0]?.text).toBe('Node 2');
+      expect(store.mindmap.root.children[1]?.text).toBe('Edited Node 1');
+      expect(store.mindmap.root.children[2]?.text).toBe('Node 3');
+    });
+
+    it('should handle multiple moves and edits correctly', () => {
+      const initialMindmap = {
+        root: {
+          text: 'Root',
+          children: [
+            { text: 'A', children: [] },
+            { text: 'B', children: [] },
+            { text: 'C', children: [] },
+            { text: 'D', children: [] },
+          ],
+        },
+      };
+
+      useMindMapStore.setState({ mindmap: initialMindmap });
+      const store = useMindMapStore.getState();
+
+      // Move D up twice (from [3] to [2] to [1])
+      let newPath = store.moveNodeUp([3]);
+      expect(newPath).toEqual([2]);
+      newPath = store.moveNodeUp([2]);
+      expect(newPath).toEqual([1]);
+
+      // Verify position after moves
+      expect(store.mindmap.root.children[0]?.text).toBe('A');
+      expect(store.mindmap.root.children[1]?.text).toBe('D'); // Moved up twice
+      expect(store.mindmap.root.children[2]?.text).toBe('B');
+      expect(store.mindmap.root.children[3]?.text).toBe('C');
+
+      // Edit the moved node
+      store.updateNodeText([1], 'Moved D');
+
+      // Move B down
+      store.moveNodeDown([2]);
+
+      // Edit B at its new position
+      store.updateNodeText([3], 'Moved B');
+
+      // Verify final state
+      expect(store.mindmap.root.children[0]?.text).toBe('A');
+      expect(store.mindmap.root.children[1]?.text).toBe('Moved D');
+      expect(store.mindmap.root.children[2]?.text).toBe('C');
+      expect(store.mindmap.root.children[3]?.text).toBe('Moved B');
+    });
+
+    it('should update selected_child_idx correctly during moves', () => {
+      const initialMindmap = {
+        root: {
+          text: 'Root',
+          children: [
+            { text: 'Node 1', children: [] },
+            { text: 'Node 2', children: [], selected_child_idx: 0 },
+            { text: 'Node 3', children: [] },
+          ],
+        },
+      };
+
+      useMindMapStore.setState({ mindmap: initialMindmap });
+      const store = useMindMapStore.getState();
+
+      // Move Node 1 up (should not move since it's already at top)
+      const newPath = store.moveNodeUp([0]);
+      expect(newPath).toEqual([0]); // No change
+
+      // Move Node 3 up (should move to position 1)
+      store.moveNodeUp([2]);
+
+      // Verify selected_child_idx is updated to point to the moved node's new position
+      expect(store.mindmap.root.selected_child_idx).toBe(1); // Points to moved Node 3
+    });
+  });
 });
