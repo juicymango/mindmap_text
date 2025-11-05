@@ -4070,3 +4070,104 @@ pasteNodeAsJson: async (path: number[]) => {
 6. Documentation updates (knowledge transfer)
 
 This plan provides a comprehensive approach to refactoring node operations while maintaining functionality and improving user experience.
+
+---
+
+## Task 56: Move + Edit Bug Analysis
+
+### Bug Description
+After moving a node up or down using the toolbar buttons, when the user double-clicks to edit the text, the text in the input field reverts to the text from before the move operation, even though the displayed text is correct.
+
+### Root Cause Analysis
+
+#### Why This Happens:
+
+1. **Component State Issue**: The `Node` component maintains local state for editing:
+   ```typescript
+   const [text, setText] = useState(node.text);
+   ```
+
+2. **Move Operation Flow**: When a node is moved up/down:
+   - The `moveNodeUp`/`moveNodeDown` functions swap nodes in the store
+   - The `Toolbar` updates the `selectedPath` to point to the node's new position
+   - The `Node` component re-renders with the same `path` but now points to a different node
+
+3. **The Problem**: The local `text` state in the Node component is initialized with `node.text` but is never updated when the underlying node prop changes. When the user enters edit mode, the local state contains the old node's text, not the current node's text.
+
+4. **Code Flow**:
+   ```typescript
+   // Initial render: path [0] points to Node A, text state = "Node A"
+   // Move operation: Node A moves to path [1], Node B moves to path [0]
+   // Re-render: path [0] now points to Node B, but text state still = "Node A"
+   // Double-click edit: input shows "Node A" instead of "Node B"
+   // handleBlur: updateNodeText([0], "Node A") // Updates wrong node!
+   ```
+
+### Solution Implementation
+
+#### The Fix:
+Add a `useEffect` hook to sync the local text state with the node prop whenever it changes:
+
+```typescript
+import React, { useState, useEffect } from 'react';
+
+export const Node: React.FC<NodeProps> = ({ node, path, index, onSelect }) => {
+  const { updateNodeText, setSelectedChild } = useMindMapStore();
+  const { selectedPath } = useSelectedPath();
+  const [isEditing, setIsEditing] = useState(false);
+  const [text, setText] = useState(node.text);
+
+  // Sync local text state with node prop when it changes (e.g., after move operations)
+  useEffect(() => {
+    setText(node.text);
+  }, [node.text]);
+
+  // ... rest of component
+};
+```
+
+#### Why This Works:
+- The `useEffect` hook runs whenever `node.text` changes
+- After move operations, the same path now points to a different node with different text
+- The effect updates the local `text` state to match the new node's text
+- When user enters edit mode, the correct text is displayed and updated
+
+### Relevant Code Components
+
+#### Store Move Operations:
+- `moveNodeUp(path: number[])`: Swaps node with previous sibling, returns new path
+- `moveNodeDown(path: number[])`: Swaps node with next sibling, returns new path
+- Both functions update `parent.selected_child_idx` to maintain selection
+
+#### Toolbar Integration:
+```typescript
+const handleMoveUp = () => {
+  if (hasSelection) {
+    const newPath = moveNodeUp(selectedPath);
+    if (newPath !== selectedPath) {
+      setSelectedPath(newPath); // Updates selectedPath to new position
+    }
+  }
+};
+```
+
+#### Node Component Issue:
+```typescript
+// PROBLEMATIC: Local state becomes stale after move operations
+const [text, setText] = useState(node.text);
+
+const handleBlur = () => {
+  updateNodeText(path, text); // Updates wrong node if text is stale
+};
+```
+
+### Test Cases Needed
+
+1. **Text Synchronization**: Verify text input updates when node prop changes
+2. **Move + Edit**: Move node up/down, then edit text, verify correct node is updated
+3. **Multiple Moves**: Multiple consecutive moves followed by edit
+4. **Edit State Preservation**: Ensure editing state is maintained during prop changes
+5. **Integration Tests**: Full flow from toolbar move to text editing
+
+### Implementation Priority
+This is a critical bug that affects core functionality. The fix is minimal and low-risk, making it suitable for immediate implementation.

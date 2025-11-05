@@ -263,10 +263,10 @@ mindmap-app/
 
 ### `src/components/Node.tsx`
 
--   **Function:** Renders a single node with color-coded styling based on node type, inline editing, selection, and delete functionality.
+-   **Function:** Renders a single node with color-coded styling based on node type, inline editing, selection, and delete functionality. **Task 56:** Fixed bug where moving a node up/down and then editing text would revert to pre-move text by adding useEffect to sync local text state with node prop changes.
 -   **Structure:**
     ```typescript
-    import React, { useState } from 'react';
+    import React, { useState, useEffect } from 'react';
     import { MindNode } from '../types';
     import { useMindMapStore } from '../store/mindmapStore';
     import { useSelectedPath } from '../contexts/SelectedPathContext';
@@ -311,6 +311,11 @@ mindmap-app/
       const { selectedPath } = useSelectedPath();
       const [isEditing, setIsEditing] = useState(false);
       const [text, setText] = useState(node.text);
+
+      // Sync local text state with node prop when it changes (e.g., after move operations)
+      useEffect(() => {
+        setText(node.text);
+      }, [node.text]);
 
       const handleDoubleClick = () => {
         setIsEditing(true);

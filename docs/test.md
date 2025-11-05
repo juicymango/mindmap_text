@@ -4,7 +4,7 @@ This document provides comprehensive testing documentation for the mind map appl
 
 ## Test Overview
 
-The application has comprehensive test coverage with 133 tests across 11 test files, covering unit tests, integration tests, and component tests using React Testing Library and Jest. The test suite covers all UI components including the newly enhanced Toolbar with horizontal scrolling support, improved visual styling components, Task 52 column height improvements, and Task 55 cut functionality with comprehensive test coverage for both JSON and text cut operations.
+The application has comprehensive test coverage with 141 tests across 11 test files, covering unit tests, integration tests, and component tests using React Testing Library and Jest. The test suite covers all UI components including the newly enhanced Toolbar with horizontal scrolling support, improved visual styling components, Task 52 column height improvements, Task 55 cut functionality with comprehensive test coverage for both JSON and text cut operations, and Task 56 move + edit bug fix with comprehensive test coverage ensuring text editing works correctly after node move operations.
 
 ## Testing Philosophy
 
@@ -105,6 +105,15 @@ src/
 - Test improved visual styling with better spacing and typography
 - Test accessibility features (tabIndex, keyboard navigation)
 - Test integration with new icon-based toolbar system
+- **Task 56: Move + Edit Bug Fix Tests:**
+  - Test text synchronization when node prop changes after move operation
+  - Test updating correct node when editing after move operation
+  - Test handling multiple node prop changes correctly
+  - Test maintaining editing state during node prop changes
+  - Test move + edit integration with store operations
+  - Test move down and edit operations work correctly
+  - Test multiple moves and edits in sequence
+  - Test selected_child_idx updates during move operations
 
 #### Node Color Visual Tests (`src/components/NodeColor.test.tsx`)
 - Test actual DOM computed styles for all 4 node types (selected, onPath, withChildren, withoutChildren)
@@ -172,6 +181,11 @@ src/
 - Test standalone root node pasting behavior
 - Test root content addition as children to non-root nodes
 - Test fallback clipboard API compatibility for older browsers
+- **Task 56: Move + Edit Integration Tests:**
+  - Test maintaining correct text after move and edit operations
+  - Test maintaining correct text after move down and edit operations
+  - Test handling multiple moves and edits correctly
+  - Test selected_child_idx updates during move operations
 - **Task 55 Cut Functionality Tests:**
   - Test cutNodeAsJson copies node as JSON string and deletes it from mind map
   - Test cutNodeAsJson with nodes containing children
