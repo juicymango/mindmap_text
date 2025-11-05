@@ -2301,3 +2301,10 @@ All requirements from Task 54 have been successfully implemented. The toolbar no
 - Update `./docs/test.md` based on the current implementation.
 - Update `./README.md` based on the current implementation.
 - Commit all changes with `git add .`, commit, and push to the remote repository.
+
+# task 57
+
+- Analyze the entire codebase. Clarify the logic of the text for the root node and list all its usages.
+- Append the findings to `./docs/plan.md`.
+- Do not modify any code.
+- Commit all changes with `git add .`, commit, and push to the remote repository.

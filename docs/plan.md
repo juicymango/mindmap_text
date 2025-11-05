@@ -4171,3 +4171,179 @@ const handleBlur = () => {
 
 ### Implementation Priority
 This is a critical bug that affects core functionality. The fix is minimal and low-risk, making it suitable for immediate implementation.
+
+---
+
+## Task 57: Root Node Text Logic Analysis
+
+### Overview
+This analysis examines the entire codebase to clarify the logic of the text for the root node and list all its usages throughout the application.
+
+### Root Node Text Logic
+
+#### 1. **Initial State and Reset**
+The root node is always initialized with the text "Root":
+```typescript
+// In mindmapStore.ts - Initial state
+mindmap: { root: { text: 'Root', children: [] } }
+
+// In reset() function
+set({
+  mindmap: { root: { text: 'Root', children: [] } },
+  jsonFilePath: null,
+  textFilePath: null,
+});
+```
+
+#### 2. **Auxiliary Root Pattern**
+The application uses an "auxiliary root" pattern where the root node serves as a container that is typically excluded from text operations:
+
+**Text Format Operations:**
+```typescript
+// In mindMapToText() - Skip root node
+mindMap.root.children.forEach(child => traverse(child, 0));
+
+// In textToMindMap() - Create auxiliary root
+const root: MindNode = { text: 'Root', children: [] };
+```
+
+**Copy/Cut Operations:**
+```typescript
+// Temporary structures for text conversion
+const tempMindMap: MindMap = {
+  root: {
+    text: 'Root',
+    children: [node]
+  }
+};
+```
+
+#### 3. **Root Node in UI Display**
+The root node is displayed in a special auxiliary root column:
+
+**In MindMap.tsx:**
+```typescript
+// Add auxiliary root column first (always present)
+columns.push({ path: [], nodes: [mindmap.root] });
+```
+
+#### 4. **Root Node Operations**
+
+**Allowed Operations for Root Node:**
+- ✅ Add Child nodes (`addNode([], 'New Node')`)
+- ✅ Copy operations (`copyNodeAsJson([])`, `copyNodeAsText([])`)
+- ✅ Cut operations (`cutNodeAsJson([])`, `cutNodeAsText([])`)
+- ✅ Paste operations (`pasteNodeAsJson([])`, `pasteNodeAsText([])`)
+- ✅ Text editing (via double-click)
+
+**Restricted Operations for Root Node:**
+- ❌ Delete (`deleteNode([])` - prevented in toolbar)
+- ❌ Move Up/Down (prevented in toolbar - no parent to move to)
+
+### All Root Node Text Usages
+
+#### 1. **Store Initialization** (`src/store/mindmapStore.ts`)
+```typescript
+// Line 29: Initial state
+mindmap: { root: { text: 'Root', children: [] } }
+
+// Line 77: In copyNodeAsText
+const tempMindMap: MindMap = {
+  root: {
+    text: 'Root',
+    children: [node]
+  }
+};
+
+// Line 103: In cutNodeAsText
+const tempMindMap: MindMap = {
+  root: {
+    text: 'Root',
+    children: [node]
+  }
+};
+
+// Line 114: In reset function
+set({
+  mindmap: { root: { text: 'Root', children: [] } },
+  // ...
+});
+```
+
+#### 2. **Text Format Utilities** (`src/utils/textFormat.ts`)
+```typescript
+// Line 44: In textToMindMap
+const root: MindNode = { text: 'Root', children: [] };
+```
+
+#### 3. **UI Components** (`src/components/`)
+```typescript
+// MindMap.tsx Line 44: Display in auxiliary column
+columns.push({ path: [], nodes: [mindmap.root] });
+
+// Toolbar.tsx: Root node detection
+const hasRootSelection = selectedPath.length === 0; // Root node has empty path []
+```
+
+#### 4. **Test Files**
+```typescript
+// NodeColor.test.tsx
+mindmap: { root: { text: 'Root', children: [] } }
+
+// Node.test.tsx
+const mindmap = {
+  root: {
+    text: 'Root',
+    children: [node],
+  },
+};
+
+// Toolbar.test.tsx
+mindmap: { root: { text: 'Root', children: [] } }
+
+// mindmapStore.test.tsx (multiple instances)
+result.current.setMindmap({ root: { text: 'Root', children: [] } });
+```
+
+#### 5. **Documentation References**
+```typescript
+// Code structure documentation and examples consistently use "Root"
+```
+
+### Key Findings
+
+#### 1. **Fixed Value Pattern**
+The root node text is **hardcoded as "Root"** throughout the codebase and never changes dynamically based on user input or data.
+
+#### 2. **Auxiliary Root Design**
+The root node serves as an **auxiliary container** for text operations:
+- **Export**: Root node is skipped in text format conversion
+- **Import**: Root node is automatically created during text-to-mindmap conversion
+- **Copy/Cut**: Temporary root nodes created for text conversion
+
+#### 3. **UI Integration**
+- Root node is displayed in a **special auxiliary column** (path: `[]`)
+- Root node can be **selected and edited** despite being auxiliary
+- Root node has **restricted operations** (no delete, no move)
+
+#### 4. **Text Operations Behavior**
+- **Text Save**: Root node text is NOT included in saved text files
+- **Text Load**: Root node text is automatically set to "Root" during loading
+- **JSON Save/Load**: Root node text IS included in JSON operations
+
+#### 5. **Consistent Implementation**
+All 15+ instances across the codebase use the exact same value: `"Root"`
+
+### Architecture Implications
+
+#### 1. **Separation of Concerns**
+The auxiliary root pattern cleanly separates the data structure from the user-visible content in text format.
+
+#### 2. **Data Integrity**
+The fixed "Root" value provides a stable anchor point for the data structure while allowing flexibility in actual content.
+
+#### 3. **User Experience**
+Users can interact with the root node (add children, edit text) but it maintains its auxiliary nature in text operations.
+
+### Conclusion
+The root node text logic follows a consistent "auxiliary root" pattern where "Root" serves as a fixed container that supports the column-based UI while remaining invisible in text export operations. This design enables the macOS Finder-like column interface while maintaining clean text file formats.
