@@ -4,7 +4,7 @@ import { useSelectedPath } from '../contexts/SelectedPathContext';
 import { saveAsFile, loadFromFile } from '../utils/file';
 import { FileFormat } from '../types';
 import styled from 'styled-components';
-import { Plus, Trash2, ChevronUp, ChevronDown, Copy, FileText, Save, FolderOpen } from 'lucide-react';
+import { Plus, Trash2, ChevronUp, ChevronDown, Copy, FileText, Save, FolderOpen, Scissors } from 'lucide-react';
 
 const ToolbarContainer = styled.div`
   height: 48px;
@@ -114,6 +114,8 @@ export const Toolbar: React.FC = () => {
     copyNodeAsText,
     pasteNodeAsJson,
     pasteNodeAsText,
+    cutNodeAsJson,
+    cutNodeAsText,
     setJsonFilePath,
     setTextFilePath
   } = useMindMapStore();
@@ -201,6 +203,18 @@ export const Toolbar: React.FC = () => {
     }
   };
 
+  const handleCutJson = () => {
+    if (hasSelection || hasRootSelection) {
+      cutNodeAsJson(selectedPath);
+    }
+  };
+
+  const handleCutText = () => {
+    if (hasSelection || hasRootSelection) {
+      cutNodeAsText(selectedPath);
+    }
+  };
+
   return (
     <ToolbarContainer data-testid="toolbar-container">
       <ButtonGroup>
@@ -230,6 +244,14 @@ export const Toolbar: React.FC = () => {
         <ToolbarButton onClick={handleCopyText} disabled={!(hasSelection || hasRootSelection)} title="Copy as Text">
           <FileText size={16} />
           <span>Copy Text</span>
+        </ToolbarButton>
+        <ToolbarButton onClick={handleCutJson} disabled={!(hasSelection || hasRootSelection)} title="Cut JSON">
+          <Scissors size={16} />
+          <span>Cut JSON</span>
+        </ToolbarButton>
+        <ToolbarButton onClick={handleCutText} disabled={!(hasSelection || hasRootSelection)} title="Cut Text">
+          <Scissors size={16} />
+          <span>Cut Text</span>
         </ToolbarButton>
         <ToolbarButton onClick={handlePasteJson} disabled={!(hasSelection || hasRootSelection)} title="Paste JSON">
           <Copy size={16} />

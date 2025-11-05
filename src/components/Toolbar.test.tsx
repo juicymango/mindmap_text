@@ -73,6 +73,8 @@ describe('Toolbar', () => {
     expect(moveDownButton).toBeDisabled(); // Root cannot be moved
     expect(screen.getByText('Copy JSON')).not.toBeDisabled();
     expect(screen.getByText('Copy Text')).not.toBeDisabled();
+    expect(screen.getByText('Cut JSON')).not.toBeDisabled();
+    expect(screen.getByText('Cut Text')).not.toBeDisabled();
     expect(screen.getByText('Paste JSON')).not.toBeDisabled();
     expect(screen.getByText('Paste Text')).not.toBeDisabled();
   });
@@ -92,7 +94,11 @@ describe('Toolbar', () => {
     // Copy operations should be enabled
     expect(screen.getByText('Copy JSON')).not.toBeDisabled();
     expect(screen.getByText('Copy Text')).not.toBeDisabled();
-    
+
+    // Cut operations should be enabled
+    expect(screen.getByText('Cut JSON')).not.toBeDisabled();
+    expect(screen.getByText('Cut Text')).not.toBeDisabled();
+
     // Paste operations should be enabled
     expect(screen.getByText('Paste JSON')).not.toBeDisabled();
     expect(screen.getByText('Paste Text')).not.toBeDisabled();
@@ -130,6 +136,8 @@ describe('Toolbar', () => {
     expect(screen.getByText('Move Down')).not.toBeDisabled();
     expect(screen.getByText('Copy JSON')).not.toBeDisabled();
     expect(screen.getByText('Copy Text')).not.toBeDisabled();
+    expect(screen.getByText('Cut JSON')).not.toBeDisabled();
+    expect(screen.getByText('Cut Text')).not.toBeDisabled();
     expect(screen.getByText('Paste JSON')).not.toBeDisabled();
     expect(screen.getByText('Paste Text')).not.toBeDisabled();
   });
@@ -207,6 +215,102 @@ describe('Toolbar', () => {
     expect(setJsonFilePath).toHaveBeenCalledWith('/path/to/file.json');
   });
 
+  it('should call cutNodeAsJson when Cut JSON is clicked', () => {
+    const cutNodeAsJson = jest.fn();
+    createMockMindMapStore({
+      mindmap: { root: { text: 'Root', children: [] } },
+      setMindmap,
+      addNode,
+      cutNodeAsJson,
+      jsonFilePath: null,
+      textFilePath: null,
+      setJsonFilePath,
+      setTextFilePath,
+    });
+
+    mockUseSelectedPath.mockReturnValue({
+      selectedPath: [0],
+      setSelectedPath: jest.fn()
+    });
+
+    render(<Toolbar />);
+    fireEvent.click(screen.getByText('Cut JSON'));
+
+    expect(cutNodeAsJson).toHaveBeenCalledWith([0]);
+  });
+
+  it('should call cutNodeAsText when Cut Text is clicked', () => {
+    const cutNodeAsText = jest.fn();
+    createMockMindMapStore({
+      mindmap: { root: { text: 'Root', children: [] } },
+      setMindmap,
+      addNode,
+      cutNodeAsText,
+      jsonFilePath: null,
+      textFilePath: null,
+      setJsonFilePath,
+      setTextFilePath,
+    });
+
+    mockUseSelectedPath.mockReturnValue({
+      selectedPath: [0],
+      setSelectedPath: jest.fn()
+    });
+
+    render(<Toolbar />);
+    fireEvent.click(screen.getByText('Cut Text'));
+
+    expect(cutNodeAsText).toHaveBeenCalledWith([0]);
+  });
+
+  it('should call cutNodeAsJson when Cut JSON is clicked with root selected', () => {
+    const cutNodeAsJson = jest.fn();
+    createMockMindMapStore({
+      mindmap: { root: { text: 'Root', children: [] } },
+      setMindmap,
+      addNode,
+      cutNodeAsJson,
+      jsonFilePath: null,
+      textFilePath: null,
+      setJsonFilePath,
+      setTextFilePath,
+    });
+
+    mockUseSelectedPath.mockReturnValue({
+      selectedPath: [], // Root selected
+      setSelectedPath: jest.fn()
+    });
+
+    render(<Toolbar />);
+    fireEvent.click(screen.getByText('Cut JSON'));
+
+    expect(cutNodeAsJson).toHaveBeenCalledWith([]);
+  });
+
+  it('should call cutNodeAsText when Cut Text is clicked with root selected', () => {
+    const cutNodeAsText = jest.fn();
+    createMockMindMapStore({
+      mindmap: { root: { text: 'Root', children: [] } },
+      setMindmap,
+      addNode,
+      cutNodeAsText,
+      jsonFilePath: null,
+      textFilePath: null,
+      setJsonFilePath,
+      setTextFilePath,
+    });
+
+    mockUseSelectedPath.mockReturnValue({
+      selectedPath: [], // Root selected
+      setSelectedPath: jest.fn()
+    });
+
+    render(<Toolbar />);
+    fireEvent.click(screen.getByText('Cut Text'));
+
+    expect(cutNodeAsText).toHaveBeenCalledWith([]);
+  });
+
   // Task 54: Horizontal scrolling tests
   it('should render toolbar with horizontal scrolling styles', () => {
     mockUseSelectedPath.mockReturnValue({
@@ -241,6 +345,8 @@ describe('Toolbar', () => {
     expect(screen.getByText('Move Down')).toBeInTheDocument();
     expect(screen.getByText('Copy JSON')).toBeInTheDocument();
     expect(screen.getByText('Copy Text')).toBeInTheDocument();
+    expect(screen.getByText('Cut JSON')).toBeInTheDocument();
+    expect(screen.getByText('Cut Text')).toBeInTheDocument();
     expect(screen.getByText('Paste JSON')).toBeInTheDocument();
     expect(screen.getByText('Paste Text')).toBeInTheDocument();
     expect(screen.getByText('Save JSON')).toBeInTheDocument();

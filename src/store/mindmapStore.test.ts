@@ -1066,4 +1066,210 @@ describe('mindmapStore', () => {
       expect(store.mindmap.root.children[0].children).toHaveLength(0);
     });
   });
+
+  describe('cutNodeAsJson', () => {
+    beforeEach(() => {
+      jest.spyOn(navigator.clipboard, 'writeText').mockResolvedValue();
+    });
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+
+    it('should cut node as JSON string and delete it', async () => {
+      const initialMindmap = {
+        root: {
+          text: 'Root',
+          children: [
+            { text: 'Node 1', children: [] },
+            { text: 'Node 2', children: [] },
+          ],
+        },
+      };
+
+      useMindMapStore.setState({ mindmap: initialMindmap });
+      const store = useMindMapStore.getState();
+
+      await store.cutNodeAsJson([0]);
+
+      expect(navigator.clipboard.writeText).toHaveBeenCalledWith(
+        JSON.stringify({
+          text: 'Node 1',
+          children: [],
+        }, null, 2)
+      );
+      expect(store.mindmap.root.children).toHaveLength(1);
+      expect(store.mindmap.root.children[0]?.text).toBe('Node 2');
+    });
+
+    it('should cut node with children as JSON string and delete it', async () => {
+      const initialMindmap = {
+        root: {
+          text: 'Root',
+          children: [
+            {
+              text: 'Node 1',
+              children: [
+                { text: 'Child 1', children: [] },
+              ],
+            },
+            { text: 'Node 2', children: [] },
+          ],
+        },
+      };
+
+      useMindMapStore.setState({ mindmap: initialMindmap });
+      const store = useMindMapStore.getState();
+
+      await store.cutNodeAsJson([0]);
+
+      expect(navigator.clipboard.writeText).toHaveBeenCalledWith(
+        JSON.stringify({
+          text: 'Node 1',
+          children: [
+            { text: 'Child 1', children: [] },
+          ],
+        }, null, 2)
+      );
+      expect(store.mindmap.root.children).toHaveLength(1);
+      expect(store.mindmap.root.children[0]?.text).toBe('Node 2');
+    });
+
+    it('should not cut if node does not exist', async () => {
+      const initialMindmap = {
+        root: {
+          text: 'Root',
+          children: [
+            { text: 'Node 1', children: [] },
+          ],
+        },
+      };
+
+      useMindMapStore.setState({ mindmap: initialMindmap });
+      const store = useMindMapStore.getState();
+
+      await store.cutNodeAsJson([1]); // Non-existent node
+
+      expect(navigator.clipboard.writeText).not.toHaveBeenCalled();
+      expect(store.mindmap.root.children).toHaveLength(1);
+      expect(store.mindmap.root.children[0]?.text).toBe('Node 1');
+    });
+
+    it('should handle clipboard API failure with fallback', async () => {
+      // Mock console.error to suppress error output
+      const originalError = console.error;
+      console.error = jest.fn();
+
+      jest.spyOn(navigator.clipboard, 'writeText').mockRejectedValue(new Error('Clipboard API failed'));
+
+      // Mock document methods for fallback
+      const mockCreateElement = jest.spyOn(document, 'createElement').mockReturnValue({
+        value: '',
+        select: jest.fn(),
+      } as any);
+      const mockAppendChild = jest.spyOn(document.body, 'appendChild').mockImplementation();
+      const mockRemoveChild = jest.spyOn(document.body, 'removeChild').mockImplementation();
+      const mockExecCommand = jest.spyOn(document, 'execCommand').mockReturnValue(true);
+
+      const initialMindmap = {
+        root: {
+          text: 'Root',
+          children: [
+            { text: 'Node 1', children: [] },
+          ],
+        },
+      };
+
+      useMindMapStore.setState({ mindmap: initialMindmap });
+      const store = useMindMapStore.getState();
+
+      await store.cutNodeAsJson([0]);
+
+      expect(mockCreateElement).toHaveBeenCalledWith('textarea');
+      expect(mockExecCommand).toHaveBeenCalledWith('copy');
+      expect(store.mindmap.root.children).toHaveLength(0); // Node should still be deleted
+
+      // Restore all mocks and console.error
+      mockCreateElement.mockRestore();
+      mockAppendChild.mockRestore();
+      mockRemoveChild.mockRestore();
+      mockExecCommand.mockRestore();
+      console.error = originalError;
+    });
+  });
+
+  describe('cutNodeAsText', () => {
+    beforeEach(() => {
+      jest.spyOn(navigator.clipboard, 'writeText').mockResolvedValue();
+    });
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+
+    it('should cut node as text format and delete it', async () => {
+      const initialMindmap = {
+        root: {
+          text: 'Root',
+          children: [
+            { text: 'Node 1', children: [] },
+            { text: 'Node 2', children: [] },
+          ],
+        },
+      };
+
+      useMindMapStore.setState({ mindmap: initialMindmap });
+      const store = useMindMapStore.getState();
+
+      await store.cutNodeAsText([0]);
+
+      expect(navigator.clipboard.writeText).toHaveBeenCalledWith('Node 1');
+      expect(store.mindmap.root.children).toHaveLength(1);
+      expect(store.mindmap.root.children[0]?.text).toBe('Node 2');
+    });
+
+    it('should cut node with children as text format and delete it', async () => {
+      const initialMindmap = {
+        root: {
+          text: 'Root',
+          children: [
+            {
+              text: 'Node 1',
+              children: [
+                { text: 'Child 1', children: [] },
+              ],
+            },
+            { text: 'Node 2', children: [] },
+          ],
+        },
+      };
+
+      useMindMapStore.setState({ mindmap: initialMindmap });
+      const store = useMindMapStore.getState();
+
+      await store.cutNodeAsText([0]);
+
+      expect(navigator.clipboard.writeText).toHaveBeenCalledWith('Node 1\n\tChild 1');
+      expect(store.mindmap.root.children).toHaveLength(1);
+      expect(store.mindmap.root.children[0]?.text).toBe('Node 2');
+    });
+
+    it('should not cut if node does not exist', async () => {
+      const initialMindmap = {
+        root: {
+          text: 'Root',
+          children: [
+            { text: 'Node 1', children: [] },
+          ],
+        },
+      };
+
+      useMindMapStore.setState({ mindmap: initialMindmap });
+      const store = useMindMapStore.getState();
+
+      await store.cutNodeAsText([1]); // Non-existent node
+
+      expect(navigator.clipboard.writeText).not.toHaveBeenCalled();
+      expect(store.mindmap.root.children).toHaveLength(1);
+      expect(store.mindmap.root.children[0]?.text).toBe('Node 1');
+    });
+  });
 });
