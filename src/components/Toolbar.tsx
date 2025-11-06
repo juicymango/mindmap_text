@@ -125,7 +125,9 @@ export const Toolbar: React.FC = () => {
   const hasRootSelection = selectedPath.length === 0; // Root node has empty path []
 
   const handleSaveAs = async (format: FileFormat) => {
-    const path = await saveAsFile(mindmap, format);
+    // Use root node text for filename
+    const rootText = mindmap.root.text;
+    const path = await saveAsFile(mindmap, format, rootText);
     if (path) {
       if (format === 'json') {
         setJsonFilePath(path);

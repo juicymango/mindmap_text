@@ -2308,3 +2308,20 @@ All requirements from Task 54 have been successfully implemented. The toolbar no
 - Append the findings to `./docs/plan.md`.
 - Do not modify any code.
 - Commit all changes with `git add .`, commit, and push to the remote repository.
+
+# task 58
+
+- Review the result of # Task 57.
+- When Save JSON or Save Text, i want the file name to be the text of the root node.
+- You need to handle special characters that can't be used in file names.
+- Could this decision potentially cause any problems?
+- Make a plan for the implementation.
+- Append your thoughts and plan to `./docs/plan.md`.
+- Implement your plan.
+- Implement the relevant test cases.
+- Keep running `npm test` and fix the errors until there are no more errors thrown.
+- Update `./docs/ui_and_iteration_design.md` based on the current implementation.
+- Update `./docs/code_structure.md` based on the current implementation.
+- Update `./docs/test.md` based on the current implementation.
+- Update `./README.md` based on the current implementation.
+- Commit all changes with `git add .`, commit, and push to the remote repository.
