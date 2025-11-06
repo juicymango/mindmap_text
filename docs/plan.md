@@ -4171,3 +4171,376 @@ const handleBlur = () => {
 
 ### Implementation Priority
 This is a critical bug that affects core functionality. The fix is minimal and low-risk, making it suitable for immediate implementation.
+
+---
+
+## Task 57: Root Node Text Logic Analysis
+
+### Overview
+This analysis examines the entire codebase to clarify the logic of the text for the root node and list all its usages throughout the application.
+
+### Root Node Text Logic
+
+#### 1. **Initial State and Reset**
+The root node is always initialized with the text "Root":
+```typescript
+// In mindmapStore.ts - Initial state
+mindmap: { root: { text: 'Root', children: [] } }
+
+// In reset() function
+set({
+  mindmap: { root: { text: 'Root', children: [] } },
+  jsonFilePath: null,
+  textFilePath: null,
+});
+```
+
+#### 2. **Auxiliary Root Pattern**
+The application uses an "auxiliary root" pattern where the root node serves as a container that is typically excluded from text operations:
+
+**Text Format Operations:**
+```typescript
+// In mindMapToText() - Skip root node
+mindMap.root.children.forEach(child => traverse(child, 0));
+
+// In textToMindMap() - Create auxiliary root
+const root: MindNode = { text: 'Root', children: [] };
+```
+
+**Copy/Cut Operations:**
+```typescript
+// Temporary structures for text conversion
+const tempMindMap: MindMap = {
+  root: {
+    text: 'Root',
+    children: [node]
+  }
+};
+```
+
+#### 3. **Root Node in UI Display**
+The root node is displayed in a special auxiliary root column:
+
+**In MindMap.tsx:**
+```typescript
+// Add auxiliary root column first (always present)
+columns.push({ path: [], nodes: [mindmap.root] });
+```
+
+#### 4. **Root Node Operations**
+
+**Allowed Operations for Root Node:**
+- ✅ Add Child nodes (`addNode([], 'New Node')`)
+- ✅ Copy operations (`copyNodeAsJson([])`, `copyNodeAsText([])`)
+- ✅ Cut operations (`cutNodeAsJson([])`, `cutNodeAsText([])`)
+- ✅ Paste operations (`pasteNodeAsJson([])`, `pasteNodeAsText([])`)
+- ✅ Text editing (via double-click)
+
+**Restricted Operations for Root Node:**
+- ❌ Delete (`deleteNode([])` - prevented in toolbar)
+- ❌ Move Up/Down (prevented in toolbar - no parent to move to)
+
+### All Root Node Text Usages
+
+#### 1. **Store Initialization** (`src/store/mindmapStore.ts`)
+```typescript
+// Line 29: Initial state
+mindmap: { root: { text: 'Root', children: [] } }
+
+// Line 77: In copyNodeAsText
+const tempMindMap: MindMap = {
+  root: {
+    text: 'Root',
+    children: [node]
+  }
+};
+
+// Line 103: In cutNodeAsText
+const tempMindMap: MindMap = {
+  root: {
+    text: 'Root',
+    children: [node]
+  }
+};
+
+// Line 114: In reset function
+set({
+  mindmap: { root: { text: 'Root', children: [] } },
+  // ...
+});
+```
+
+#### 2. **Text Format Utilities** (`src/utils/textFormat.ts`)
+```typescript
+// Line 44: In textToMindMap
+const root: MindNode = { text: 'Root', children: [] };
+```
+
+#### 3. **UI Components** (`src/components/`)
+```typescript
+// MindMap.tsx Line 44: Display in auxiliary column
+columns.push({ path: [], nodes: [mindmap.root] });
+
+// Toolbar.tsx: Root node detection
+const hasRootSelection = selectedPath.length === 0; // Root node has empty path []
+```
+
+#### 4. **Test Files**
+```typescript
+// NodeColor.test.tsx
+mindmap: { root: { text: 'Root', children: [] } }
+
+// Node.test.tsx
+const mindmap = {
+  root: {
+    text: 'Root',
+    children: [node],
+  },
+};
+
+// Toolbar.test.tsx
+mindmap: { root: { text: 'Root', children: [] } }
+
+// mindmapStore.test.tsx (multiple instances)
+result.current.setMindmap({ root: { text: 'Root', children: [] } });
+```
+
+#### 5. **Documentation References**
+```typescript
+// Code structure documentation and examples consistently use "Root"
+```
+
+### Key Findings
+
+#### 1. **Fixed Value Pattern**
+The root node text is **hardcoded as "Root"** throughout the codebase and never changes dynamically based on user input or data.
+
+#### 2. **Auxiliary Root Design**
+The root node serves as an **auxiliary container** for text operations:
+- **Export**: Root node is skipped in text format conversion
+- **Import**: Root node is automatically created during text-to-mindmap conversion
+- **Copy/Cut**: Temporary root nodes created for text conversion
+
+#### 3. **UI Integration**
+- Root node is displayed in a **special auxiliary column** (path: `[]`)
+- Root node can be **selected and edited** despite being auxiliary
+- Root node has **restricted operations** (no delete, no move)
+
+#### 4. **Text Operations Behavior**
+- **Text Save**: Root node text is NOT included in saved text files
+- **Text Load**: Root node text is automatically set to "Root" during loading
+- **JSON Save/Load**: Root node text IS included in JSON operations
+
+#### 5. **Consistent Implementation**
+All 15+ instances across the codebase use the exact same value: `"Root"`
+
+### Architecture Implications
+
+#### 1. **Separation of Concerns**
+The auxiliary root pattern cleanly separates the data structure from the user-visible content in text format.
+
+#### 2. **Data Integrity**
+The fixed "Root" value provides a stable anchor point for the data structure while allowing flexibility in actual content.
+
+#### 3. **User Experience**
+Users can interact with the root node (add children, edit text) but it maintains its auxiliary nature in text operations.
+
+### Conclusion
+The root node text logic follows a consistent "auxiliary root" pattern where "Root" serves as a fixed container that supports the column-based UI while remaining invisible in text export operations. This design enables the macOS Finder-like column interface while maintaining clean text file formats.
+
+---
+
+## Task 58: Root Node Filename Implementation Plan
+
+### Review of Task 57 Results
+Based on the comprehensive analysis in Task 57, we understand that:
+- Root node text is currently hardcoded as "Root" throughout the application
+- Users can edit the root node text despite its auxiliary nature
+- The root node serves as a container but is displayed in the UI for user interaction
+- The root node text can be modified via double-click editing, just like any other node
+
+### New Requirement Analysis
+**Task**: When Save JSON or Save Text, use the text of the root node as the filename, handling special characters appropriately.
+
+### Potential Problems and Solutions
+
+#### 1. **Empty or Whitespace Root Node Text**
+**Problem**: If root node text is empty or only whitespace, filename becomes invalid
+**Solution**: Fallback to "mindmap" as default filename
+```typescript
+const getSafeFilename = (rootText: string, format: FileFormat): string => {
+  const cleanText = sanitizeFilename(rootText);
+  return cleanText || `mindmap.${format === 'text' ? 'txt' : 'json'}`;
+};
+```
+
+#### 2. **Very Long Root Node Text**
+**Problem**: Long filenames can cause issues in different operating systems
+**Solution**: Truncate to reasonable length (e.g., 100 characters) while preserving readability
+```typescript
+const MAX_FILENAME_LENGTH = 100;
+const truncateFilename = (filename: string): string => {
+  if (filename.length <= MAX_FILENAME_LENGTH) return filename;
+  return filename.substring(0, MAX_FILENAME_LENGTH - 3) + '...';
+};
+```
+
+#### 3. **Special Characters in Different Operating Systems**
+**Problem**: Different OS have different filename restrictions
+**Solution**: Comprehensive sanitization for cross-platform compatibility
+
+**Invalid Characters by OS:**
+- **Windows**: `< > : " / \ | ? *` and control characters (0-31)
+- **macOS**: `:` and `/`
+- **Linux**: `/` and null character
+- **All**: Reserved names (`CON`, `PRN`, `AUX`, `NUL` on Windows)
+
+#### 4. **Duplicate Filenames**
+**Problem**: Saving multiple times with same root text could overwrite existing files
+**Solution**: Add timestamp or increment number as needed (though current implementation uses browser download, so this is handled by browser)
+
+### Implementation Plan
+
+#### Phase 1: Create Filename Sanitization Utility
+1. Create `sanitizeFilename()` function in `src/utils/file.ts`
+2. Handle special characters, reserved names, and length limits
+3. Add comprehensive test coverage
+
+#### Phase 2: Modify Save Functions
+1. Update `saveAsFile()` to accept root node text parameter
+2. Update `saveToFile()` to use sanitized root text as filename
+3. Modify Toolbar component to pass root node text to save functions
+
+#### Phase 3: Edge Case Handling
+1. Handle empty/whitespace root text
+2. Handle very long root text
+3. Handle reserved names and special characters
+4. Add fallback to "mindmap" when needed
+
+### Detailed Implementation Strategy
+
+#### 1. **Filename Sanitization Function**
+```typescript
+/**
+ * Sanitizes a string to be safe for use as a filename across operating systems
+ * @param text - The text to sanitize
+ * @returns - Sanitized filename-safe string
+ */
+export const sanitizeFilename = (text: string): string => {
+  if (!text || text.trim() === '') return '';
+
+  // Remove invalid characters: < > : " / \ | ? * and control chars
+  let sanitized = text.replace(/[<>:"/\\|?*\x00-\x1F]/g, '');
+
+  // Replace multiple whitespace with single space
+  sanitized = sanitized.replace(/\s+/g, ' ').trim();
+
+  // Remove leading/trailing dots (Windows doesn't allow)
+  sanitized = sanitized.replace(/^\.+|\.+$/g, '');
+
+  // Handle reserved names (Windows)
+  const reservedNames = [
+    'CON', 'PRN', 'AUX', 'NUL',
+    'COM1', 'COM2', 'COM3', 'COM4', 'COM5', 'COM6', 'COM7', 'COM8', 'COM9',
+    'LPT1', 'LPT2', 'LPT3', 'LPT4', 'LPT5', 'LPT6', 'LPT7', 'LPT8', 'LPT9'
+  ];
+
+  if (reservedNames.includes(sanitized.toUpperCase())) {
+    sanitized = `${sanitized}_mindmap`;
+  }
+
+  return sanitized;
+};
+
+/**
+ * Generates a safe filename from root node text
+ * @param rootText - The root node text
+ * @param format - The file format ('json' or 'text')
+ * @returns - Safe filename with appropriate extension
+ */
+export const generateFilenameFromRoot = (rootText: string, format: FileFormat): string => {
+  const sanitized = sanitizeFilename(rootText);
+  const base = sanitized || 'mindmap';
+  const extension = format === 'text' ? 'txt' : 'json';
+
+  // Truncate if too long (leaving room for extension)
+  const maxLength = 100 - extension.length - 1;
+  const truncated = base.length > maxLength ? base.substring(0, maxLength) : base;
+
+  return `${truncated}.${extension}`;
+};
+```
+
+#### 2. **Update File Utilities**
+```typescript
+// In saveAsFile function
+export const saveAsFile = async (
+  mindmap: MindMap,
+  format: FileFormat = 'json',
+  rootText?: string
+): Promise<string> => {
+  const filename = rootText
+    ? generateFilenameFromRoot(rootText, format)
+    : `mindmap.${format === 'text' ? 'txt' : 'json'}`;
+
+  saveToFile(mindmap, filename);
+  return filename;
+};
+```
+
+#### 3. **Update Toolbar Component**
+```typescript
+const handleSaveAs = async (format: FileFormat) => {
+  // Use root node text for filename
+  const rootText = mindmap.root.text;
+  const path = await saveAsFile(mindmap, format, rootText);
+  if (path) {
+    if (format === 'json') {
+      setJsonFilePath(path);
+    } else {
+      setTextFilePath(path);
+    }
+  }
+};
+```
+
+### Test Cases Needed
+
+#### 1. **Sanitization Tests**
+- Empty string input
+- Whitespace-only input
+- Various special characters (`<>:"/\\|?*`)
+- Reserved names (`CON`, `PRN`, etc.)
+- Very long input strings
+- Mixed special and normal characters
+
+#### 2. **Integration Tests**
+- Save JSON with normal root text
+- Save Text with normal root text
+- Save with special characters in root text
+- Save with empty root text (should fallback)
+- Save with very long root text (should truncate)
+
+#### 3. **Cross-Platform Tests**
+- Test sanitization for Windows-specific restrictions
+- Test sanitization for macOS/Linux restrictions
+- Verify browser download behavior
+
+### Implementation Priority
+1. **High**: Core sanitization functionality
+2. **High**: Save function updates
+3. **Medium**: Edge case handling (empty, very long text)
+4. **Medium**: Reserved name handling
+5. **Low**: Advanced features (automatic numbering for duplicates)
+
+### Benefits of This Approach
+- **User-Friendly**: Filenames reflect content, making files easier to identify
+- **Cross-Platform**: Works across all operating systems
+- **Safe**: Prevents filesystem errors from invalid filenames
+- **Backward Compatible**: Fallback to existing behavior when needed
+- **Robust**: Handles edge cases gracefully
+
+### Risk Mitigation
+- **Breaking Changes**: None - existing behavior preserved with fallbacks
+- **Testing**: Comprehensive test coverage prevents regressions
+- **User Experience**: Clear filename expectations, predictable behavior

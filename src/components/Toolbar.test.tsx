@@ -162,7 +162,8 @@ describe('Toolbar', () => {
 
     expect(saveAsFile).toHaveBeenCalledWith(
       { root: { text: 'Root', children: [] } },
-      'json'
+      'json',
+      'Root'
     );
     expect(setJsonFilePath).toHaveBeenCalledWith(defaultPath);
   });
@@ -186,7 +187,8 @@ describe('Toolbar', () => {
 
     expect(saveAsFile).toHaveBeenCalledWith(
       { root: { text: 'Root', children: [] } },
-      'text'
+      'text',
+      'Root'
     );
     expect(setTextFilePath).toHaveBeenCalledWith(defaultPath);
   });
