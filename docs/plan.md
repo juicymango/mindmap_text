@@ -4544,3 +4544,216 @@ const handleSaveAs = async (format: FileFormat) => {
 - **Breaking Changes**: None - existing behavior preserved with fallbacks
 - **Testing**: Comprehensive test coverage prevents regressions
 - **User Experience**: Clear filename expectations, predictable behavior
+
+---
+
+## Task 59: UI/UX Improvements Implementation Plan
+
+### Review of Current Implementation
+
+#### Current Background Colors Analysis
+```typescript
+// Current colors in nodeColors.ts
+selected: { background: '#4A90E2', border: '#357ABD', text: '#FFFFFF', hover: '#357ABD' }  // Dark blue
+onPath: { background: '#E8F4FD', border: '#B8D4F1', text: '#333333', hover: '#D1E7FC' }   // Light blue
+withChildren: { background: '#cfdae2ff', border: '#90CAF9', text: '#333333', hover: '#BBDEFB' } // Purple
+withoutChildren: { background: '#FFFFFF', border: '#DEE2E6', text: '#333333', hover: '#F8F9FA' } // White
+```
+
+#### Current Toolbar Issues
+1. **Icon Mismatches**: Paste operations use `Copy` icon instead of `Download` or `Upload`
+2. **Button Grouping**: All operations are in one large group, not logically separated
+3. **Add Child Behavior**: Uses default text "New Node" instead of blank text editing
+
+### Subtasks Analysis
+
+#### 1. Background Color Redesign
+**Requirement**: Selected path colors should be stronger than children but lighter than selected node, with similarities to selected node.
+
+**Current Problem**:
+- `onPath` (#E8F4FD) is too light compared to `selected` (#4A90E2)
+- `withChildren` (#cfdae2ff) is stronger than `onPath` despite being less important
+- Visual hierarchy not clear
+
+**Proposed Solution:**
+```typescript
+selected: { background: '#4A90E2', border: '#357ABD', text: '#FFFFFF', hover: '#357ABD' }      // Keep unchanged
+onPath: { background: '#2C5AA0', border: '#1E88E5', text: '#FFFFFF', hover: '#1E88E5' }      // Stronger, blue family, white text
+withChildren: { background: '#E3F2FD', border: '#90CAF9', text: '#333333', hover: '#D1E7FC' }      // Light blue
+withoutChildren: { background: '#FFFFFF', border: '#DEE2E6', text: '#333333', hover: '#F8F9FA' } // Keep unchanged
+```
+
+**Benefits:**
+- Clear visual hierarchy: Selected > Selected Path > Children > No Children
+- Selected path nodes share blue color family with selected node
+- White text on selected path improves readability
+- Stronger contrast for better accessibility
+
+#### 2. Blank Text Editing for New Nodes
+**Current Implementation**: `addNode(selectedPath, 'New Node')`
+**Problem**: Users must delete default text to enter their own
+
+**Proposed Solution**:
+- Modify addNode to accept optional initial text parameter
+- When called from toolbar, pass empty string `''`
+- Trigger immediate edit mode for new node
+
+**Implementation Strategy:**
+```typescript
+// Store update: addNode(parentPath: number[], text: string = 'New Node')
+// Toolbar change: addNode(selectedPath, '')
+// Auto-select and trigger edit mode in MindMap component
+```
+
+#### 3. Toolbar Icon Fixes
+**Current Issues:**
+- Paste operations use `Copy` icon instead of `Upload`/`Download`
+- Some icons may not intuitively match their functions
+
+**Proposed Icon Updates:**
+```typescript
+import { Plus, Trash2, ChevronUp, ChevronDown, Copy, FileText, Save, FolderOpen, Scissors, Download } from 'lucide-react';
+
+// Icon mapping:
+- Copy JSON: Copy (appropriate)
+- Copy Text: FileText (appropriate)
+- Cut JSON: Scissors (appropriate)
+- Cut Text: Scissors (appropriate)
+- Paste JSON: Download (better semantic)
+- Paste Text: Download (better semantic)
+```
+
+#### 4. Toolbar Button Grouping
+**Current Structure**: One large group with all buttons
+**Problem**: Related operations not visually grouped
+
+**Proposed Structure:**
+```typescript
+<Group 1: Node Operations>
+  Add Child, Delete, Move Up, Move Down
+</Group 1>
+
+<Group 2: Copy Operations (JSON)>
+  Copy JSON, Cut JSON, Paste JSON
+</Group 2>
+
+<Group 3: Copy Operations (Text)>
+  Copy Text, Cut Text, Paste Text
+</Group 3>
+
+<Group 4: File Operations>
+  Save JSON, Save Text, Load File
+</Group 4>
+```
+
+### Detailed Implementation Strategy
+
+#### Phase 1: Background Color Updates
+**Files to Modify:**
+- `src/styles/nodeColors.ts`: Update color definitions
+
+**Implementation Steps:**
+1. Update `onPath` colors to stronger blue with white text
+2. Update `withChildren` colors to light blue for better hierarchy
+3. Keep `selected` and `withoutChildren` unchanged
+4. Update all related tests
+
+#### Phase 2: New Node Text Editing
+**Files to Modify:**
+- `src/store/mindmapStore.ts`: Update addNode function signature
+- `src/components/Toolbar.tsx`: Change addNode call to use empty string
+- `src/components/MindMap.tsx`: Add logic to auto-select and edit new nodes
+- `src/components/Node.tsx`: Ensure edit mode triggers correctly
+
+**Implementation Steps:**
+1. Make `text` parameter optional in addNode with default 'New Node'
+2. Update toolbar to call addNode with empty string
+3. Add auto-select and edit mode logic in MindMap component
+4. Update existing tests
+
+#### Phase 3: Icon and Toolbar Updates
+**Files to Modify:**
+- `src/components/Toolbar.tsx`: Update icons and button groups
+- Test files: Update icon and toolbar tests
+
+**Implementation Steps:**
+1. Import `Download` icon from lucide-react
+2. Update paste button icons to use `Download`
+3. Restructure JSX to use separate button groups
+4. Update all toolbar-related tests
+
+### Implementation Priority
+
+#### High Priority (Core UX Improvements)
+1. Background color redesign - affects visual hierarchy significantly
+2. New node blank text editing - directly improves user workflow
+3. Toolbar button grouping - improves organization and findability
+
+#### Medium Priority (Polish)
+4. Icon fixes - improves clarity and intuition
+
+#### Low Priority (Nice to Have)
+5. Advanced toolbar styling improvements
+6. Keyboard shortcuts for better accessibility
+
+### Test Cases Needed
+
+#### Background Color Tests
+- Test color rendering for all 4 node types
+- Test hover states for updated colors
+- Test accessibility contrast ratios
+- Test dynamic color updates during selection changes
+
+#### New Node Tests
+- Test addNode with empty text parameter
+- Test toolbar Add Child creates blank node in edit mode
+- Test edit mode auto-activation
+- Test auto-selection after node creation
+- Test edge cases (empty nodes, special characters)
+
+#### Icon and Toolbar Tests
+- Test icon updates render correctly
+- Test button grouping structure
+- Test all toolbar functionality preserved
+- Test responsive behavior with new groups
+
+#### Integration Tests
+- Test complete user workflow: Add Child → Edit → Save
+- Test color hierarchy visibility during navigation
+- Test all button states with different node selections
+
+### Benefits of This Approach
+
+#### User Experience
+- **Visual Hierarchy**: Clear distinction between node states
+- **Efficient Workflow**: Direct text editing without default deletion
+- **Intuitive Interface**: Logical button grouping and appropriate icons
+- **Accessibility**: Improved contrast and clear visual feedback
+
+#### Maintainability
+- **Consistent Design**: Color family relationships make future changes easier
+- **Clear Separation**: Button groups make future additions logical
+- **Backward Compatibility**: All existing functionality preserved
+
+#### Professional Quality
+- **Attention to Detail**: Proper icon semantics and color theory
+- **User-Centered**: Workflow improvements based on actual usage patterns
+- **Cross-Platform**: Consistent with modern UI standards
+
+### Risk Mitigation
+
+#### Breaking Changes
+- **None**: All changes are enhancements, not breaking existing functionality
+- **Backward Compatibility**: Default behaviors preserved where appropriate
+- **Testing**: Comprehensive test coverage prevents regressions
+
+#### Implementation Risks
+- **Color Accessibility**: Test contrast ratios across all node states
+- **Edit Mode Triggers**: Ensure automatic edit mode works reliably
+- **Icon Availability**: Verify lucide-react icons are available
+- **Browser Compatibility**: Test all changes across different browsers
+
+#### User Adoption
+- **Learning Curve**: Color changes are intuitive improvements
+- **Workflow Changes**: Blank text editing is more natural than default text
+- **Visual Consistency**: Grouped buttons follow common UI patterns

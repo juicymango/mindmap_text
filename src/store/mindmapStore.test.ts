@@ -1412,3 +1412,91 @@ describe('mindmapStore', () => {
     });
   });
 });
+
+// Task 59: Test cases for updated addNode functionality
+describe('Task 59: AddNode with Blank Text Tests', () => {
+  beforeEach(() => {
+    // Reset the store to initial state
+    useMindMapStore.setState({
+      mindmap: { root: { text: 'Root', children: [] } },
+      jsonFilePath: null,
+      textFilePath: null,
+    });
+  });
+
+  it('should add node with empty text when no text parameter is provided', () => {
+    const store = useMindMapStore.getState();
+
+    act(() => {
+      store.addNode([]); // Add to root without text parameter
+    });
+
+    expect(store.mindmap.root.children).toHaveLength(1);
+    expect(store.mindmap.root.children[0].text).toBe('');
+    expect(store.mindmap.root.selected_child_idx).toBe(0); // Should auto-select new node
+  });
+
+  it('should add node with provided text parameter', () => {
+    const store = useMindMapStore.getState();
+
+    act(() => {
+      store.addNode([], 'Custom Text'); // Add to root with custom text
+    });
+
+    expect(store.mindmap.root.children).toHaveLength(1);
+    expect(store.mindmap.root.children[0].text).toBe('Custom Text');
+    expect(store.mindmap.root.selected_child_idx).toBe(0); // Should auto-select new node
+  });
+
+  it('should add node with empty text when empty string is provided', () => {
+    const store = useMindMapStore.getState();
+
+    act(() => {
+      store.addNode([], ''); // Add to root with empty string
+    });
+
+    expect(store.mindmap.root.children).toHaveLength(1);
+    expect(store.mindmap.root.children[0].text).toBe('');
+    expect(store.mindmap.root.selected_child_idx).toBe(0); // Should auto-select new node
+  });
+
+  it('should auto-select newly created node and update selected_child_idx', () => {
+    const store = useMindMapStore.getState();
+
+    // Add first node
+    act(() => {
+      store.addNode([]);
+    });
+
+    expect(store.mindmap.root.selected_child_idx).toBe(0);
+
+    // Add second node
+    act(() => {
+      store.addNode([]);
+    });
+
+    expect(store.mindmap.root.children).toHaveLength(2);
+    expect(store.mindmap.root.selected_child_idx).toBe(1); // Should select the latest node
+  });
+
+  it('should work correctly when adding to nested parent', () => {
+    const store = useMindMapStore.getState();
+
+    // First add a child to root
+    act(() => {
+      store.addNode([]);
+    });
+
+    expect(store.mindmap.root.children).toHaveLength(1);
+    expect(store.mindmap.root.selected_child_idx).toBe(0);
+
+    // Then add a grandchild to the first child
+    act(() => {
+      store.addNode([0]);
+    });
+
+    expect(store.mindmap.root.children[0].children).toHaveLength(1);
+    expect(store.mindmap.root.children[0].children[0].text).toBe('');
+    expect(store.mindmap.root.children[0].selected_child_idx).toBe(0); // Should select the new grandchild
+  });
+});

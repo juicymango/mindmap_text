@@ -5,7 +5,7 @@ import { mindMapToText, textToMindMap } from '../utils/textFormat';
 export interface MindMapState {
   mindmap: MindMap;
   setMindmap: (mindmap: MindMap) => void;
-  addNode: (parentPath: number[], text: string) => void;
+  addNode: (parentPath: number[], text?: string) => void;
   deleteNode: (path: number[]) => void;
   updateNodeText: (path: number[], text: string) => void;
   copyNode: (path: number[]) => Promise<void>;
@@ -70,13 +70,15 @@ export const useMindMapStore: UseBoundStore<StoreApi<MindMapState>> = create<Min
   mindmap: { root: { text: 'Root', children: [] } },
   ...getInitialFilePaths(),
   setMindmap: (mindmap: MindMap) => set({ mindmap }),
-  addNode: (parentPath: number[], text: string) => {
+  addNode: (parentPath: number[], text?: string) => {
     const { mindmap } = get();
     const newMindMap = { ...mindmap };
     const parent = findNode(newMindMap.root, parentPath);
     if (parent) {
-      const newNode: MindNode = { text, children: [] };
+      const newNode: MindNode = { text: text || '', children: [] };
       parent.children.push(newNode);
+      // Auto-select the newly created node
+      get().setSelectedChild(parentPath, parent.children.length - 1);
       set({ mindmap: newMindMap });
     }
   },

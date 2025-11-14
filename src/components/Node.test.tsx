@@ -1,9 +1,25 @@
+import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { Node } from './Node';
 import { createMockMindMapStore } from '../utils/test-utils';
 import { SelectedPathProvider } from '../contexts/SelectedPathContext';
+import { MindNode } from '../types';
 
 jest.mock('../store/mindmapStore');
+
+// Mock TestWrapper component (based on existing tests in NodeColor.test.tsx)
+const TestWrapper: React.FC<{ children: React.ReactNode, initialPath?: number[] }> = ({
+  children,
+  initialPath = []
+}) => {
+  const { setSelectedPath } = require('../contexts/SelectedPathContext').useSelectedPath();
+
+  React.useEffect(() => {
+    setSelectedPath(initialPath);
+  }, [initialPath, setSelectedPath]);
+
+  return <>{children}</>;
+};
 
 describe('Node', () => {
   const updateNodeText = jest.fn();
@@ -206,5 +222,89 @@ describe('Node', () => {
       fireEvent.change(screen.getByDisplayValue('Updated'), { target: { value: 'Edited Updated' } });
       expect(screen.getByDisplayValue('Edited Updated')).toBeInTheDocument();
     });
+  });
+});
+
+// Task 59: Test cases for blank text editing feature
+describe('Task 59: Blank Text Editing Tests', () => {
+  const mockNodeWithChildren: MindNode = {
+    text: 'Parent Node',
+    children: []
+  };
+
+  const emptyNode: MindNode = {
+    text: '',
+    children: []
+  };
+
+  beforeEach(() => {
+    createMockMindMapStore({
+      updateNodeText: jest.fn(),
+      setSelectedChild: jest.fn(),
+      addNode: jest.fn(),
+      deleteNode: jest.fn(),
+    });
+  });
+
+  it('should auto-enter edit mode when node has empty text and is selected', () => {
+    render(
+      <SelectedPathProvider>
+        <TestWrapper initialPath={[0]}>
+          <Node
+            node={emptyNode}
+            path={[0]}
+            index={0}
+            onSelect={jest.fn()}
+          />
+        </TestWrapper>
+      </SelectedPathProvider>
+    );
+
+    // Should automatically show input field for empty selected node
+    // Use getAllByDisplayValue since there might be other empty inputs
+    const inputs = screen.getAllByDisplayValue('');
+    expect(inputs.length).toBeGreaterThan(0); // At least one input should be present
+
+    // Just verify that an input field exists - we don't need to check node container specifics
+    // The presence of an input with empty value indicates auto-edit mode is working
+    expect(screen.getByDisplayValue('')).toBeInTheDocument();
+  });
+
+  it('should not auto-enter edit mode for non-empty nodes', () => {
+    render(
+      <SelectedPathProvider>
+        <TestWrapper initialPath={[0]}>
+          <Node
+            node={mockNodeWithChildren}
+            path={[0]}
+            index={0}
+            onSelect={jest.fn()}
+          />
+        </TestWrapper>
+      </SelectedPathProvider>
+    );
+
+    // Should show text normally, not in edit mode
+    expect(screen.getByText('Parent Node')).toBeInTheDocument();
+    expect(screen.queryByDisplayValue('Parent Node')).not.toBeInTheDocument();
+  });
+
+  it('should not auto-enter edit mode for empty nodes that are not selected', () => {
+    render(
+      <SelectedPathProvider>
+        <TestWrapper initialPath={[]}>
+          <Node
+            node={emptyNode}
+            path={[1]}
+            index={1}
+            onSelect={jest.fn()}
+          />
+        </TestWrapper>
+      </SelectedPathProvider>
+    );
+
+    // Empty node is not selected, so should not show input field
+    // Since empty text would render as empty span, we check that no input is present
+    expect(screen.queryByDisplayValue('')).not.toBeInTheDocument();
   });
 });

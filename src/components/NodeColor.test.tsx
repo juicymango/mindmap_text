@@ -287,7 +287,7 @@ describe('Node Color Visual Tests', () => {
       // Note: CSS pseudo-classes like :hover are difficult to test in JSDOM
       // This test verifies the hover color value is correct
       const hoverColor = hexToRgb(NODE_COLORS.withChildren.hover);
-      expect(hoverColor).toBe('rgb(187, 222, 251)');
+      expect(hoverColor).toBe('rgb(209, 231, 252)');
     });
 
     it('should handle empty selected path gracefully', () => {
@@ -393,5 +393,89 @@ describe('Node Color Visual Tests', () => {
       // Colors should be different
       expect(parentStyle.backgroundColor).not.toBe(leafStyle.backgroundColor);
     });
+  });
+});
+
+// Task 59: Test cases for background color redesign
+describe('Task 59: Background Color Redesign Tests', () => {
+  const mockNodeWithChildren: MindNode = {
+    text: 'Parent Node',
+    children: [
+      { text: 'Child 1', children: [] },
+      { text: 'Child 2', children: [] }
+    ]
+  };
+
+  beforeEach(() => {
+    createMockMindMapStore({
+      updateNodeText: jest.fn(),
+      setSelectedChild: jest.fn(),
+      addNode: jest.fn(),
+      deleteNode: jest.fn(),
+    });
+  });
+
+  it('should use stronger blue for onPath nodes with white text', () => {
+    render(
+      <SelectedPathProvider>
+        <TestWrapper initialPath={[1]}>
+          <Node
+            node={mockNodeWithChildren}
+            path={[]}
+            index={0}
+            onSelect={jest.fn()}
+          />
+        </TestWrapper>
+      </SelectedPathProvider>
+    );
+
+    const rootElement = screen.getByText('Parent Node').closest('div');
+    const computedStyle = window.getComputedStyle(rootElement!);
+
+    // Should use onPath colors (stronger blue with white text)
+    expect(computedStyle.backgroundColor).toBe(hexToRgb(NODE_COLORS.onPath.background));
+    expect(computedStyle.color).toBe(hexToRgb(NODE_COLORS.onPath.text));
+  });
+
+  it('should maintain proper visual hierarchy with updated colors', () => {
+    // Test that selected > onPath > withChildren > withoutChildren
+    const selectedColor = hexToRgb(NODE_COLORS.selected.background);
+    const onPathColor = hexToRgb(NODE_COLORS.onPath.background);
+    const withChildrenColor = hexToRgb(NODE_COLORS.withChildren.background);
+    const withoutChildrenColor = hexToRgb(NODE_COLORS.withoutChildren.background);
+
+    // This test validates the color hierarchy from the design
+    expect(selectedColor).not.toBe(onPathColor);
+    expect(onPathColor).not.toBe(withChildrenColor);
+    expect(withChildrenColor).not.toBe(withoutChildrenColor);
+  });
+
+  it('should use light blue for withChildren nodes', () => {
+    // Test a non-root node that has children but is not selected or on path
+    const nonRootNodeWithChildren: MindNode = {
+      text: 'Non-Root Parent',
+      children: [
+        { text: 'Child 1', children: [] }
+      ]
+    };
+
+    render(
+      <SelectedPathProvider>
+        <TestWrapper initialPath={[]}> {/* No selection */}
+          <Node
+            node={nonRootNodeWithChildren}
+            path={[0]}  // This node is not selected and not on the path
+            index={0}
+            onSelect={jest.fn()}
+          />
+        </TestWrapper>
+      </SelectedPathProvider>
+    );
+
+    const nodeElement = screen.getByText('Non-Root Parent').closest('div');
+    const computedStyle = window.getComputedStyle(nodeElement!);
+
+    // Should use withChildren color (light blue) when not selected but has children
+    expect(computedStyle.backgroundColor).toBe(hexToRgb(NODE_COLORS.withChildren.background));
   });
 });

@@ -4,7 +4,7 @@ import { useSelectedPath } from '../contexts/SelectedPathContext';
 import { saveAsFile, loadFromFile } from '../utils/file';
 import { FileFormat } from '../types';
 import styled from 'styled-components';
-import { Plus, Trash2, ChevronUp, ChevronDown, Copy, FileText, Save, FolderOpen, Scissors } from 'lucide-react';
+import { Plus, Trash2, ChevronUp, ChevronDown, Copy, FileText, Save, FolderOpen, Scissors, Clipboard } from 'lucide-react';
 
 const ToolbarContainer = styled.div`
   height: 48px;
@@ -153,7 +153,7 @@ export const Toolbar: React.FC = () => {
 
   const handleAddChild = () => {
     if (hasSelection || hasRootSelection) {
-      addNode(selectedPath, 'New Node');
+      addNode(selectedPath); // No text parameter - will create empty string
     }
   };
 
@@ -237,7 +237,7 @@ export const Toolbar: React.FC = () => {
           <span>Move Down</span>
         </ToolbarButton>
       </ButtonGroup>
-      
+
       <ButtonGroup>
         <ToolbarButton onClick={handleCopyJson} disabled={!(hasSelection || hasRootSelection)} title="Copy as JSON">
           <Copy size={16} />
@@ -247,6 +247,9 @@ export const Toolbar: React.FC = () => {
           <FileText size={16} />
           <span>Copy Text</span>
         </ToolbarButton>
+      </ButtonGroup>
+
+      <ButtonGroup>
         <ToolbarButton onClick={handleCutJson} disabled={!(hasSelection || hasRootSelection)} title="Cut JSON">
           <Scissors size={16} />
           <span>Cut JSON</span>
@@ -255,16 +258,19 @@ export const Toolbar: React.FC = () => {
           <Scissors size={16} />
           <span>Cut Text</span>
         </ToolbarButton>
+      </ButtonGroup>
+
+      <ButtonGroup>
         <ToolbarButton onClick={handlePasteJson} disabled={!(hasSelection || hasRootSelection)} title="Paste JSON">
-          <Copy size={16} />
+          <Clipboard size={16} />
           <span>Paste JSON</span>
         </ToolbarButton>
         <ToolbarButton onClick={handlePasteText} disabled={!(hasSelection || hasRootSelection)} title="Paste Text">
-          <FileText size={16} />
+          <Clipboard size={16} />
           <span>Paste Text</span>
         </ToolbarButton>
       </ButtonGroup>
-      
+
       <ButtonGroup>
         <ToolbarButton onClick={() => handleSaveAs('json')} title="Save as JSON">
           <Save size={16} />

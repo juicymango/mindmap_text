@@ -53,6 +53,15 @@ export const Node: React.FC<NodeProps> = ({ node, path, index, onSelect }) => {
     setText(node.text);
   }, [node.text]);
 
+  // Auto-enter edit mode for newly created nodes with empty text
+  useEffect(() => {
+    // If node text is empty and this node is currently selected, enter edit mode
+    if (node.text === '' && selectedPath.length === path.length &&
+        selectedPath.every((val, idx) => val === path[idx])) {
+      setIsEditing(true);
+    }
+  }, [node.text, selectedPath, path]);
+
   const handleDoubleClick = () => {
     setIsEditing(true);
   };
