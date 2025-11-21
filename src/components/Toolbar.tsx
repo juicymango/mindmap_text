@@ -243,27 +243,24 @@ export const Toolbar: React.FC = () => {
           <Copy size={16} />
           <span>Copy JSON</span>
         </ToolbarButton>
-        <ToolbarButton onClick={handleCopyText} disabled={!(hasSelection || hasRootSelection)} title="Copy as Text">
-          <FileText size={16} />
-          <span>Copy Text</span>
-        </ToolbarButton>
-      </ButtonGroup>
-
-      <ButtonGroup>
         <ToolbarButton onClick={handleCutJson} disabled={!(hasSelection || hasRootSelection)} title="Cut JSON">
           <Scissors size={16} />
           <span>Cut JSON</span>
         </ToolbarButton>
-        <ToolbarButton onClick={handleCutText} disabled={!(hasSelection || hasRootSelection)} title="Cut Text">
-          <Scissors size={16} />
-          <span>Cut Text</span>
-        </ToolbarButton>
-      </ButtonGroup>
-
-      <ButtonGroup>
         <ToolbarButton onClick={handlePasteJson} disabled={!(hasSelection || hasRootSelection)} title="Paste JSON">
           <Clipboard size={16} />
           <span>Paste JSON</span>
+        </ToolbarButton>            
+      </ButtonGroup>
+
+      <ButtonGroup>
+        <ToolbarButton onClick={handleCopyText} disabled={!(hasSelection || hasRootSelection)} title="Copy as Text">
+          <Copy size={16} />
+          <span>Copy Text</span>
+        </ToolbarButton>
+        <ToolbarButton onClick={handleCutText} disabled={!(hasSelection || hasRootSelection)} title="Cut Text">
+          <Scissors size={16} />
+          <span>Cut Text</span>
         </ToolbarButton>
         <ToolbarButton onClick={handlePasteText} disabled={!(hasSelection || hasRootSelection)} title="Paste Text">
           <Clipboard size={16} />
