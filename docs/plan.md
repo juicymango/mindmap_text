@@ -4757,3 +4757,102 @@ import { Plus, Trash2, ChevronUp, ChevronDown, Copy, FileText, Save, FolderOpen,
 - **Learning Curve**: Color changes are intuitive improvements
 - **Workflow Changes**: Blank text editing is more natural than default text
 - **Visual Consistency**: Grouped buttons follow common UI patterns
+
+---
+
+# Task 60 Implementation Plan
+
+## Issues to Fix
+
+### 1. Color Hierarchy Problem: `onPath` Appears Stronger Than `selected`
+
+**Current Issue Analysis:**
+- Current `onPath` background: `#2C5AA0` (darker blue)
+- Current `selected` background: `#4A90E2` (lighter blue)
+- The darker `onPath` color appears more prominent than `selected`, creating incorrect visual hierarchy
+
+**Root Cause:**
+Darkness/shade is perceived as strength/importance. When `onPath` is darker than `selected`, it creates the impression that nodes on the path are more important than the selected node itself.
+
+**Fix Strategy:**
+Make `onPath` lighter than `selected` but maintain the same color family for visual coherence. Use a lighter shade or transparency approach.
+
+**Proposed Color Changes:**
+- `selected`: Keep `#4A90E2` (base color)
+- `onPath`: Change to a lighter shade like `#B8D4F1` (light blue with same hue)
+- This maintains color family relationship while establishing proper hierarchy
+
+### 2. Add Child Edit Mode Issue
+
+**Current Issue Analysis:**
+- When `Add Child` button is clicked, a new node is created with empty text
+- The node is auto-selected via `setSelectedChild()`
+- The Node component should automatically enter edit mode for empty selected nodes
+- Currently, users need to double-click the new node to start editing
+
+**Root Cause:**
+The auto-edit mode logic exists in Node.tsx (lines 57-63) but may not be triggering properly or there might be a timing issue.
+
+**Current Logic (Node.tsx:57-63):**
+```javascript
+// Auto-enter edit mode for newly created nodes with empty text
+useEffect(() => {
+  // If node text is empty and this node is currently selected, enter edit mode
+  if (node.text === '' && selectedPath.length === path.length &&
+      selectedPath.every((val, idx) => val === path[idx])) {
+    setIsEditing(true);
+  }
+}, [node.text, selectedPath, path]);
+```
+
+**Investigation Required:**
+- Verify if this logic is working correctly
+- Check if there's a timing issue with state updates
+- Ensure the selection and empty text detection work together properly
+
+## Implementation Strategy
+
+### Phase 1: Fix Color Hierarchy
+**Files to Modify:**
+- `src/styles/nodeColors.ts` - Update `onPath` color values
+
+**Changes:**
+- Change `onPath.background` from `#2C5AA0` to `#B8D4F1`
+- Update `onPath.border` to match new background (darker shade like `#7DB8E8`)
+- Keep text color as is or adjust for contrast if needed
+
+### Phase 2: Debug and Fix Add Child Edit Mode
+**Files to Modify:**
+- `src/components/Node.tsx` - Fix auto-edit mode logic
+- `src/store/mindmapStore.ts` - Verify `addNode` and `setSelectedChild` coordination
+
+**Approach:**
+- First, add debugging to understand current behavior
+- Check if the useEffect for auto-edit mode is firing
+- If timing issue, add additional state or ref to track newly created nodes
+- Ensure seamless transition from node creation to edit mode
+
+### Phase 3: Testing
+**Test Cases to Add:**
+- Color contrast and hierarchy visibility tests
+- Add Child → immediate edit mode functionality test
+- Integration test for complete workflow
+- Edge cases (multiple additions, rapid clicking)
+
+## Specific Technical Considerations
+
+### Color Fix Technical Details
+- Use HSL color space calculations to ensure proper hue consistency
+- Maintain WCAG contrast ratios for accessibility
+- Test colors across different screen types and lighting conditions
+
+### Edit Mode Technical Details
+- React useEffect dependency array optimization
+- State update timing and batching considerations
+- Focus management for immediate user interaction
+- Cleanup of edit mode on navigation away
+
+### Risk Assessment
+- **Low Risk**: Color changes are purely cosmetic and reversible
+- **Medium Risk**: Edit mode changes affect user interaction patterns
+- **Mitigation**: Comprehensive testing and gradual rollout

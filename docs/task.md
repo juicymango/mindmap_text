@@ -2342,3 +2342,20 @@ All requirements from Task 54 have been successfully implemented. The toolbar no
 - Update `./docs/test.md` based on the current implementation.
 - Update `./README.md` based on the current implementation.
 - Commit all changes with `git add .`, commit, and push to the remote repository.
+
+# task 60
+
+- Review Task 59.
+- Your modification of button icons and grouping had bugs. I’ve already fixed them in the last commit. Please don’t modify them again.
+- The color of `onPath` looks stronger than `selected`, which is not expected. It might be because it’s darker. Redesign it.
+- When `Add Child` is clicked, it’s not in active editing mode. I need to click on the new node to activate editing. Fix this.
+- Make a plan for the implementation. Specify the files and functions you’ll modify for each subtask.
+- Append your thoughts and plan to `./docs/plan.md`.
+- Implement your plan.
+- Implement the relevant test cases.
+- Keep running `npm test` and fix the errors until there are no more errors thrown.
+- Update `./docs/ui_and_iteration_design.md` based on the current implementation.
+- Update `./docs/code_structure.md` based on the current implementation.
+- Update `./docs/test.md` based on the current implementation.
+- Update `./README.md` based on the current implementation.
+- Commit all changes with `git add .`, commit, and push to the remote repository.

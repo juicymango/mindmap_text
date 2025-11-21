@@ -13,9 +13,11 @@ Mind Map Text is a web-based mind mapping application that uses a column-based i
 *   **State Management:** Uses Zustand for efficient and predictable state management.
 *   **File Path Memory:** Remembers your last used file paths for quick saving and loading.
 *   **Enhanced Visual Design:** Modern styling with improved spacing, shadows, and color-coded node states.
+*   **Improved Color Hierarchy:** Proper visual hierarchy where selected nodes are most prominent, followed by nodes on the selected path, with appropriate contrast for accessibility.
+*   **Automatic Edit Mode:** Newly created nodes automatically enter edit mode for streamlined workflow - no more double-clicking required!
 *   **Simplified Interface:** Clean layout focused on mind map content without status bar distractions.
 *   **Responsive Toolbar:** Horizontal scrolling support for better usability on smaller screens and extensive button layouts.
-*   **Comprehensive Testing:** 141 tests across 11 test files ensuring robust functionality and preventing regressions.
+*   **Comprehensive Testing:** 173 tests across 11 test files ensuring robust functionality and preventing regressions.
 
 ## Demo
 
@@ -95,6 +97,32 @@ The application has been enhanced with several visual and functional improvement
 - **Horizontal Scrolling:** Smooth horizontal scrolling for deep mind map structures
 - **Custom Scrollbars:** Both horizontal and vertical scrollbars are styled for consistency
 - **Flexible Layout:** The interface adapts to different screen sizes while maintaining usability
+
+## Task 60: Latest Improvements
+
+### Enhanced Visual Hierarchy
+- **Fixed Color Priority:** Resolved visual hierarchy issue where nodes on the selected path (`onPath`) appeared more prominent than selected nodes
+- **Improved Color Scheme:** Updated `onPath` nodes to use lighter blue background with dark text, ensuring selected nodes remain visually dominant
+- **Accessibility Compliance:** All color combinations maintain proper contrast ratios for WCAG compliance
+
+### Streamlined User Workflow
+- **Automatic Edit Mode:** When clicking "Add Child", new nodes immediately enter edit mode with empty text - no double-clicking required!
+- **Reduced Friction:** Node creation workflow improved from 3 steps (Add → Click → Double-click) to 2 steps (Add → Type)
+- **Intuitive Interaction:** New behavior matches user expectations for immediate content entry
+
+### Technical Improvements
+- **Optimized State Management:** Consolidated React useEffect hooks for better performance and reliability
+- **Enhanced Testing:** Added automated color hierarchy validation using RGB sum comparison algorithms
+- **Comprehensive Coverage:** 173 tests ensure all new functionality is thoroughly tested and regression-proof
+
+### Visual Design Updates
+```
+Selected Node:     Dark Blue (#4A90E2) + White Text - Most Prominent
+On Path Nodes:     Light Blue (#B8D4F1) + Dark Text - Secondary Prominence
+With Children:     Very Light Blue (#E3F2FD) + Dark Text - Tertiary
+Without Children:  White (#FFFFFF) + Dark Text - Least Prominent
+```
+The new color system provides clear visual feedback about node states while maintaining the application's established blue color family.
 
 ## File Formats
 

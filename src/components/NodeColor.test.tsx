@@ -478,4 +478,33 @@ describe('Task 59: Background Color Redesign Tests', () => {
     // Should use withChildren color (light blue) when not selected but has children
     expect(computedStyle.backgroundColor).toBe(hexToRgb(NODE_COLORS.withChildren.background));
   });
+
+  it('should ensure onPath color is lighter than selected color (Task 60 fix)', () => {
+    // Task 60: Verify that onPath appears lighter/less prominent than selected
+    const selectedRgb = hexToRgb(NODE_COLORS.selected.background);
+    const onPathRgb = hexToRgb(NODE_COLORS.onPath.background);
+
+    // Extract RGB values for comparison
+    const selectedMatch = selectedRgb.match(/\d+/g);
+    const onPathMatch = onPathRgb.match(/\d+/g);
+
+    // Ensure we have valid RGB matches
+    expect(selectedMatch).toBeTruthy();
+    expect(onPathMatch).toBeTruthy();
+
+    // Calculate brightness by summing RGB values
+    const selectedSum = selectedMatch ?
+      parseInt(selectedMatch[0]) + parseInt(selectedMatch[1]) + parseInt(selectedMatch[2]) : 0;
+    const onPathSum = onPathMatch ?
+      parseInt(onPathMatch[0]) + parseInt(onPathMatch[1]) + parseInt(onPathMatch[2]) : 0;
+
+    // onPath should have higher RGB sum (lighter) than selected
+    expect(onPathSum).toBeGreaterThan(selectedSum);
+
+    // Verify actual color values
+    expect(NODE_COLORS.selected.background).toBe('#4A90E2');
+    expect(NODE_COLORS.onPath.background).toBe('#B8D4F1');
+    expect(NODE_COLORS.onPath.text).toBe('#1565C0'); // Dark text for light background
+    expect(NODE_COLORS.selected.text).toBe('#FFFFFF'); // White text for darker background
+  });
 });

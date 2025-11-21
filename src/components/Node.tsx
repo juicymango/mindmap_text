@@ -48,14 +48,11 @@ export const Node: React.FC<NodeProps> = ({ node, path, index, onSelect }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [text, setText] = useState(node.text);
 
-  // Sync local text state with node prop when it changes (e.g., after move operations)
+  // Sync local text state with handle auto-edit mode for newly created nodes
   useEffect(() => {
     setText(node.text);
-  }, [node.text]);
 
-  // Auto-enter edit mode for newly created nodes with empty text
-  useEffect(() => {
-    // If node text is empty and this node is currently selected, enter edit mode
+    // Auto-enter edit mode for newly created nodes with empty text
     if (node.text === '' && selectedPath.length === path.length &&
         selectedPath.every((val, idx) => val === path[idx])) {
       setIsEditing(true);

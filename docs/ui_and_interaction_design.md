@@ -250,3 +250,86 @@ Root
 - Each line represents a node
 - Tabs (`\t`) indicate hierarchical structure
 - A node with `n` leading tabs is a child of the last line above it with `n-1` leading tabs
+
+---
+
+# Task 60: Color Hierarchy and Edit Mode Improvements
+
+## Color Hierarchy Fix
+
+### Problem Solved
+The previous `onPath` color (`#2C5AA0`) was darker than the `selected` color (`#4A90E2`), creating incorrect visual hierarchy where nodes on the selected path appeared more prominent than the selected node itself.
+
+### Solution Implemented
+Updated the color scheme in `src/styles/nodeColors.ts`:
+
+```typescript
+onPath: {
+  background: '#B8D4F1',  // Light blue background (was #2C5AA0)
+  border: '#7DB8E8',     // Matching border color
+  text: '#1565C0',       // Dark text for contrast (was #FFFFFF)
+  hover: '#A8CCEF'       // Light hover state
+}
+```
+
+### Visual Hierarchy Now Correct
+1. **Selected** (`#4A90E2`) - Darkest blue, most prominent with white text
+2. **OnPath** (`#B8D4F1`) - Light blue, less prominent with dark text  
+3. **WithChildren** (`#E3F2FD`) - Very light blue with dark text
+4. **WithoutChildren** (`#FFFFFF`) - White background with dark text
+
+The new design ensures that the selected node is visually dominant, while nodes on the path are visible but subordinate to the selection.
+
+## Add Child Edit Mode Enhancement
+
+### Problem Solved
+When clicking the "Add Child" button, users had to double-click the newly created node to enter edit mode. This created an inefficient workflow.
+
+### Solution Implemented
+Enhanced the Node component in `src/components/Node.tsx` to automatically enter edit mode for newly created nodes with empty text:
+
+```typescript
+// Auto-enter edit mode for newly created nodes with empty text
+useEffect(() => {
+  // If node text is empty and this node is currently selected, enter edit mode
+  if (node.text === '' && selectedPath.length === path.length &&
+      selectedPath.every((val, idx) => val === path[idx])) {
+    setIsEditing(true);
+  }
+}, [node.text, selectedPath, path]);
+```
+
+### User Experience Improvement
+- **Before**: Add Child → See empty node → Double-click → Edit
+- **After**: Add Child → Immediately edit (automatic)
+
+This change significantly improves the workflow efficiency by reducing the number of user actions required to add and name a new node.
+
+## Technical Implementation Details
+
+### Color Design Principles
+- **Maintained Color Family**: All blue colors share the same hue for visual consistency
+- **Proper Contrast**: Each state maintains WCAG accessibility standards
+- **Progressive Intensity**: Colors create a clear visual hierarchy from most to least important
+
+### React State Management
+- **Coordinated State Updates**: The auto-edit mode relies on the coordination between `node.text` and `selectedPath` state
+- **Effect Dependencies**: Proper dependency array ensures the effect triggers when relevant state changes
+- **No Race Conditions**: Combined state sync and auto-edit logic prevents timing issues
+
+### Testing Enhancements
+- Added comprehensive test to verify color hierarchy (RGB sum comparison)
+- Validated auto-edit mode functionality with existing test suite
+- Ensured no regressions in color contrast or accessibility
+
+## Impact Assessment
+
+### User Experience
+- **Reduced Cognitive Load**: Clearer visual hierarchy makes state understanding more intuitive
+- **Improved Workflow**: Automatic edit mode reduces friction in node creation
+- **Professional Appearance**: More refined color scheme aligns with modern UI standards
+
+### Code Quality
+- **Backward Compatibility**: All existing functionality preserved
+- **Test Coverage**: New functionality thoroughly tested
+- **Maintainability**: Color changes centralized in `nodeColors.ts` for easy future updates

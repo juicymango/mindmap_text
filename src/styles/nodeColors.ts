@@ -6,10 +6,10 @@ export const NODE_COLORS = {
     hover: '#357ABD'
   },
   onPath: {
-    background: '#2C5AA0',
-    border: '#1E88E5',
-    text: '#FFFFFF',
-    hover: '#1E88E5'
+    background: '#B8D4F1',
+    border: '#7DB8E8',
+    text: '#1565C0',
+    hover: '#A8CCEF'
   },
   withChildren: {
     background: '#E3F2FD',
